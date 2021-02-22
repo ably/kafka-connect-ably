@@ -67,6 +67,8 @@ services:
     command: /bin/bash # ./bin/debug.sh
     networks:
       kafka_network:
+    ports:
+      - '5005:5005'  # expose the debug port
     depends_on:
       - zookeeper
       - kafka
