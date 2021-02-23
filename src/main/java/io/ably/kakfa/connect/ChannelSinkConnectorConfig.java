@@ -404,43 +404,12 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
             .defaultValue(Defaults.HTTP_ASYNC_THREADPOOL_SIZE)
             .build()
         )
-
         .define(
           ConfigKeyBuilder.of(CLIENT_PUSH_FULL_WAIT, Type.BOOLEAN)
             .documentation(CLIENT_PUSH_FULL_WAIT_DOC)
             .importance(Importance.MEDIUM)
             .defaultValue(false)
             .build()
-        )
-
-        ;
+        );
   }
 }
-
-    // /**
-    //  * Proxy settings
-    //  */
-    // public ProxyOptions proxy;
-
-    // public class ProxyOptions {
-    //   public String host;
-    //   public int port;
-    //   public String username;
-    //   public String password;
-    //   public String[] nonProxyHosts;
-    //   public HttpAuth.Type prefAuthType = HttpAuth.Type.BASIC;
-    // }
-
-
-    // /**
-    //  * When a TokenParams object is provided, it will override
-    //  * the client library defaults described in TokenParams
-    //  * Spec: TO3j11
-    //  */
-    // public TokenParams defaultTokenParams = new TokenParams();
-
-
-    // /**
-    //  * Additional parameters to be sent in the querystring when initiating a realtime connection
-    //  */
-    // public Param[] transportParams;
