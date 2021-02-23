@@ -73,7 +73,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     "initialising the library with the intention of inheriting the state of an earlier connection. See the Ably " +
     "Realtime API documentation for further information on connection state recovery.";
 
-
   private static final String CLIENT_PROXY = "client.proxy";
   private static final String CLIENT_PROXY_DOC = "If true, use the configured proxy options to proxy connections.";
 
@@ -129,16 +128,29 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   private static final String CLIENT_FALLBACK_HOSTS_DOC = "List of custom fallback hosts to override the defaults. " +
     "Spec: TO3k6,RSC15a,RSC15b,RTN17b.";
 
+  private static final String CLIENT_TOKEN_PARAMS_TTL = "client.token.params.ttl";
+  private static final String CLIENT_TOKEN_PARAMS_TTL_DOC = "Requested time to live for the token in milliseconds. " +
+    "When omitted, the REST API default of 60 minutes is applied by Ably.";
+
+  private static final String CLIENT_TOKEN_PARAMS_CAPABILITY = "client.token.params.capability";
+  private static final String CLIENT_TOKEN_PARAMS_CAPABILITY_DOC = "Capability requirements JSON stringified for " +
+    "the token. When omitted, the REST API default to allow all operations is applied by Ably, with the string " +
+    "value {\"*\":[\"*\"]}.";
+
+  private static final String CLIENT_TOKEN_PARAMS_CLIENT_ID = "client.token.params.client.id";
+  private static final String CLIENT_TOKEN_PARAMS_CLIENT_ID_DOC = "Requested time to live for the token in " +
+    "milliseconds. When omitted, the REST API default of 60 minutes is applied by Ably.";
+
   private static final String CLIENT_CHANNEL_RETRY_TIMEOUT = "client.channel.retry.timeout";
-  private static final String CLIENT_CHANNEL_RETRY_TIMEOUT_DOC = "";
+  private static final String CLIENT_CHANNEL_RETRY_TIMEOUT_DOC = "Channel reattach timeout. Spec: RTL13b.";
 
   private static final String CLIENT_ASYNC_HTTP_THREADPOOL_SIZE = "client.async.http.threadpool.size";
   private static final String CLIENT_ASYNC_HTTP_THREADPOOL_SIZE_DOC = "Allows the caller to specify a non-default " +
     "size for the asyncHttp threadpool";
 
   private static final String CLIENT_PUSH_FULL_WAIT = "client.push.full.wait";
-  private static final String CLIENT_PUSH_FULL_WAIT_DOC = "";
-
+  private static final String CLIENT_PUSH_FULL_WAIT_DOC = "Whether to tell Ably to wait for push REST requests to " +
+    "fully wait for all their effects before responding.";
 
   public final String channel;
   public final String topic;
@@ -346,9 +358,27 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
             .defaultValue("")
             .build()
         )
-
-        // .CLIENT_TOKEN_PARAMS_XYZ
-
+        .define(
+          ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_TTL, Type.LONG)
+            .documentation(CLIENT_TOKEN_PARAMS_TTL_DOC)
+            .importance(Importance.MEDIUM)
+            .defaultValue(0L)
+            .build()
+        )
+        .define(
+          ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_CAPABILITY, Type.STRING)
+            .documentation(CLIENT_TOKEN_PARAMS_CAPABILITY_DOC)
+            .importance(Importance.MEDIUM)
+            .defaultValue("")
+            .build()
+        )
+        .define(
+          ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_CLIENT_ID, Type.LONG)
+            .documentation(CLIENT_TOKEN_PARAMS_CLIENT_ID_DOC)
+            .importance(Importance.MEDIUM)
+            .defaultValue(0L)
+            .build()
+        )
         .define(
           ConfigKeyBuilder.of(CLIENT_CHANNEL_RETRY_TIMEOUT, Type.INT)
             .documentation(CLIENT_CHANNEL_RETRY_TIMEOUT_DOC)
