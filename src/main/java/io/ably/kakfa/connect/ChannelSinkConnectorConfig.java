@@ -144,6 +144,10 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   private static final String CLIENT_CHANNEL_RETRY_TIMEOUT = "client.channel.retry.timeout";
   private static final String CLIENT_CHANNEL_RETRY_TIMEOUT_DOC = "Channel reattach timeout. Spec: RTL13b.";
 
+  private static final String CLIENT_TRANSPORT_PARAMS = "client.transport.params";
+  private static final String CLIENT_TRANSPORT_PARAMS_DOC = "Additional parameters to be sent in the querystring " +
+    "when initiating a realtime connection. This should be specified in the form \"key1=value1,key2=value2,...\".";
+
   private static final String CLIENT_ASYNC_HTTP_THREADPOOL_SIZE = "client.async.http.threadpool.size";
   private static final String CLIENT_ASYNC_HTTP_THREADPOOL_SIZE_DOC = "Allows the caller to specify a non-default " +
     "size for the asyncHttp threadpool";
@@ -386,9 +390,13 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
             .defaultValue(Defaults.TIMEOUT_CHANNEL_RETRY)
             .build()
         )
-
-        // .CLIENT_TRANSPORT_PARAMS
-
+        .define(
+          ConfigKeyBuilder.of(CLIENT_TRANSPORT_PARAMS, Type.LIST)
+            .documentation(CLIENT_TRANSPORT_PARAMS_DOC)
+            .importance(Importance.MEDIUM)
+            .defaultValue(Defaults.TIMEOUT_CHANNEL_RETRY)
+            .build()
+        )
         .define(
           ConfigKeyBuilder.of(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE, Type.INT)
             .documentation(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE_DOC)
