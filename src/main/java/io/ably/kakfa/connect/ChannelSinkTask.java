@@ -29,8 +29,8 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public void start(Map<String, String> settings) {
-        ClientOptions opts = new ClientOptions(); // TODO: get client options from settings
-        opts.logHandler = new LogHandler() {
+        this.config = new ChannelSinkConnectorConfig(settings);
+        this.config.clientOptions.logHandler = new LogHandler() {
             public void println(int severity, String tag, String msg, Throwable tr) {
                 if (severity < 0 || severity >= severities.length) {
                     severity = 3;
@@ -62,9 +62,8 @@ public class ChannelSinkTask extends SinkTask {
             }
         };
 
-        this.config = new ChannelSinkConnectorConfig(settings);
         try {
-            this.ably = new AblyRealtime(new ClientOptions());
+            this.ably = new AblyRealtime(this.config.clientOptions);
         } catch(AblyException e) {
             ChannelSinkTask.logger.error("error initializing ably client", e);
         }

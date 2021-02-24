@@ -3,15 +3,23 @@ package io.ably.kakfa.connect;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.ably.lib.http.HttpAuth;
+import io.ably.lib.rest.Auth.TokenParams;
 import io.ably.lib.transport.Defaults;
+import io.ably.lib.types.ClientOptions;
+import io.ably.lib.types.Param;
+import io.ably.lib.types.ProxyOptions;
 
 import org.apache.kafka.common.config.ConfigDef.Importance;
 import com.github.jcustenborder.kafka.connect.utils.config.ConfigKeyBuilder;
 import com.github.jcustenborder.kafka.connect.utils.config.recommenders.Recommenders;
 import com.github.jcustenborder.kafka.connect.utils.config.validators.Validators;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class ChannelSinkConnectorConfig extends AbstractConfig {
@@ -128,18 +136,22 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   private static final String CLIENT_FALLBACK_HOSTS_DOC = "List of custom fallback hosts to override the defaults. " +
     "Spec: TO3k6,RSC15a,RSC15b,RTN17b.";
 
+  private static final String CLIENT_TOKEN_PARAMS = "client.token.params";
+  private static final String CLIENT_TOKEN_PARAMS_DOC = "If true, use the configured token params.";
+
   private static final String CLIENT_TOKEN_PARAMS_TTL = "client.token.params.ttl";
   private static final String CLIENT_TOKEN_PARAMS_TTL_DOC = "Requested time to live for the token in milliseconds. " +
-    "When omitted, the REST API default of 60 minutes is applied by Ably.";
+    "When omitted, the REST API default of 60 minutes is applied by Ably. Client token params must be enabled";
 
   private static final String CLIENT_TOKEN_PARAMS_CAPABILITY = "client.token.params.capability";
   private static final String CLIENT_TOKEN_PARAMS_CAPABILITY_DOC = "Capability requirements JSON stringified for " +
     "the token. When omitted, the REST API default to allow all operations is applied by Ably, with the string " +
-    "value {\"*\":[\"*\"]}.";
+    "value {\"*\":[\"*\"]}. Client token params must be enabled.";
 
   private static final String CLIENT_TOKEN_PARAMS_CLIENT_ID = "client.token.params.client.id";
   private static final String CLIENT_TOKEN_PARAMS_CLIENT_ID_DOC = "Requested time to live for the token in " +
-    "milliseconds. When omitted, the REST API default of 60 minutes is applied by Ably.";
+    "milliseconds. When omitted, the REST API default of 60 minutes is applied by Ably. Client token params must " +
+    "be enabled.";
 
   private static final String CLIENT_CHANNEL_RETRY_TIMEOUT = "client.channel.retry.timeout";
   private static final String CLIENT_CHANNEL_RETRY_TIMEOUT_DOC = "Channel reattach timeout. Spec: RTL13b.";
@@ -156,13 +168,75 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   private static final String CLIENT_PUSH_FULL_WAIT_DOC = "Whether to tell Ably to wait for push REST requests to " +
     "fully wait for all their effects before responding.";
 
+  private static Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
+
   public final String channel;
   public final String topic;
+  public final ClientOptions clientOptions;
 
   public ChannelSinkConnectorConfig(Map<?, ?> originals) {
     super(config(), originals);
     this.channel = this.getString(CHANNEL_CONFIG);
     this.topic = this.getString(TOPIC_CONFIG);
+    this.clientOptions = this.getAblyClientOptions();
+  }
+
+  private ClientOptions getAblyClientOptions() {
+    ClientOptions opts = new ClientOptions();
+
+    opts.clientId = this.getString(CLIENT_ID);
+    opts.logLevel = this.getInt(CLIENT_LOG_LEVEL);
+    opts.tls = this.getBoolean(CLIENT_TLS);
+    opts.restHost = this.getString(CLIENT_REST_HOST);
+    opts.realtimeHost = this.getString(CLIENT_REALTIME_HOST);
+    opts.port = this.getInt(CLIENT_PORT);
+    opts.tlsPort = this.getInt(CLIENT_TLS_PORT);
+    opts.autoConnect = this.getBoolean(CLIENT_AUTO_CONNECT);
+    opts.useBinaryProtocol = this.getBoolean(CLIENT_USE_BINARY_PROTOCOL);
+    opts.queueMessages = this.getBoolean(CLIENT_QUEUE_MESSAGES);
+    opts.echoMessages = this.getBoolean(CLIENT_ECHO_MESSAGES);
+    opts.recover = this.getString(CLIENT_RECOVER);
+    if (this.getBoolean(CLIENT_PROXY)) {
+      ProxyOptions proxyOpts = new ProxyOptions();
+      proxyOpts.host = this.getString(CLIENT_PROXY_HOST);
+      proxyOpts.port = this.getInt(CLIENT_PROXY_PORT);
+      proxyOpts.username = this.getString(CLIENT_PROXY_USERNAME);
+      proxyOpts.password = this.getString(CLIENT_PROXY_PASSWORD);
+      proxyOpts.nonProxyHosts = this.getList(CLIENT_PROXY_NON_PROXY_HOSTS).toArray(new String[0]);
+      proxyOpts.prefAuthType = HttpAuth.Type.valueOf(this.getString(CLIENT_PROXY_PREF_AUTH_TYPE));
+    }
+    opts.environment = this.getString(CLIENT_ENVIRONMENT);
+    opts.idempotentRestPublishing = this.getBoolean(CLIENT_IDEMPOTENT_REST_PUBLISHING);
+    opts.httpOpenTimeout = this.getInt(CLIENT_HTTP_OPEN_TIMEOUT);
+    opts.httpRequestTimeout = this.getInt(CLIENT_HTTP_REQUEST_TIMEOUT);
+    opts.httpMaxRetryCount = this.getInt(CLIENT_HTTP_MAX_RETRY_COUNT);
+    opts.realtimeRequestTimeout = this.getLong(CLIENT_REALTIME_REQUEST_TIMEOUT);
+    opts.fallbackHosts =  this.getList(CLIENT_FALLBACK_HOSTS).toArray(new String[0]);
+    if (this.getBoolean(CLIENT_TOKEN_PARAMS)) {
+      TokenParams tokenParams = new TokenParams();
+      tokenParams.ttl = this.getLong(CLIENT_TOKEN_PARAMS_TTL);
+      tokenParams.capability = this.getString(CLIENT_TOKEN_PARAMS_CAPABILITY);
+      tokenParams.clientId = this.getString(CLIENT_TOKEN_PARAMS_CLIENT_ID);
+    }
+    opts.channelRetryTimeout = this.getInt(CLIENT_CHANNEL_RETRY_TIMEOUT);
+    opts.transportParams = convertTransportParams(this.getList(CLIENT_TRANSPORT_PARAMS));
+    opts.asyncHttpThreadpoolSize = this.getInt(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE);
+    opts.pushFullWait = this.getBoolean(CLIENT_PUSH_FULL_WAIT);
+    return opts;
+  }
+
+  private static Param[] convertTransportParams(List<String> params) {
+    List<Param> parsedParams = new ArrayList<Param>(params.size());
+    for (String param : params) {
+      String[] parts = param.split("=");
+      if (parts.length == 2) {
+        parsedParams.add(new Param(parts[0], parts[1]));
+      } else {
+        logger.warn("skipping invalid param configuration: %s", param);
+      }
+    }
+
+    return parsedParams.toArray(new Param[0]);
   }
 
   public static ConfigDef config() {
@@ -363,6 +437,13 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
             .build()
         )
         .define(
+          ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS, Type.BOOLEAN)
+            .documentation(CLIENT_TOKEN_PARAMS_DOC)
+            .importance(Importance.MEDIUM)
+            .defaultValue(false)
+            .build()
+        )
+        .define(
           ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_TTL, Type.LONG)
             .documentation(CLIENT_TOKEN_PARAMS_TTL_DOC)
             .importance(Importance.MEDIUM)
@@ -394,7 +475,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
           ConfigKeyBuilder.of(CLIENT_TRANSPORT_PARAMS, Type.LIST)
             .documentation(CLIENT_TRANSPORT_PARAMS_DOC)
             .importance(Importance.MEDIUM)
-            .defaultValue(Defaults.TIMEOUT_CHANNEL_RETRY)
+            .defaultValue("")
             .build()
         )
         .define(
