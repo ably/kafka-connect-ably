@@ -71,6 +71,13 @@ Uncomment this second to generate a package to deploy to the Confluent Hub.
     <dependencies>
 
         <dependency>
+            <groupId>org.msgpack</groupId>
+            <artifactId>msgpack-core</artifactId>
+            <version>0.8.22</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
             <version>2.0.0-alpha1</version>

@@ -1,5 +1,6 @@
 package io.ably.kakfa.connect;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -10,6 +11,8 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
+import org.msgpack.core.MessageBufferPacker;
+import org.msgpack.core.MessagePack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +33,8 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public void start(Map<String, String> settings) {
+        logger.info("Starting Ably client Sink task");
+
         this.config = new ChannelSinkConnectorConfig(settings);
 
         if (this.config.clientOptions == null) {
@@ -90,11 +95,11 @@ public class ChannelSinkTask extends SinkTask {
 
         for (SinkRecord r : records) {
             // TODO: add configuration to change the event name
-            Message message = new Message("sink", r.value()); // TODO: read and encode the record
-            message.id = String.format("%d:%d:%d", r.topic().hashCode(), r.kafkaPartition(), r.kafkaOffset());
             try {
+                Message message = new Message("sink", this.encodeSinkRecord(r));
+                message.id = String.format("%d:%d:%d", r.topic().hashCode(), r.kafkaPartition(), r.kafkaOffset());
                 this.channel.publish(message);
-            } catch (AblyException e) {
+            } catch (AblyException | IOException e) {
                 // The ably client should attempt retries itself, so if we do have to handle an exception here,
                 // we can assume that it is not retryably.
                 throw new ConnectException("ably client failed to publish", e);
@@ -120,5 +125,35 @@ public class ChannelSinkTask extends SinkTask {
     @Override
     public String version() {
         return VersionUtil.version(this.getClass());
+    }
+
+    private byte[] encodeSinkRecord(SinkRecord r) throws IOException {
+        // TODO: Currently this is packing the key value pair into two byte
+        // arrays. We will need to offer some control over this encoding scheme
+        // i.e. msgpack vs json and to interpret the underlying values i.e.
+        // if the underlying value is JSON then it shouldn't be base64 encoded
+        // in a JSON wrapper. Kafka connect provides converters for these
+        // key/value pairs, but we still need to decide how to publish these.
+        // It should also be possible to pass the value through directly,
+        // ignoring the key.
+        byte[] keyValue = (byte[])r.key();
+        byte[] recordValue = (byte[])r.value();
+
+        MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
+        if (keyValue == null) {
+            packer.packArrayHeader(0);
+        } else {
+            packer.packArrayHeader(keyValue.length);
+            packer.addPayload(keyValue);
+        }
+        if (recordValue == null) {
+            packer.packArrayHeader(0);
+        } else {
+            packer.packArrayHeader(recordValue.length);
+            packer.addPayload(recordValue);
+        }
+        packer.close();
+
+        return packer.toByteArray();
     }
 }
