@@ -7,6 +7,7 @@ import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
@@ -84,39 +85,35 @@ public class ChannelSinkTask extends SinkTask {
     public void put(Collection<SinkRecord> records) {
         if (this.channel == null) {
             // Put is not retryable, throwing error will indicate this
-            throw new org.apache.kafka.connect.errors.ConnectException("ably client is uninitialized");
+            throw new ConnectException("ably client is uninitialized");
         }
 
-        // TODO: queue the collection on the channel, mark as retryable if the queue is
-        // full
-        Message[] messages = new Message[records.size()];
-        int index = 0;
         for (SinkRecord r : records) {
-            messages[index++] = new Message("put", "todo - read the record to binary"); // TODO: read and encode the record
-            logger.debug(String.format("key: %s, value: %s", r.key().toString(), r.value().toString()));
-        }
-
-        try {
-            this.channel.publish(messages);
-        } catch (AblyException e) {
-            // Assume that this isn't retryable but we should figure out if
-            // ably client exceptions are retryable and which ones are if they
-            // are
-            throw new org.apache.kafka.connect.errors.ConnectException("ably client failed to publish");
+            // TODO: add configuration to change the event name
+            Message message = new Message("sink", r.value()); // TODO: read and encode the record
+            message.id = String.format("%d:%d:%d", r.topic().hashCode(), r.kafkaPartition(), r.kafkaOffset());
+            try {
+                this.channel.publish(message);
+            } catch (AblyException e) {
+                // The ably client should attempt retries itself, so if we do have to handle an exception here,
+                // we can assume that it is not retryably.
+                throw new ConnectException("ably client failed to publish", e);
+            }
         }
     }
 
     @Override
     public void flush(Map<TopicPartition, OffsetAndMetadata> map) {
         // Currently irrelevant because the put call is synchronous
+        return;
     }
 
     @Override
     public void stop() {
-        // Close resources here.
         if (this.ably != null) {
             this.ably.close();
             this.ably = null;
+            this.channel = null;
         }
     }
 
