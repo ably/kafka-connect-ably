@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.AblyException;
-import io.ably.lib.types.ClientOptions;
 import io.ably.lib.types.Message;
 import io.ably.lib.util.Log.LogHandler;
 
@@ -49,7 +48,7 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public void start(Map<String, String> settings) {
-        logger.info("Starting Ably client Sink task");
+        logger.info("Starting Ably channel Sink task");
 
         this.config = new ChannelSinkConnectorConfig(settings);
 
@@ -131,6 +130,8 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public void stop() {
+        logger.info("Stopping Ably channel Sink task");
+
         if (this.ably != null) {
             this.ably.close();
             this.ably = null;

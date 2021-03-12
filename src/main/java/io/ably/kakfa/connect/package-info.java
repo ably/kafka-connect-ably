@@ -17,7 +17,7 @@
 /**
  * This attribute is used during documentation generation to write the introduction section.
  */
-@Introduction("This plugin is used to add additional JSON parsing functionality to Kafka Connect.")
+@Introduction("This plugin is used to publish data from Kafka topics to Ably channels")
 /**
  * This attribute is used as the display name during documentation generation.
  */

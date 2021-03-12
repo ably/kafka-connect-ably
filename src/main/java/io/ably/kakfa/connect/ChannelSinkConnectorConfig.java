@@ -46,8 +46,13 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
   public static final String CHANNEL_CONFIG = "channel";
   private static final String CHANNEL_CONFIG_DOC = "The ably channel name to use for publishing.";
+
   private static final String TOPIC_CONFIG = "topic";
   private static final String TOPIC_CONFIG_DOC = "The kafka topic to read from.";
+
+  private static final String CLIENT_KEY = "client.key";
+  private static final String CLIENT_KEY_DOC = "The Ably API key string. The key string is obtained from the " +
+    "application dashboard.";
 
   private static final String CLIENT_ID = "client.id";
   private static final String CLIENT_ID_DOC = "The id of the client represented by this instance. The clientId is " +
@@ -224,7 +229,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     ClientOptions clientOpts = null;
     try {
       clientOpts = this.getAblyClientOptions();
-    } catch (ConfigException e) {
+    } catch (ConfigException | AblyException e) {
       logger.error("Error configuring Ably client options", e);
     }
     this.clientOptions = clientOpts;
@@ -238,8 +243,8 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     this.channelOptions = channelOpts;
   }
 
-  private ClientOptions getAblyClientOptions() throws ConfigException {
-    ClientOptions opts = new ClientOptions();
+  private ClientOptions getAblyClientOptions() throws AblyException, ConfigException {
+    ClientOptions opts = new ClientOptions(this.getPassword(CLIENT_KEY).value());
 
     opts.clientId = this.getString(CLIENT_ID);
     opts.logLevel = this.getInt(CLIENT_LOG_LEVEL);
@@ -258,7 +263,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
       proxyOpts.host = this.getString(CLIENT_PROXY_HOST);
       proxyOpts.port = this.getInt(CLIENT_PROXY_PORT);
       proxyOpts.username = this.getString(CLIENT_PROXY_USERNAME);
-      proxyOpts.password = this.getString(CLIENT_PROXY_PASSWORD);
+      proxyOpts.password = this.getPassword(CLIENT_PROXY_PASSWORD).value();
       proxyOpts.nonProxyHosts = this.getList(CLIENT_PROXY_NON_PROXY_HOSTS).toArray(new String[0]);
       proxyOpts.prefAuthType = HttpAuth.Type.valueOf(this.getString(CLIENT_PROXY_PREF_AUTH_TYPE));
     }
@@ -337,270 +342,276 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
   public static ConfigDef config() {
     return new ConfigDef()
-        .define(
-            ConfigKeyBuilder.of(CHANNEL_CONFIG, Type.STRING)
-                .documentation(CHANNEL_CONFIG_DOC)
-                .importance(Importance.HIGH)
-                .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(TOPIC_CONFIG, Type.STRING)
-            .documentation(TOPIC_CONFIG_DOC)
-            .importance(Importance.HIGH)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_ID, Type.STRING)
-            .documentation(CLIENT_ID_DOC)
-            .importance(Importance.HIGH)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_LOG_LEVEL, Type.INT)
-            .documentation(CLIENT_LOG_LEVEL_DOC)
-            .importance(Importance.LOW)
-            .defaultValue(0)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_TLS, Type.BOOLEAN)
-            .documentation(CLIENT_TLS_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(true)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_REST_HOST, Type.STRING)
-            .documentation(CLIENT_REST_HOST_DOC)
-            .importance(Importance.LOW)
-            .defaultValue("")
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_REALTIME_HOST, Type.STRING)
-            .documentation(CLIENT_REALTIME_HOST_DOC)
-            .importance(Importance.LOW)
-            .defaultValue("")
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_PORT, Type.INT)
-            .documentation(CLIENT_PORT_DOC)
-            .importance(Importance.LOW)
-            .defaultValue(0)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_TLS_PORT, Type.INT)
-            .documentation(CLIENT_TLS_PORT_DOC)
-            .importance(Importance.LOW)
-            .defaultValue(0)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_AUTO_CONNECT, Type.BOOLEAN)
-            .documentation(CLIENT_AUTO_CONNECT_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(true)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_USE_BINARY_PROTOCOL, Type.BOOLEAN)
-            .documentation(CLIENT_USE_BINARY_PROTOCOL_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(true)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_QUEUE_MESSAGES, Type.BOOLEAN)
-            .documentation(CLIENT_QUEUE_MESSAGES_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(true)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_ECHO_MESSAGES, Type.BOOLEAN)
-            .documentation(CLIENT_ECHO_MESSAGES_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(true)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_RECOVER, Type.STRING)
-            .documentation(CLIENT_RECOVER_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue("")
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_PROXY, Type.BOOLEAN)
-            .documentation(CLIENT_PROXY_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(false)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_PROXY_HOST, Type.STRING)
-            .documentation(CLIENT_PROXY_HOST_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue("")
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_PROXY_PORT, Type.INT)
-            .documentation(CLIENT_PROXY_PORT_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(0)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_PROXY_USERNAME, Type.STRING)
-            .documentation(CLIENT_PROXY_USERNAME_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue("")
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_PROXY_PASSWORD, Type.PASSWORD)
-            .documentation(CLIENT_PROXY_PASSWORD_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue("")
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_PROXY_PREF_AUTH_TYPE, Type.STRING)
-            .documentation(CLIENT_PROXY_PREF_AUTH_TYPE_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(HttpAuth.Type.BASIC.name())
-            .validator(Validators.validEnum(HttpAuth.Type.class))
-            .recommender(Recommenders.enumValues(HttpAuth.Type.class))
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_PROXY_NON_PROXY_HOSTS, Type.LIST)
-            .documentation(CLIENT_PROXY_NON_PROXY_HOSTS_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue("")
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_ENVIRONMENT, Type.STRING)
-            .documentation(CLIENT_ENVIRONMENT_DOC)
-            .importance(Importance.LOW)
-            .defaultValue("")
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_IDEMPOTENT_REST_PUBLISHING, Type.BOOLEAN)
-            .documentation(CLIENT_IDEMPOTENT_REST_PUBLISHING_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(Defaults.ABLY_VERSION_NUMBER >= 1.2)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_HTTP_OPEN_TIMEOUT, Type.INT)
-            .documentation(CLIENT_HTTP_OPEN_TIMEOUT_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(Defaults.TIMEOUT_HTTP_OPEN)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_HTTP_REQUEST_TIMEOUT, Type.INT)
-            .documentation(CLIENT_HTTP_REQUEST_TIMEOUT_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(Defaults.TIMEOUT_HTTP_REQUEST)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_HTTP_MAX_RETRY_COUNT, Type.INT)
-            .documentation(CLIENT_HTTP_MAX_RETRY_COUNT_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(Defaults.HTTP_MAX_RETRY_COUNT)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_REALTIME_REQUEST_TIMEOUT, Type.LONG)
-            .documentation(CLIENT_REALTIME_REQUEST_TIMEOUT_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(Defaults.realtimeRequestTimeout)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_FALLBACK_HOSTS, Type.LIST)
-            .documentation(CLIENT_FALLBACK_HOSTS_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue("")
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS, Type.BOOLEAN)
-            .documentation(CLIENT_TOKEN_PARAMS_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(false)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_TTL, Type.LONG)
-            .documentation(CLIENT_TOKEN_PARAMS_TTL_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(0L)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_CAPABILITY, Type.STRING)
-            .documentation(CLIENT_TOKEN_PARAMS_CAPABILITY_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue("")
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_CLIENT_ID, Type.LONG)
-            .documentation(CLIENT_TOKEN_PARAMS_CLIENT_ID_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(0L)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_CHANNEL_RETRY_TIMEOUT, Type.INT)
-            .documentation(CLIENT_CHANNEL_RETRY_TIMEOUT_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(Defaults.TIMEOUT_CHANNEL_RETRY)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_TRANSPORT_PARAMS, Type.LIST)
-            .documentation(CLIENT_TRANSPORT_PARAMS_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue("")
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE, Type.INT)
-            .documentation(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(Defaults.HTTP_ASYNC_THREADPOOL_SIZE)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_PUSH_FULL_WAIT, Type.BOOLEAN)
-            .documentation(CLIENT_PUSH_FULL_WAIT_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(false)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_CHANNEL_CIPHER_KEY, Type.STRING)
-            .documentation(CLIENT_CHANNEL_CIPHER_KEY_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue(null)
-            .build()
-        )
-        .define(
-          ConfigKeyBuilder.of(CLIENT_CHANNEL_PARAMS, Type.LIST)
-            .documentation(CLIENT_CHANNEL_PARAMS_DOC)
-            .importance(Importance.MEDIUM)
-            .defaultValue("")
-            .build()
-        );
+      .define(
+        ConfigKeyBuilder.of(CHANNEL_CONFIG, Type.STRING)
+          .documentation(CHANNEL_CONFIG_DOC)
+          .importance(Importance.HIGH)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(TOPIC_CONFIG, Type.STRING)
+          .documentation(TOPIC_CONFIG_DOC)
+          .importance(Importance.HIGH)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_KEY, Type.PASSWORD)
+          .documentation(CLIENT_KEY_DOC)
+          .importance(Importance.HIGH)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_ID, Type.STRING)
+          .documentation(CLIENT_ID_DOC)
+          .importance(Importance.HIGH)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_LOG_LEVEL, Type.INT)
+          .documentation(CLIENT_LOG_LEVEL_DOC)
+          .importance(Importance.LOW)
+          .defaultValue(0)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_TLS, Type.BOOLEAN)
+          .documentation(CLIENT_TLS_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(true)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_REST_HOST, Type.STRING)
+          .documentation(CLIENT_REST_HOST_DOC)
+          .importance(Importance.LOW)
+          .defaultValue(null)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_REALTIME_HOST, Type.STRING)
+          .documentation(CLIENT_REALTIME_HOST_DOC)
+          .importance(Importance.LOW)
+          .defaultValue(null)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_PORT, Type.INT)
+          .documentation(CLIENT_PORT_DOC)
+          .importance(Importance.LOW)
+          .defaultValue(0)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_TLS_PORT, Type.INT)
+          .documentation(CLIENT_TLS_PORT_DOC)
+          .importance(Importance.LOW)
+          .defaultValue(0)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_AUTO_CONNECT, Type.BOOLEAN)
+          .documentation(CLIENT_AUTO_CONNECT_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(true)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_USE_BINARY_PROTOCOL, Type.BOOLEAN)
+          .documentation(CLIENT_USE_BINARY_PROTOCOL_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(true)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_QUEUE_MESSAGES, Type.BOOLEAN)
+          .documentation(CLIENT_QUEUE_MESSAGES_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(true)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_ECHO_MESSAGES, Type.BOOLEAN)
+          .documentation(CLIENT_ECHO_MESSAGES_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(true)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_RECOVER, Type.STRING)
+          .documentation(CLIENT_RECOVER_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue("")
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_PROXY, Type.BOOLEAN)
+          .documentation(CLIENT_PROXY_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(false)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_PROXY_HOST, Type.STRING)
+          .documentation(CLIENT_PROXY_HOST_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(null)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_PROXY_PORT, Type.INT)
+          .documentation(CLIENT_PROXY_PORT_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(0)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_PROXY_USERNAME, Type.STRING)
+          .documentation(CLIENT_PROXY_USERNAME_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(null)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_PROXY_PASSWORD, Type.PASSWORD)
+          .documentation(CLIENT_PROXY_PASSWORD_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(null)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_PROXY_PREF_AUTH_TYPE, Type.STRING)
+          .documentation(CLIENT_PROXY_PREF_AUTH_TYPE_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(HttpAuth.Type.BASIC.name())
+          .validator(Validators.validEnum(HttpAuth.Type.class))
+          .recommender(Recommenders.enumValues(HttpAuth.Type.class))
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_PROXY_NON_PROXY_HOSTS, Type.LIST)
+          .documentation(CLIENT_PROXY_NON_PROXY_HOSTS_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(null)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_ENVIRONMENT, Type.STRING)
+          .documentation(CLIENT_ENVIRONMENT_DOC)
+          .importance(Importance.LOW)
+          .defaultValue(null)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_IDEMPOTENT_REST_PUBLISHING, Type.BOOLEAN)
+          .documentation(CLIENT_IDEMPOTENT_REST_PUBLISHING_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(Defaults.ABLY_VERSION_NUMBER >= 1.2)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_HTTP_OPEN_TIMEOUT, Type.INT)
+          .documentation(CLIENT_HTTP_OPEN_TIMEOUT_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(Defaults.TIMEOUT_HTTP_OPEN)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_HTTP_REQUEST_TIMEOUT, Type.INT)
+          .documentation(CLIENT_HTTP_REQUEST_TIMEOUT_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(Defaults.TIMEOUT_HTTP_REQUEST)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_HTTP_MAX_RETRY_COUNT, Type.INT)
+          .documentation(CLIENT_HTTP_MAX_RETRY_COUNT_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(Defaults.HTTP_MAX_RETRY_COUNT)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_REALTIME_REQUEST_TIMEOUT, Type.LONG)
+          .documentation(CLIENT_REALTIME_REQUEST_TIMEOUT_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(Defaults.realtimeRequestTimeout)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_FALLBACK_HOSTS, Type.LIST)
+          .documentation(CLIENT_FALLBACK_HOSTS_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue("")
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS, Type.BOOLEAN)
+          .documentation(CLIENT_TOKEN_PARAMS_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(false)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_TTL, Type.LONG)
+          .documentation(CLIENT_TOKEN_PARAMS_TTL_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(0L)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_CAPABILITY, Type.STRING)
+          .documentation(CLIENT_TOKEN_PARAMS_CAPABILITY_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue("")
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_CLIENT_ID, Type.LONG)
+          .documentation(CLIENT_TOKEN_PARAMS_CLIENT_ID_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(0L)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_CHANNEL_RETRY_TIMEOUT, Type.INT)
+          .documentation(CLIENT_CHANNEL_RETRY_TIMEOUT_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(Defaults.TIMEOUT_CHANNEL_RETRY)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_TRANSPORT_PARAMS, Type.LIST)
+          .documentation(CLIENT_TRANSPORT_PARAMS_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue("")
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE, Type.INT)
+          .documentation(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(Defaults.HTTP_ASYNC_THREADPOOL_SIZE)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_PUSH_FULL_WAIT, Type.BOOLEAN)
+          .documentation(CLIENT_PUSH_FULL_WAIT_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(false)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_CHANNEL_CIPHER_KEY, Type.STRING)
+          .documentation(CLIENT_CHANNEL_CIPHER_KEY_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue(null)
+          .build()
+      )
+      .define(
+        ConfigKeyBuilder.of(CLIENT_CHANNEL_PARAMS, Type.LIST)
+          .documentation(CLIENT_CHANNEL_PARAMS_DOC)
+          .importance(Importance.MEDIUM)
+          .defaultValue("")
+          .build()
+      );
   }
 }
