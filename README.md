@@ -29,8 +29,7 @@ mvn clean package
 Start the connector in standalone mode.
 
 ```
-export SUSPEND='y'
-./bin/debug.sh
+bash ./bin/debug.sh
 ```
 
 OR
