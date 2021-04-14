@@ -16,7 +16,7 @@
 
 package io.ably.kakfa.connect;
 
-import java.io.IOException;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Map;
 
@@ -25,10 +25,9 @@ import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.ConnectException;
+import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
-import org.msgpack.core.MessageBufferPacker;
-import org.msgpack.core.MessagePack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +35,9 @@ import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.Message;
+import io.ably.lib.types.MessageExtras;
+import io.ably.lib.util.JsonUtils;
+import io.ably.lib.util.JsonUtils.JsonUtilsObject;
 import io.ably.lib.util.Log.LogHandler;
 
 public class ChannelSinkTask extends SinkTask {
@@ -111,10 +113,16 @@ public class ChannelSinkTask extends SinkTask {
         for (SinkRecord r : records) {
             // TODO: add configuration to change the event name
             try {
-                Message message = new Message("sink", this.encodeSinkRecord(r));
+                Message message = new Message("sink", r.value());
                 message.id = String.format("%d:%d:%d", r.topic().hashCode(), r.kafkaPartition(), r.kafkaOffset());
+
+                JsonUtilsObject kafkaExtras = this.kafkaExtras(r);
+                if(kafkaExtras.toJson().size() > 0 ) {
+                    message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
+                }
+
                 this.channel.publish(message);
-            } catch (AblyException | IOException e) {
+            } catch (AblyException e) {
                 // The ably client should attempt retries itself, so if we do have to handle an exception here,
                 // we can assume that it is not retryably.
                 throw new ConnectException("ably client failed to publish", e);
@@ -144,33 +152,35 @@ public class ChannelSinkTask extends SinkTask {
         return VersionUtil.version(this.getClass());
     }
 
-    private byte[] encodeSinkRecord(SinkRecord r) throws IOException {
-        // TODO: Currently this is packing the key value pair into two byte
-        // arrays. We will need to offer some control over this encoding scheme
-        // i.e. msgpack vs json and to interpret the underlying values i.e.
-        // if the underlying value is JSON then it shouldn't be base64 encoded
-        // in a JSON wrapper. Kafka connect provides converters for these
-        // key/value pairs, but we still need to decide how to publish these.
-        // It should also be possible to pass the value through directly,
-        // ignoring the key.
-        byte[] keyValue = (byte[])r.key();
-        byte[] recordValue = (byte[])r.value();
+    /**
+     * Returns the Kafka extras object to use when converting a Kafka message
+     * to an Ably message.
+     *
+     * If the Kafka message has a key, it is base64 encoded and set as the
+     * "key" field in the extras.
+     *
+     * If the Kafka message has headers, they are set as the "headers" field
+     * in the extras.
+     *
+     * @param record The sink record representing the Kafka message
+     * @return       The Kafka message extras object
+     */
+    private JsonUtilsObject kafkaExtras(SinkRecord r) {
+        JsonUtilsObject extras = JsonUtils.object();
 
-        MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
-        if (keyValue == null) {
-            packer.packArrayHeader(0);
-        } else {
-            packer.packArrayHeader(keyValue.length);
-            packer.addPayload(keyValue);
+        byte[] key = (byte[])r.key();
+        if(key != null) {
+            extras.add("key", Base64.getEncoder().encodeToString(key));
         }
-        if (recordValue == null) {
-            packer.packArrayHeader(0);
-        } else {
-            packer.packArrayHeader(recordValue.length);
-            packer.addPayload(recordValue);
-        }
-        packer.close();
 
-        return packer.toByteArray();
+        if(!r.headers().isEmpty()) {
+            JsonUtilsObject headers = JsonUtils.object();
+            for (Header header : r.headers()) {
+                headers.add(header.key(), header.value());
+            }
+            extras.add("headers", headers);
+        }
+
+        return extras;
     }
 }
