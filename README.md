@@ -6,7 +6,7 @@ for publishing data from Kafka into Ably.
 
 # Status
 
-kafka-connect-ably is under heavy development as is not currently considered production ready.
+kafka-connect-ably is under heavy development and is not currently considered production ready.
 
 # Running in development
 
