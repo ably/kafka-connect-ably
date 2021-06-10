@@ -47,9 +47,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   public static final String CHANNEL_CONFIG = "channel";
   private static final String CHANNEL_CONFIG_DOC = "The ably channel name to use for publishing.";
 
-  private static final String TOPIC_CONFIG = "topic";
-  private static final String TOPIC_CONFIG_DOC = "The kafka topic to read from.";
-
   private static final String CLIENT_KEY = "client.key";
   private static final String CLIENT_KEY_DOC = "The Ably API key string. The key string is obtained from the " +
     "application dashboard.";
@@ -205,7 +202,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   private static Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
   public final String channel;
-  public final String topic;
   public final ClientOptions clientOptions;
   public final ChannelOptions channelOptions;
 
@@ -224,7 +220,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   public ChannelSinkConnectorConfig(Map<?, ?> originals) {
     super(config(), originals);
     this.channel = this.getString(CHANNEL_CONFIG);
-    this.topic = this.getString(TOPIC_CONFIG);
 
     ClientOptions clientOpts = null;
     try {
@@ -345,12 +340,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
       .define(
         ConfigKeyBuilder.of(CHANNEL_CONFIG, Type.STRING)
           .documentation(CHANNEL_CONFIG_DOC)
-          .importance(Importance.HIGH)
-          .build()
-      )
-      .define(
-        ConfigKeyBuilder.of(TOPIC_CONFIG, Type.STRING)
-          .documentation(TOPIC_CONFIG_DOC)
           .importance(Importance.HIGH)
           .build()
       )
