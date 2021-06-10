@@ -41,6 +41,14 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M3</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.3.0</version>
+            </plugin>
 <!--
 Uncomment this second to generate a package to deploy to the Confluent Hub.
             <plugin>
