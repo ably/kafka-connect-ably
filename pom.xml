@@ -49,32 +49,45 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.3.0</version>
             </plugin>
-<!--
-Uncomment this second to generate a package to deploy to the Confluent Hub.
             <plugin>
                 <groupId>io.confluent</groupId>
                 <artifactId>kafka-connect-maven-plugin</artifactId>
-                <configuration>
-                    <confluentControlCenterIntegration>true</confluentControlCenterIntegration>
-                    <documentationUrl>https://jcustenborder.github.io/kafka-connect-documentation/</documentationUrl>
-                    <componentTypes>
-                        <componentType>source</componentType>
-                        <componentType>sink</componentType>
-                        <componentType>transform</componentType>
-                        <componentType>converter</componentType>
-                    </componentTypes>
-                    <tags>
-                        <tag>kafka-connect-ably</tag>
-                    </tags>
-                    <title>Kafka Connect kafka-connect-ably</title>
-                    <supportUrl>${pom.issueManagement.url}</supportUrl>
-                    <supportSummary>Support provided through community involvement.</supportSummary>
-                    <excludes>
-                        <exclude>org.reflections:reflections</exclude>
-                    </excludes>
-                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <id>hub</id>
+                        <goals>
+                            <goal>kafka-connect</goal>
+                        </goals>
+                        <configuration>
+                            <title>Kafka Connect Ably</title>
+                            <documentationUrl>https://github.com/ably/kafka-connect-ably</documentationUrl>
+                            <description>Kafka Connect Ably</description>
+
+                            <supportProviderName>Ably</supportProviderName>
+                            <supportUrl>https://ably.com/support</supportUrl>
+                            <supportSummary><![CDATA[This connector is <a href="https://ably.com/support">supported by Ably</a>]]></supportSummary>
+
+                            <ownerUsername>ably</ownerUsername>
+                            <ownerType>organization</ownerType>
+                            <ownerName>Ably</ownerName>
+                            <ownerUrl>https://ably.com/</ownerUrl>
+
+                            <componentTypes>
+                                <componentType>sink</componentType>
+                            </componentTypes>
+
+                            <tags>
+                                <tag>Ably</tag>
+                                <tag>realtime</tag>
+                                <tag>kafka-connect-ably</tag>
+                            </tags>
+
+                            <confluentControlCenterIntegration>true</confluentControlCenterIntegration>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
--->
         </plugins>
     </build>
 

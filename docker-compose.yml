@@ -63,8 +63,8 @@ services:
     build: .
     command:
       - /bin/connect-standalone
-      - /config/connect-avro-docker.properties
-      - /config/ChannelSinkConnector.properties
+      - /config/docker-compose-worker.properties
+      - /config/docker-compose-connector.properties
     volumes:
       - ./config:/config
     ports:
@@ -72,6 +72,8 @@ services:
     environment:
       PORT: 5005
       SUSPEND: ${SUSPEND:-n}
+      CONNECT_REST_PORT: 8083
+      CONNECT_REST_ADVERTISED_HOST_NAME: connector
     networks:
       kafka_network:
         aliases:
