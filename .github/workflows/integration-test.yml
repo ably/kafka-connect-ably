@@ -25,3 +25,11 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots verify
+      - name: Upload ZIP archive
+        uses: ably/sdk-upload-action@v1
+        with:
+          s3AccessKeyId: ${{ secrets.SDK_S3_ACCESS_KEY_ID }}
+          s3AccessKey: ${{ secrets.SDK_S3_ACCESS_KEY }}
+          sourcePath: target/components/packages
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          artifactName: kafka-connect-ably
