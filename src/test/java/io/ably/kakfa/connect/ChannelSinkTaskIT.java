@@ -16,19 +16,95 @@
 
 package io.ably.kakfa.connect;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.kafka.connect.converters.ByteArrayConverter;
+import org.apache.kafka.connect.util.clusters.EmbeddedConnectCluster;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * This test can be used for integration testing with the system you are integrating with. For example
- * take a look at https://github.com/jcustenborder/docker-compose-junit-extension to launch docker
- * containers for your testing.
- */
+import io.ably.lib.realtime.AblyRealtime;
+import io.ably.lib.realtime.Channel;
+import io.ably.lib.realtime.Channel.MessageListener;
+import io.ably.lib.types.ClientOptions;
+import io.ably.lib.types.Message;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import static org.apache.kafka.connect.runtime.ConnectorConfig.CONNECTOR_CLASS_CONFIG;
+import static org.apache.kafka.connect.runtime.ConnectorConfig.KEY_CONVERTER_CLASS_CONFIG;
+import static org.apache.kafka.connect.runtime.ConnectorConfig.TASKS_MAX_CONFIG;
+import static org.apache.kafka.connect.runtime.ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG;
+import static org.apache.kafka.connect.runtime.SinkConnectorConfig.TOPICS_CONFIG;
+
 public class ChannelSinkTaskIT {
-  @Test
-  public void test() {
-    // Congrats on a passing test!
-  }
+    private static final String CONNECTOR_NAME = "ably-test";
+    private static final String SINK_CONNECTOR_CLASS_NAME = ChannelSinkConnector.class.getSimpleName();
+    private static final int NUM_WORKERS = 1;
+    private static final int NUM_TASKS = 1;
+
+    private EmbeddedConnectCluster connect;
+    private AblyHelpers.AppSpec appSpec;
+    private AblyRealtime ablyClient;
+
+    @BeforeEach
+    public void setup() throws Exception {
+        // create a test Ably app
+        appSpec = AblyHelpers.createTestApp();
+
+        // setup Connect cluster with defaults
+        connect = new EmbeddedConnectCluster.Builder().build();
+
+        // start Connect cluster
+        connect.start();
+        connect.assertions().assertAtLeastNumWorkersAreUp(NUM_WORKERS, "Initial group of workers did not start in time.");
+
+        // connect Ably client
+        ablyClient = AblyHelpers.realtimeClient(appSpec);
+    }
+
+    @AfterEach
+    public void close() {
+        connect.stop();
+        ablyClient.close();
+        AblyHelpers.deleteTestApp(appSpec);
+    }
+
+    @Test
+    public void testMessagePublish() throws Exception {
+        // create a test Kafka topic
+        connect.kafka().createTopic("kafka-connect-ably-test");
+
+        // configure the Ably connector to publish messages from the test Kafka
+        // topic to an Ably channel
+        Map<String, String> settings = new HashMap<>();
+        settings.put(CONNECTOR_CLASS_CONFIG, SINK_CONNECTOR_CLASS_NAME);
+        settings.put(TASKS_MAX_CONFIG, String.valueOf(NUM_TASKS));
+        settings.put(TOPICS_CONFIG, "kafka-connect-ably-test");
+        settings.put(KEY_CONVERTER_CLASS_CONFIG, ByteArrayConverter.class.getName());
+        settings.put(VALUE_CONVERTER_CLASS_CONFIG, ByteArrayConverter.class.getName());
+        settings.put(ChannelSinkConnectorConfig.CHANNEL_CONFIG, "kafka-connect-ably-test");
+        settings.put(ChannelSinkConnectorConfig.CLIENT_KEY, appSpec.key());
+        settings.put(ChannelSinkConnectorConfig.CLIENT_ID, "kafka-connect-ably-test");
+        settings.put(ChannelSinkConnectorConfig.CLIENT_ENVIRONMENT, AblyHelpers.TEST_ENVIRONMENT);
+        connect.configureConnector(CONNECTOR_NAME, settings);
+        connect.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
+
+        // subscribe to the Ably channel
+        Channel channel = ablyClient.channels.get("kafka-connect-ably-test");
+        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
+
+        // produce a message on the Kafka topic
+        connect.kafka().produce("kafka-connect-ably-test", "foo", "bar");
+
+        // wait 5s for the message to arrive on the Ably channel
+        messageWaiter.waitFor(1, 5000L);
+        assertEquals(messageWaiter.receivedMessages.size(), 1, "Unexpected message count");
+
+        // delete connector
+        connect.deleteConnector(CONNECTOR_NAME);
+    }
 }

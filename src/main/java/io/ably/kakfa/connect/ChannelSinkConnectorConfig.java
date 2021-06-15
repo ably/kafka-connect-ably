@@ -47,165 +47,161 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   public static final String CHANNEL_CONFIG = "channel";
   private static final String CHANNEL_CONFIG_DOC = "The ably channel name to use for publishing.";
 
-  private static final String TOPIC_CONFIG = "topic";
-  private static final String TOPIC_CONFIG_DOC = "The kafka topic to read from.";
-
-  private static final String CLIENT_KEY = "client.key";
+  public static final String CLIENT_KEY = "client.key";
   private static final String CLIENT_KEY_DOC = "The Ably API key string. The key string is obtained from the " +
     "application dashboard.";
 
-  private static final String CLIENT_ID = "client.id";
+  public static final String CLIENT_ID = "client.id";
   private static final String CLIENT_ID_DOC = "The id of the client represented by this instance. The clientId is " +
     "relevant to presence operations, where the clientId is the principal identifier of the client in presence " +
     "update messages. The clientId is also relevant to authentication; a token issued for a specific client may be " +
     "used to authenticate the bearer of that token to the service.";
 
-  private static final String CLIENT_LOG_LEVEL = "client.loglevel";
+  public static final String CLIENT_LOG_LEVEL = "client.loglevel";
   private static final String CLIENT_LOG_LEVEL_DOC = "Log level; controls the level of verbosity of log messages " +
     "from the library.";
 
-  private static final String CLIENT_TLS = "client.tls";
+  public static final String CLIENT_TLS = "client.tls";
   private static final String CLIENT_TLS_DOC = "Encrypted transport: if true, TLS will be used for all connections " +
     "(whether REST/HTTP or Realtime WebSocket or Comet connections).";
 
-  private static final String CLIENT_REST_HOST = "client.rest.host";
+  public static final String CLIENT_REST_HOST = "client.rest.host";
   private static final String CLIENT_REST_HOST_DOC = "For development environments only; allows a non-default Ably " +
     "host to be specified.";
 
-  private static final String CLIENT_REALTIME_HOST = "client.realtime.host";
+  public static final String CLIENT_REALTIME_HOST = "client.realtime.host";
   private static final String CLIENT_REALTIME_HOST_DOC = "For development environments only; allows a non-default " +
     "Ably host to be specified for websocket connections.";
 
-  private static final String CLIENT_PORT = "client.port";
+  public static final String CLIENT_PORT = "client.port";
   private static final String CLIENT_PORT_DOC = "For development environments only; allows a non-default Ably port " +
     "to be specified.";
 
-  private static final String CLIENT_TLS_PORT = "client.tls.port";
+  public static final String CLIENT_TLS_PORT = "client.tls.port";
   private static final String CLIENT_TLS_PORT_DOC = "For development environments only; allows a non-default Ably " +
     "TLS port to be specified.";
 
-  private static final String CLIENT_AUTO_CONNECT = "client.auto.connect";
+  public static final String CLIENT_AUTO_CONNECT = "client.auto.connect";
   private static final String CLIENT_AUTO_CONNECT_DOC = "If false, suppresses the automatic initiation of a " +
     "connection when the library is instanced.";
 
-  private static final String CLIENT_USE_BINARY_PROTOCOL = "client.use.binary.protocol";
+  public static final String CLIENT_USE_BINARY_PROTOCOL = "client.use.binary.protocol";
   private static final String CLIENT_USE_BINARY_PROTOCOL_DOC = "If false, forces the library to use the JSON " +
     "encoding for REST and Realtime operations, instead of the default binary msgpack encoding.";
 
-  private static final String CLIENT_QUEUE_MESSAGES = "client.queue.messages";
+  public static final String CLIENT_QUEUE_MESSAGES = "client.queue.messages";
   private static final String CLIENT_QUEUE_MESSAGES_DOC = "If false, suppresses the default queueing of messages " +
     "when connection states that anticipate imminent connection (connecting and disconnected). Instead, publish " +
     "and presence state changes will fail immediately if not in the connected state.";
 
-  private static final String CLIENT_ECHO_MESSAGES = "client.echo.messages";
+  public static final String CLIENT_ECHO_MESSAGES = "client.echo.messages";
   private static final String CLIENT_ECHO_MESSAGES_DOC = "If false, suppresses messages originating from this " +
     "connection being echoed back on the same connection.";
 
-  private static final String CLIENT_RECOVER = "client.recover";
+  public static final String CLIENT_RECOVER = "client.recover";
   private static final String CLIENT_RECOVER_DOC = "A connection recovery string, specified by a client when " +
     "initialising the library with the intention of inheriting the state of an earlier connection. See the Ably " +
     "Realtime API documentation for further information on connection state recovery.";
 
-  private static final String CLIENT_PROXY = "client.proxy";
+  public static final String CLIENT_PROXY = "client.proxy";
   private static final String CLIENT_PROXY_DOC = "If true, use the configured proxy options to proxy connections.";
 
-  private static final String CLIENT_PROXY_HOST = "client.proxy.host";
+  public static final String CLIENT_PROXY_HOST = "client.proxy.host";
   private static final String CLIENT_PROXY_HOST_DOC = "Specifies the client proxy host to use if the client proxy " +
     "is enabled.";
 
-  private static final String CLIENT_PROXY_PORT = "client.proxy.port";
+  public static final String CLIENT_PROXY_PORT = "client.proxy.port";
   private static final String CLIENT_PROXY_PORT_DOC = "Specifies the client proxy port to use if the client proxy " +
     "is enabled";
 
-  private static final String CLIENT_PROXY_USERNAME = "client.proxy.username";
+  public static final String CLIENT_PROXY_USERNAME = "client.proxy.username";
   private static final String CLIENT_PROXY_USERNAME_DOC = "Specifies the client proxy username to use if the " +
     "client proxy is enabled.";
 
-  private static final String CLIENT_PROXY_PASSWORD = "client.proxy.password";
+  public static final String CLIENT_PROXY_PASSWORD = "client.proxy.password";
   private static final String CLIENT_PROXY_PASSWORD_DOC = "Specifies the client proxy password to use if the " +
     "client proxy is enabled.";
 
-  private static final String CLIENT_PROXY_NON_PROXY_HOSTS = "client.proxy.non.proxy.hosts";
+  public static final String CLIENT_PROXY_NON_PROXY_HOSTS = "client.proxy.non.proxy.hosts";
   private static final String CLIENT_PROXY_NON_PROXY_HOSTS_DOC = "Specifies a list of hosts for which the proxy " +
     "should not be used if the client proxy is enabled.";
 
-  private static final String CLIENT_PROXY_PREF_AUTH_TYPE = "client.proxy.pref.auth.type";
+  public static final String CLIENT_PROXY_PREF_AUTH_TYPE = "client.proxy.pref.auth.type";
   private static final String CLIENT_PROXY_PREF_AUTH_TYPE_DOC = "Specfies the preferred auth type to use if the " +
     "client proxy is enabled. This should be \"BASIC\",  \"DIGEST\" or \"X_ABLY_TOKEN\"";
 
-  private static final String CLIENT_ENVIRONMENT = "client.environment";
+  public static final String CLIENT_ENVIRONMENT = "client.environment";
   private static final String CLIENT_ENVIRONMENT_DOC = "For development environments only; allows a non-default " +
     "Ably environment to be used such as 'sandbox'. Spec: TO3k1.";
 
-  private static final String CLIENT_IDEMPOTENT_REST_PUBLISHING = "client.idempotent.rest";
+  public static final String CLIENT_IDEMPOTENT_REST_PUBLISHING = "client.idempotent.rest";
   private static final String CLIENT_IDEMPOTENT_REST_PUBLISHING_DOC = "When true idempotent rest publishing will " +
     "be enabled.";
 
-  private static final String CLIENT_HTTP_OPEN_TIMEOUT = "client.http.open.timeout";
+  public static final String CLIENT_HTTP_OPEN_TIMEOUT = "client.http.open.timeout";
   private static final String CLIENT_HTTP_OPEN_TIMEOUT_DOC = "Timeout for opening the http connection";
 
-  private static final String CLIENT_HTTP_REQUEST_TIMEOUT = "client.http.request.timeout";
+  public static final String CLIENT_HTTP_REQUEST_TIMEOUT = "client.http.request.timeout";
   private static final String CLIENT_HTTP_REQUEST_TIMEOUT_DOC = "Timeout for any single HTTP request and response";
 
-  private static final String CLIENT_HTTP_MAX_RETRY_COUNT = "client.http.max.retry.count";
+  public static final String CLIENT_HTTP_MAX_RETRY_COUNT = "client.http.max.retry.count";
   private static final String CLIENT_HTTP_MAX_RETRY_COUNT_DOC = "Max number of fallback hosts to use as a fallback " +
     "when an HTTP request to the primary host is unreachable or indicates that it is unserviceable.";
 
-  private static final String CLIENT_REALTIME_REQUEST_TIMEOUT = "client.realtime.request.timeout";
+  public static final String CLIENT_REALTIME_REQUEST_TIMEOUT = "client.realtime.request.timeout";
   private static final String CLIENT_REALTIME_REQUEST_TIMEOUT_DOC = "When a realtime client library is " +
     "establishing a connection with Ably, or sending a HEARTBEAT, CONNECT, ATTACH, DETACH or CLOSE ProtocolMessage " +
     "to Ably, this is the amount of time that the client library will wait before considering that request as " +
     "failed and triggering a suitable failure condition.";
 
-  private static final String CLIENT_FALLBACK_HOSTS = "client.fallback.hosts";
+  public static final String CLIENT_FALLBACK_HOSTS = "client.fallback.hosts";
   private static final String CLIENT_FALLBACK_HOSTS_DOC = "List of custom fallback hosts to override the defaults. " +
     "Spec: TO3k6,RSC15a,RSC15b,RTN17b.";
 
-  private static final String CLIENT_TOKEN_PARAMS = "client.token.params";
+  public static final String CLIENT_TOKEN_PARAMS = "client.token.params";
   private static final String CLIENT_TOKEN_PARAMS_DOC = "If true, use the configured token params.";
 
-  private static final String CLIENT_TOKEN_PARAMS_TTL = "client.token.params.ttl";
+  public static final String CLIENT_TOKEN_PARAMS_TTL = "client.token.params.ttl";
   private static final String CLIENT_TOKEN_PARAMS_TTL_DOC = "Requested time to live for the token in milliseconds. " +
     "When omitted, the REST API default of 60 minutes is applied by Ably. Client token params must be enabled";
 
-  private static final String CLIENT_TOKEN_PARAMS_CAPABILITY = "client.token.params.capability";
+  public static final String CLIENT_TOKEN_PARAMS_CAPABILITY = "client.token.params.capability";
   private static final String CLIENT_TOKEN_PARAMS_CAPABILITY_DOC = "Capability requirements JSON stringified for " +
     "the token. When omitted, the REST API default to allow all operations is applied by Ably, with the string " +
     "value {\"*\":[\"*\"]}. Client token params must be enabled.";
 
-  private static final String CLIENT_TOKEN_PARAMS_CLIENT_ID = "client.token.params.client.id";
+  public static final String CLIENT_TOKEN_PARAMS_CLIENT_ID = "client.token.params.client.id";
   private static final String CLIENT_TOKEN_PARAMS_CLIENT_ID_DOC = "Requested time to live for the token in " +
     "milliseconds. When omitted, the REST API default of 60 minutes is applied by Ably. Client token params must " +
     "be enabled.";
 
-  private static final String CLIENT_CHANNEL_RETRY_TIMEOUT = "client.channel.retry.timeout";
+  public static final String CLIENT_CHANNEL_RETRY_TIMEOUT = "client.channel.retry.timeout";
   private static final String CLIENT_CHANNEL_RETRY_TIMEOUT_DOC = "Channel reattach timeout. Spec: RTL13b.";
 
-  private static final String CLIENT_TRANSPORT_PARAMS = "client.transport.params";
+  public static final String CLIENT_TRANSPORT_PARAMS = "client.transport.params";
   private static final String CLIENT_TRANSPORT_PARAMS_DOC = "Additional parameters to be sent in the querystring " +
     "when initiating a realtime connection. This should be specified in the form \"key1=value1,key2=value2,...\"" +
     "without URL encoding.";
 
-  private static final String CLIENT_ASYNC_HTTP_THREADPOOL_SIZE = "client.async.http.threadpool.size";
+  public static final String CLIENT_ASYNC_HTTP_THREADPOOL_SIZE = "client.async.http.threadpool.size";
   private static final String CLIENT_ASYNC_HTTP_THREADPOOL_SIZE_DOC = "Allows the caller to specify a non-default " +
     "size for the asyncHttp threadpool";
 
-  private static final String CLIENT_PUSH_FULL_WAIT = "client.push.full.wait";
+  public static final String CLIENT_PUSH_FULL_WAIT = "client.push.full.wait";
   private static final String CLIENT_PUSH_FULL_WAIT_DOC = "Whether to tell Ably to wait for push REST requests to " +
     "fully wait for all their effects before responding.";
 
-  private static final String CLIENT_CHANNEL_CIPHER_KEY = "client.channel.cipher.key";
+  public static final String CLIENT_CHANNEL_CIPHER_KEY = "client.channel.cipher.key";
   private static final String CLIENT_CHANNEL_CIPHER_KEY_DOC = "Requests encryption for this channel when not null, " +
     "and specifies encryption-related parameters (such as algorithm, chaining mode, key length and key).";
 
-  private static final String CLIENT_CHANNEL_PARAMS = "client.channel.params";
+  public static final String CLIENT_CHANNEL_PARAMS = "client.channel.params";
   private static final String CLIENT_CHANNEL_PARAMS_DOC = "Additional channel parameters used to configure the " +
     "behaviour of the channel. This should be specified in the form \"key1=value1,key2=value2,...\".";
 
   private static Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
   public final String channel;
-  public final String topic;
   public final ClientOptions clientOptions;
   public final ChannelOptions channelOptions;
 
@@ -224,7 +220,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   public ChannelSinkConnectorConfig(Map<?, ?> originals) {
     super(config(), originals);
     this.channel = this.getString(CHANNEL_CONFIG);
-    this.topic = this.getString(TOPIC_CONFIG);
 
     ClientOptions clientOpts = null;
     try {
@@ -345,12 +340,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
       .define(
         ConfigKeyBuilder.of(CHANNEL_CONFIG, Type.STRING)
           .documentation(CHANNEL_CONFIG_DOC)
-          .importance(Importance.HIGH)
-          .build()
-      )
-      .define(
-        ConfigKeyBuilder.of(TOPIC_CONFIG, Type.STRING)
-          .documentation(TOPIC_CONFIG_DOC)
           .importance(Importance.HIGH)
           .build()
       )
