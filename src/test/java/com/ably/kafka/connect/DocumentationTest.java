@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-package io.ably.kakfa.connect;
+package com.ably.kafka.connect;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.github.jcustenborder.kafka.connect.utils.BaseDocumentationTest;
 
-public class ChannelSinkConnectorTest {
-  @Test
-  public void test() {
-    // Congrats on a passing test!
-  }
-}
+public class DocumentationTest extends BaseDocumentationTest {}

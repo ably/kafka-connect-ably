@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.ably.kakfa.connect;
+package com.ably.kafka.connect;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

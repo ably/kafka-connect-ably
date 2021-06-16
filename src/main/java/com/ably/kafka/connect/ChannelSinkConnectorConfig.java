@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.ably.kakfa.connect;
+package com.ably.kafka.connect;
 
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;

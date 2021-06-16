@@ -7,6 +7,6 @@
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
-    <logger name="io.ably.kakfa.connect" level="TRACE" />
+    <logger name="com.ably.kafka.connect" level="TRACE" />
     <logger name="org.reflections" level="ERROR"/>
 </configuration>

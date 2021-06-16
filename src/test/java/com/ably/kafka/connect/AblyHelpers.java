@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.ably.kakfa.connect;
+package com.ably.kafka.connect;
 
 import java.util.List;
 import java.util.ArrayList;
