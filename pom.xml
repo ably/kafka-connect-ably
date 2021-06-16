@@ -14,7 +14,8 @@
     </properties>
 
     <name>kafka-connect-ably</name>
-    <description>A Kafka Connect Connector for Ably</description>
+    <description>A sink connector for publishing data from Apache Kafka into Ably</description>
+    <url>https://github.com/ably/kafka-connect-ably</url>
 
     <parent>
         <groupId>com.github.jcustenborder.kafka.connect</groupId>
@@ -22,14 +23,36 @@
         <version>2.4.0</version>
     </parent>
 
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>lmars</id>
+            <name>Lewis Marshall</name>
+            <email>lewis.marshall@ably.com</email>
+            <url>https://github.com/lmars</url>
+            <timezone>Europe/London</timezone>
+            <roles>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+
     <scm>
-        <connection></connection>
-        <developerConnection></developerConnection>
-        <url></url>
+        <connection>scm:git:https://github.com/ably/kafka-connect-ably.git</connection>
+        <developerConnection>scm:git:git://git@github.com:ably/kafka-connect-ably.git</developerConnection>
+        <url>https://github.com/ably/kafka-connect-ably</url>
     </scm>
+
     <issueManagement>
-        <system></system>
-        <url></url>
+        <system>github</system>
+        <url>https://github.com/ably/kafka-connect-ably/issues</url>
     </issueManagement>
 
     <build>
