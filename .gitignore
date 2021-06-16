@@ -3,3 +3,4 @@
 .project
 .settings/
 target/
+config/docker-compose-connector.properties
