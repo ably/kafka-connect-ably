@@ -25,7 +25,7 @@
 /**
  * This attribute is used to provide the owner on the connect hub. For example jcustenborder.
  */
-@PluginOwner("com.ably.kafka.connect")
+@PluginOwner("ably")
 /**
  * This attribute is used to provide the name of the plugin on the connect hub.
  */
