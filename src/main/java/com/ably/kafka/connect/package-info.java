@@ -1,5 +1,5 @@
 /**
- * Copyright © 2021 Ably Real-time Ltd. (support@ably.io)
+ * Copyright © 2021 Ably Real-time Ltd. (support@ably.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,12 @@
 /**
  * This attribute is used to provide the owner on the connect hub. For example jcustenborder.
  */
-@PluginOwner("io.ably.kakfa.connect")
+@PluginOwner("ably")
 /**
  * This attribute is used to provide the name of the plugin on the connect hub.
  */
 @PluginName("kafka-connect-ably")
-package io.ably.kakfa.connect;
+package com.ably.kafka.connect;
 
 import com.github.jcustenborder.kafka.connect.utils.config.Introduction;
 import com.github.jcustenborder.kafka.connect.utils.config.PluginName;

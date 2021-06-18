@@ -1,5 +1,5 @@
 /**
- * Copyright © 2021 Ably Real-time Ltd. (support@ably.io)
+ * Copyright © 2021 Ably Real-time Ltd. (support@ably.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-package io.ably.kakfa.connect;
+package com.ably.kafka.connect;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.github.jcustenborder.kafka.connect.utils.BaseDocumentationTest;
 
-public class ChannelSinkTaskTest {
-  @Test
-  public void test() {
-    // Congrats on a passing test!
-  }
-}
+public class DocumentationTest extends BaseDocumentationTest {}

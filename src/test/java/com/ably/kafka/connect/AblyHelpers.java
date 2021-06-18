@@ -1,5 +1,5 @@
 /**
- * Copyright © 2021 Ably Real-time Ltd. (support@ably.io)
+ * Copyright © 2021 Ably Real-time Ltd. (support@ably.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.ably.kakfa.connect;
+package com.ably.kafka.connect;
 
 import java.util.List;
 import java.util.ArrayList;
