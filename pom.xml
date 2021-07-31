@@ -153,6 +153,17 @@
             <version>2.8.6</version>
         </dependency>
 
+        <!--
+          Pin reflections to 0.9.10 to prevent the following error when running DocumentationTest.java:
+
+          java.lang.NoSuchMethodError: 'java.util.Set org.reflections.Reflections.getResources(com.google.common.base.Predicate)'
+        -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.10</version>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_${kafka.scala.version}</artifactId>
