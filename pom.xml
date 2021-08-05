@@ -83,9 +83,9 @@
                             <goal>kafka-connect</goal>
                         </goals>
                         <configuration>
-                            <title>Kafka Connect Ably</title>
+                            <title>Ably Kafka Connector</title>
                             <documentationUrl>https://github.com/ably/kafka-connect-ably</documentationUrl>
-                            <description>Kafka Connect Ably</description>
+                            <description>The Ably Kafka Connector is a sink connector used to publish data from Apache Kafka into Ably.</description>
 
                             <supportProviderName>Ably</supportProviderName>
                             <supportUrl>https://ably.com/support</supportUrl>

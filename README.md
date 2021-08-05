@@ -1,6 +1,6 @@
-# Kafka Connect Ably Connector
+# Ably Kafka Connector
 
-The Kafka Connect Ably Connector is a sink connector used to publish data from [Apache Kafka](http://kafka.apache.org/) into [Ably](https://ably.com).
+The Ably Kafka Connector is a sink connector used to publish data from [Apache Kafka](http://kafka.apache.org/) into [Ably](https://ably.com).
 
 ## Overview
 
