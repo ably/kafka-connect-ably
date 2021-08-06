@@ -199,7 +199,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   private static final String CLIENT_CHANNEL_PARAMS_DOC = "Additional channel parameters used to configure the " +
     "behaviour of the channel. This should be specified in the form \"key1=value1,key2=value2,...\".";
 
-  private static Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
+  private static final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
   public final String channel;
   public final ClientOptions clientOptions;

@@ -33,7 +33,7 @@ import com.github.jcustenborder.kafka.connect.utils.config.Title;
 @Title("Channel Sink Connector")
 @Description("Publishes a kafka topic to an ably channel")
 public class ChannelSinkConnector extends SinkConnector {
-    private static Logger logger = LoggerFactory.getLogger(ChannelSinkConnector.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChannelSinkConnector.class);
     private Map<String, String> settings;
 
     @Override

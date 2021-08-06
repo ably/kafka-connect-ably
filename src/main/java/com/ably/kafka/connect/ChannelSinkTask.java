@@ -41,8 +41,8 @@ import io.ably.lib.util.JsonUtils.JsonUtilsObject;
 import io.ably.lib.util.Log.LogHandler;
 
 public class ChannelSinkTask extends SinkTask {
-    private static Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
-    private static String[] severities = new String[]{"", "", "VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "ASSERT"};
+    private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
+    private static final String[] severities = new String[]{"", "", "VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "ASSERT"};
 
     ChannelSinkConnectorConfig config;
     AblyRealtime ably;
