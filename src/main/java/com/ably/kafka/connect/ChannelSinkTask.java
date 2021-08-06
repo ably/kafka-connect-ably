@@ -52,18 +52,18 @@ public class ChannelSinkTask extends SinkTask {
     public void start(Map<String, String> settings) {
         logger.info("Starting Ably channel Sink task");
 
-        this.config = new ChannelSinkConnectorConfig(settings);
+        config = new ChannelSinkConnectorConfig(settings);
 
-        if (this.config.clientOptions == null) {
+        if (config.clientOptions == null) {
             logger.error("Ably client options were not initialized due to invalid configuration.");
             return;
         }
 
-        if (this.config.channelOptions == null) {
+        if (config.channelOptions == null) {
             logger.error("Ably channel options were not initialized due to invalid configuration.");
             return;
         }
-        this.config.clientOptions.logHandler = new LogHandler() {
+        config.clientOptions.logHandler = new LogHandler() {
             public void println(int severity, String tag, String msg, Throwable tr) {
                 if (severity < 0 || severity >= severities.length) {
                     severity = 3;
@@ -96,8 +96,8 @@ public class ChannelSinkTask extends SinkTask {
         };
 
         try {
-            this.ably = new AblyRealtime(this.config.clientOptions);
-            this.channel = this.ably.channels.get(this.config.channelName, this.config.channelOptions);
+            ably = new AblyRealtime(config.clientOptions);
+            channel = ably.channels.get(config.channelName, config.channelOptions);
         } catch(AblyException e) {
             ChannelSinkTask.logger.error("error initializing ably client", e);
         }
@@ -105,7 +105,7 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public void put(Collection<SinkRecord> records) {
-        if (this.channel == null) {
+        if (channel == null) {
             // Put is not retryable, throwing error will indicate this
             throw new ConnectException("ably client is uninitialized");
         }
@@ -116,12 +116,12 @@ public class ChannelSinkTask extends SinkTask {
                 Message message = new Message("sink", r.value());
                 message.id = String.format("%d:%d:%d", r.topic().hashCode(), r.kafkaPartition(), r.kafkaOffset());
 
-                JsonUtilsObject kafkaExtras = this.kafkaExtras(r);
+                JsonUtilsObject kafkaExtras = kafkaExtras(r);
                 if(kafkaExtras.toJson().size() > 0 ) {
                     message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
                 }
 
-                this.channel.publish(message);
+                channel.publish(message);
             } catch (AblyException e) {
                 // The ably client should attempt retries itself, so if we do have to handle an exception here,
                 // we can assume that it is not retryably.
@@ -140,10 +140,10 @@ public class ChannelSinkTask extends SinkTask {
     public void stop() {
         logger.info("Stopping Ably channel Sink task");
 
-        if (this.ably != null) {
-            this.ably.close();
-            this.ably = null;
-            this.channel = null;
+        if (ably != null) {
+            ably.close();
+            ably = null;
+            channel = null;
         }
     }
 
