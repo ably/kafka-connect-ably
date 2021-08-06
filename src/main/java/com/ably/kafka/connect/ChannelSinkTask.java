@@ -167,17 +167,17 @@ public class ChannelSinkTask extends SinkTask {
      * @param record The sink record representing the Kafka message
      * @return       The Kafka message extras object
      */
-    private JsonUtilsObject kafkaExtras(SinkRecord r) {
+    private JsonUtilsObject kafkaExtras(SinkRecord record) {
         JsonUtilsObject extras = JsonUtils.object();
 
-        byte[] key = (byte[])r.key();
+        byte[] key = (byte[])record.key();
         if(key != null) {
             extras.add("key", Base64.getEncoder().encodeToString(key));
         }
 
-        if(!r.headers().isEmpty()) {
+        if(!record.headers().isEmpty()) {
             JsonUtilsObject headers = JsonUtils.object();
-            for (Header header : r.headers()) {
+            for (Header header : record.headers()) {
                 headers.add(header.key(), header.value());
             }
             extras.add("headers", headers);
