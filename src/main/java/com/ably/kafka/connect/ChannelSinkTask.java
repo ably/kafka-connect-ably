@@ -41,8 +41,8 @@ import io.ably.lib.util.JsonUtils.JsonUtilsObject;
 import io.ably.lib.util.Log.LogHandler;
 
 public class ChannelSinkTask extends SinkTask {
-    private static Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
-    private static String[] severities = new String[]{"", "", "VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "ASSERT"};
+    private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
+    private static final String[] severities = new String[]{"", "", "VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "ASSERT"};
 
     ChannelSinkConnectorConfig config;
     AblyRealtime ably;
@@ -52,60 +52,60 @@ public class ChannelSinkTask extends SinkTask {
     public void start(Map<String, String> settings) {
         logger.info("Starting Ably channel Sink task");
 
-        this.config = new ChannelSinkConnectorConfig(settings);
+        config = new ChannelSinkConnectorConfig(settings);
 
-        if (this.config.clientOptions == null) {
+        if (config.clientOptions == null) {
             logger.error("Ably client options were not initialized due to invalid configuration.");
             return;
         }
 
-        if (this.config.channelOptions == null) {
+        if (config.channelOptions == null) {
             logger.error("Ably channel options were not initialized due to invalid configuration.");
             return;
         }
-        this.config.clientOptions.logHandler = new LogHandler() {
-            public void println(int severity, String tag, String msg, Throwable tr) {
-                if (severity < 0 || severity >= severities.length) {
-                    severity = 3;
-                }
-                switch (severities[severity]) {
-                    case "VERBOSE":
-                        ChannelSinkTask.logger.trace(msg, tr);
-                        break;
-                    case "DEBUG":
-                        ChannelSinkTask.logger.debug(msg, tr);
-                        break;
-                    case "INFO":
-                        ChannelSinkTask.logger.info(msg, tr);
-                        break;
-                    case "WARN":
-                        ChannelSinkTask.logger.warn(msg, tr);
-                        break;
-                    case "ERROR":
-                        ChannelSinkTask.logger.error(msg, tr);
-                        break;
-                    case "default":
-                        if (ChannelSinkTask.logger.isDebugEnabled()) {
-                            ChannelSinkTask.logger.debug(
-                                String.format("severity: %d, tag: %s, msg: %s, err"),
+        config.clientOptions.logHandler = (severity, tag, msg, tr) -> {
+            if (severity < 0 || severity >= severities.length) {
+                severity = 3;
+            }
+            switch (severities[severity]) {
+                case "VERBOSE":
+                    logger.trace(msg, tr);
+                    break;
+                case "DEBUG":
+                    logger.debug(msg, tr);
+                    break;
+                case "INFO":
+                    logger.info(msg, tr);
+                    break;
+                case "WARN":
+                    logger.warn(msg, tr);
+                    break;
+                case "ERROR":
+                    logger.error(msg, tr);
+                    break;
+                case "default":
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(
+                            String.format(
+                                "severity: %d, tag: %s, msg: %s, err",
                                 severity, tag, msg, (tr != null) ? tr.getMessage() : "null"
-                            );
-                        }
-                }
+                            )
+                        );
+                    }
             }
         };
 
         try {
-            this.ably = new AblyRealtime(this.config.clientOptions);
-            this.channel = this.ably.channels.get(this.config.channel, this.config.channelOptions);
+            ably = new AblyRealtime(config.clientOptions);
+            channel = ably.channels.get(config.channelName, config.channelOptions);
         } catch(AblyException e) {
-            ChannelSinkTask.logger.error("error initializing ably client", e);
+            logger.error("error initializing ably client", e);
         }
     }
 
     @Override
     public void put(Collection<SinkRecord> records) {
-        if (this.channel == null) {
+        if (channel == null) {
             // Put is not retryable, throwing error will indicate this
             throw new ConnectException("ably client is uninitialized");
         }
@@ -116,12 +116,12 @@ public class ChannelSinkTask extends SinkTask {
                 Message message = new Message("sink", r.value());
                 message.id = String.format("%d:%d:%d", r.topic().hashCode(), r.kafkaPartition(), r.kafkaOffset());
 
-                JsonUtilsObject kafkaExtras = this.kafkaExtras(r);
+                JsonUtilsObject kafkaExtras = createKafkaExtras(r);
                 if(kafkaExtras.toJson().size() > 0 ) {
                     message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
                 }
 
-                this.channel.publish(message);
+                channel.publish(message);
             } catch (AblyException e) {
                 // The ably client should attempt retries itself, so if we do have to handle an exception here,
                 // we can assume that it is not retryably.
@@ -140,10 +140,10 @@ public class ChannelSinkTask extends SinkTask {
     public void stop() {
         logger.info("Stopping Ably channel Sink task");
 
-        if (this.ably != null) {
-            this.ably.close();
-            this.ably = null;
-            this.channel = null;
+        if (ably != null) {
+            ably.close();
+            ably = null;
+            channel = null;
         }
     }
 
@@ -165,17 +165,17 @@ public class ChannelSinkTask extends SinkTask {
      * @param record The sink record representing the Kafka message
      * @return       The Kafka message extras object
      */
-    private JsonUtilsObject kafkaExtras(SinkRecord r) {
+    private JsonUtilsObject createKafkaExtras(SinkRecord record) {
         JsonUtilsObject extras = JsonUtils.object();
 
-        byte[] key = (byte[])r.key();
+        byte[] key = (byte[])record.key();
         if(key != null) {
             extras.add("key", Base64.getEncoder().encodeToString(key));
         }
 
-        if(!r.headers().isEmpty()) {
+        if(!record.headers().isEmpty()) {
             JsonUtilsObject headers = JsonUtils.object();
-            for (Header header : r.headers()) {
+            for (Header header : record.headers()) {
                 headers.add(header.key(), header.value());
             }
             extras.add("headers", headers);

@@ -16,7 +16,7 @@
 
 package com.ably.kafka.connect;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -33,15 +33,13 @@ import com.github.jcustenborder.kafka.connect.utils.config.Title;
 @Title("Channel Sink Connector")
 @Description("Publishes a kafka topic to an ably channel")
 public class ChannelSinkConnector extends SinkConnector {
-    private static Logger logger = LoggerFactory.getLogger(ChannelSinkConnector.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChannelSinkConnector.class);
     private Map<String, String> settings;
 
     @Override
     public List<Map<String, String>> taskConfigs(int maxTasks) {
         //TODO: Add multi-partition publisher
-        ArrayList<Map<String, String>> configs = new ArrayList<>();
-        configs.add(this.settings);
-        return configs;
+        return Collections.singletonList(this.settings);
     }
 
     @Override
@@ -57,7 +55,7 @@ public class ChannelSinkConnector extends SinkConnector {
 
     @Override
     public ConfigDef config() {
-        return ChannelSinkConnectorConfig.config();
+        return ChannelSinkConnectorConfig.createConfig();
     }
 
     @Override

@@ -199,9 +199,9 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   private static final String CLIENT_CHANNEL_PARAMS_DOC = "Additional channel parameters used to configure the " +
     "behaviour of the channel. This should be specified in the form \"key1=value1,key2=value2,...\".";
 
-  private static Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
+  private static final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
-  public final String channel;
+  public final String channelName;
   public final ClientOptions clientOptions;
   public final ChannelOptions channelOptions;
 
@@ -218,73 +218,73 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   }
 
   public ChannelSinkConnectorConfig(Map<?, ?> originals) {
-    super(config(), originals);
-    this.channel = this.getString(CHANNEL_CONFIG);
+    super(createConfig(), originals);
+    channelName = getString(CHANNEL_CONFIG);
 
     ClientOptions clientOpts = null;
     try {
-      clientOpts = this.getAblyClientOptions();
+      clientOpts = getAblyClientOptions();
     } catch (ConfigException | AblyException e) {
       logger.error("Error configuring Ably client options", e);
     }
-    this.clientOptions = clientOpts;
+    clientOptions = clientOpts;
 
     ChannelOptions channelOpts = null;
     try {
-      channelOpts = this.getAblyChannelOptions();
+      channelOpts = getAblyChannelOptions();
     } catch (ConfigException e) {
       logger.error("Error configuring Ably channel options", e);
     }
-    this.channelOptions = channelOpts;
+    channelOptions = channelOpts;
   }
 
   private ClientOptions getAblyClientOptions() throws AblyException, ConfigException {
-    ClientOptions opts = new ClientOptions(this.getPassword(CLIENT_KEY).value());
+    ClientOptions opts = new ClientOptions(getPassword(CLIENT_KEY).value());
 
-    opts.clientId = this.getString(CLIENT_ID);
-    opts.logLevel = this.getInt(CLIENT_LOG_LEVEL);
-    opts.tls = this.getBoolean(CLIENT_TLS);
-    opts.restHost = this.getString(CLIENT_REST_HOST);
-    opts.realtimeHost = this.getString(CLIENT_REALTIME_HOST);
-    opts.port = this.getInt(CLIENT_PORT);
-    opts.tlsPort = this.getInt(CLIENT_TLS_PORT);
-    opts.autoConnect = this.getBoolean(CLIENT_AUTO_CONNECT);
-    opts.useBinaryProtocol = this.getBoolean(CLIENT_USE_BINARY_PROTOCOL);
-    opts.queueMessages = this.getBoolean(CLIENT_QUEUE_MESSAGES);
-    opts.echoMessages = this.getBoolean(CLIENT_ECHO_MESSAGES);
-    opts.recover = this.getString(CLIENT_RECOVER);
-    if (this.getBoolean(CLIENT_PROXY)) {
+    opts.clientId = getString(CLIENT_ID);
+    opts.logLevel = getInt(CLIENT_LOG_LEVEL);
+    opts.tls = getBoolean(CLIENT_TLS);
+    opts.restHost = getString(CLIENT_REST_HOST);
+    opts.realtimeHost = getString(CLIENT_REALTIME_HOST);
+    opts.port = getInt(CLIENT_PORT);
+    opts.tlsPort = getInt(CLIENT_TLS_PORT);
+    opts.autoConnect = getBoolean(CLIENT_AUTO_CONNECT);
+    opts.useBinaryProtocol = getBoolean(CLIENT_USE_BINARY_PROTOCOL);
+    opts.queueMessages = getBoolean(CLIENT_QUEUE_MESSAGES);
+    opts.echoMessages = getBoolean(CLIENT_ECHO_MESSAGES);
+    opts.recover = getString(CLIENT_RECOVER);
+    if (getBoolean(CLIENT_PROXY)) {
       ProxyOptions proxyOpts = new ProxyOptions();
-      proxyOpts.host = this.getString(CLIENT_PROXY_HOST);
-      proxyOpts.port = this.getInt(CLIENT_PROXY_PORT);
-      proxyOpts.username = this.getString(CLIENT_PROXY_USERNAME);
-      proxyOpts.password = this.getPassword(CLIENT_PROXY_PASSWORD).value();
-      proxyOpts.nonProxyHosts = this.getList(CLIENT_PROXY_NON_PROXY_HOSTS).toArray(new String[0]);
-      proxyOpts.prefAuthType = HttpAuth.Type.valueOf(this.getString(CLIENT_PROXY_PREF_AUTH_TYPE));
+      proxyOpts.host = getString(CLIENT_PROXY_HOST);
+      proxyOpts.port = getInt(CLIENT_PROXY_PORT);
+      proxyOpts.username = getString(CLIENT_PROXY_USERNAME);
+      proxyOpts.password = getPassword(CLIENT_PROXY_PASSWORD).value();
+      proxyOpts.nonProxyHosts = getList(CLIENT_PROXY_NON_PROXY_HOSTS).toArray(new String[0]);
+      proxyOpts.prefAuthType = HttpAuth.Type.valueOf(getString(CLIENT_PROXY_PREF_AUTH_TYPE));
     }
-    opts.environment = this.getString(CLIENT_ENVIRONMENT);
-    opts.idempotentRestPublishing = this.getBoolean(CLIENT_IDEMPOTENT_REST_PUBLISHING);
-    opts.httpOpenTimeout = this.getInt(CLIENT_HTTP_OPEN_TIMEOUT);
-    opts.httpRequestTimeout = this.getInt(CLIENT_HTTP_REQUEST_TIMEOUT);
-    opts.httpMaxRetryCount = this.getInt(CLIENT_HTTP_MAX_RETRY_COUNT);
-    opts.realtimeRequestTimeout = this.getLong(CLIENT_REALTIME_REQUEST_TIMEOUT);
-    opts.fallbackHosts =  this.getList(CLIENT_FALLBACK_HOSTS).toArray(new String[0]);
-    if (this.getBoolean(CLIENT_TOKEN_PARAMS)) {
+    opts.environment = getString(CLIENT_ENVIRONMENT);
+    opts.idempotentRestPublishing = getBoolean(CLIENT_IDEMPOTENT_REST_PUBLISHING);
+    opts.httpOpenTimeout = getInt(CLIENT_HTTP_OPEN_TIMEOUT);
+    opts.httpRequestTimeout = getInt(CLIENT_HTTP_REQUEST_TIMEOUT);
+    opts.httpMaxRetryCount = getInt(CLIENT_HTTP_MAX_RETRY_COUNT);
+    opts.realtimeRequestTimeout = getLong(CLIENT_REALTIME_REQUEST_TIMEOUT);
+    opts.fallbackHosts =  getList(CLIENT_FALLBACK_HOSTS).toArray(new String[0]);
+    if (getBoolean(CLIENT_TOKEN_PARAMS)) {
       TokenParams tokenParams = new TokenParams();
-      tokenParams.ttl = this.getLong(CLIENT_TOKEN_PARAMS_TTL);
-      tokenParams.capability = this.getString(CLIENT_TOKEN_PARAMS_CAPABILITY);
-      tokenParams.clientId = this.getString(CLIENT_TOKEN_PARAMS_CLIENT_ID);
+      tokenParams.ttl = getLong(CLIENT_TOKEN_PARAMS_TTL);
+      tokenParams.capability = getString(CLIENT_TOKEN_PARAMS_CAPABILITY);
+      tokenParams.clientId = getString(CLIENT_TOKEN_PARAMS_CLIENT_ID);
     }
-    opts.channelRetryTimeout = this.getInt(CLIENT_CHANNEL_RETRY_TIMEOUT);
-    opts.transportParams = convertTransportParams(this.getList(CLIENT_TRANSPORT_PARAMS));
-    opts.asyncHttpThreadpoolSize = this.getInt(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE);
-    opts.pushFullWait = this.getBoolean(CLIENT_PUSH_FULL_WAIT);
+    opts.channelRetryTimeout = getInt(CLIENT_CHANNEL_RETRY_TIMEOUT);
+    opts.transportParams = convertTransportParams(getList(CLIENT_TRANSPORT_PARAMS));
+    opts.asyncHttpThreadpoolSize = getInt(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE);
+    opts.pushFullWait = getBoolean(CLIENT_PUSH_FULL_WAIT);
     return opts;
   }
 
   private ChannelOptions getAblyChannelOptions() throws ConfigException {
     ChannelOptions opts;
-    String cipherKey = this.getString(CLIENT_CHANNEL_CIPHER_KEY);
+    String cipherKey = getString(CLIENT_CHANNEL_CIPHER_KEY);
 
     if (cipherKey != null && !cipherKey.trim().isEmpty()) {
       try {
@@ -299,7 +299,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
     // Since we're only publishing, set the channel mode to publish only
     opts.modes = new ChannelMode[]{ ChannelMode.publish };
-    opts.params = convertChannelParams(this.getList(CLIENT_CHANNEL_PARAMS));
+    opts.params = convertChannelParams(getList(CLIENT_CHANNEL_PARAMS));
     return opts;
   }
 
@@ -335,7 +335,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     return parsedParams;
   }
 
-  public static ConfigDef config() {
+  public static ConfigDef createConfig() {
     return new ConfigDef()
       .define(
         ConfigKeyBuilder.of(CHANNEL_CONFIG, Type.STRING)
