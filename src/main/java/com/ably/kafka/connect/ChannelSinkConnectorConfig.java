@@ -201,7 +201,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
   private static final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
-  public final String channel;
+  public final String channelName;
   public final ClientOptions clientOptions;
   public final ChannelOptions channelOptions;
 
@@ -219,7 +219,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
   public ChannelSinkConnectorConfig(Map<?, ?> originals) {
     super(createConfig(), originals);
-    this.channel = this.getString(CHANNEL_CONFIG);
+    this.channelName = this.getString(CHANNEL_CONFIG);
 
     ClientOptions clientOpts = null;
     try {

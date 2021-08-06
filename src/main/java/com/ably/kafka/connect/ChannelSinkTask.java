@@ -97,7 +97,7 @@ public class ChannelSinkTask extends SinkTask {
 
         try {
             this.ably = new AblyRealtime(this.config.clientOptions);
-            this.channel = this.ably.channels.get(this.config.channel, this.config.channelOptions);
+            this.channel = this.ably.channels.get(this.config.channelName, this.config.channelOptions);
         } catch(AblyException e) {
             ChannelSinkTask.logger.error("error initializing ably client", e);
         }
