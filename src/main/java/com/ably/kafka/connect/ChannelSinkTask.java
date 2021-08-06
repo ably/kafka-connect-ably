@@ -87,8 +87,10 @@ public class ChannelSinkTask extends SinkTask {
                     case "default":
                         if (logger.isDebugEnabled()) {
                             logger.debug(
-                                String.format("severity: %d, tag: %s, msg: %s, err"),
-                                severity, tag, msg, (tr != null) ? tr.getMessage() : "null"
+                                String.format(
+                                    "severity: %d, tag: %s, msg: %s, err",
+                                    severity, tag, msg, (tr != null) ? tr.getMessage() : "null"
+                                )
                             );
                         }
                 }
