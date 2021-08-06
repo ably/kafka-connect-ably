@@ -70,23 +70,23 @@ public class ChannelSinkTask extends SinkTask {
                 }
                 switch (severities[severity]) {
                     case "VERBOSE":
-                        ChannelSinkTask.logger.trace(msg, tr);
+                        logger.trace(msg, tr);
                         break;
                     case "DEBUG":
-                        ChannelSinkTask.logger.debug(msg, tr);
+                        logger.debug(msg, tr);
                         break;
                     case "INFO":
-                        ChannelSinkTask.logger.info(msg, tr);
+                        logger.info(msg, tr);
                         break;
                     case "WARN":
-                        ChannelSinkTask.logger.warn(msg, tr);
+                        logger.warn(msg, tr);
                         break;
                     case "ERROR":
-                        ChannelSinkTask.logger.error(msg, tr);
+                        logger.error(msg, tr);
                         break;
                     case "default":
-                        if (ChannelSinkTask.logger.isDebugEnabled()) {
-                            ChannelSinkTask.logger.debug(
+                        if (logger.isDebugEnabled()) {
+                            logger.debug(
                                 String.format("severity: %d, tag: %s, msg: %s, err"),
                                 severity, tag, msg, (tr != null) ? tr.getMessage() : "null"
                             );
@@ -99,7 +99,7 @@ public class ChannelSinkTask extends SinkTask {
             ably = new AblyRealtime(config.clientOptions);
             channel = ably.channels.get(config.channelName, config.channelOptions);
         } catch(AblyException e) {
-            ChannelSinkTask.logger.error("error initializing ably client", e);
+            logger.error("error initializing ably client", e);
         }
     }
 
