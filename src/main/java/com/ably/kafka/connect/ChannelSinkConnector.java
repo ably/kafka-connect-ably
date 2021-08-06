@@ -16,7 +16,7 @@
 
 package com.ably.kafka.connect;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -39,9 +39,7 @@ public class ChannelSinkConnector extends SinkConnector {
     @Override
     public List<Map<String, String>> taskConfigs(int maxTasks) {
         //TODO: Add multi-partition publisher
-        ArrayList<Map<String, String>> configs = new ArrayList<>();
-        configs.add(this.settings);
-        return configs;
+        return Collections.singletonList(this.settings);
     }
 
     @Override
