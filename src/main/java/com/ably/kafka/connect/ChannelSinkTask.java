@@ -118,7 +118,7 @@ public class ChannelSinkTask extends SinkTask {
                 Message message = new Message("sink", r.value());
                 message.id = String.format("%d:%d:%d", r.topic().hashCode(), r.kafkaPartition(), r.kafkaOffset());
 
-                JsonUtilsObject kafkaExtras = kafkaExtras(r);
+                JsonUtilsObject kafkaExtras = createKafkaExtras(r);
                 if(kafkaExtras.toJson().size() > 0 ) {
                     message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
                 }
@@ -167,7 +167,7 @@ public class ChannelSinkTask extends SinkTask {
      * @param record The sink record representing the Kafka message
      * @return       The Kafka message extras object
      */
-    private JsonUtilsObject kafkaExtras(SinkRecord record) {
+    private JsonUtilsObject createKafkaExtras(SinkRecord record) {
         JsonUtilsObject extras = JsonUtils.object();
 
         byte[] key = (byte[])record.key();
