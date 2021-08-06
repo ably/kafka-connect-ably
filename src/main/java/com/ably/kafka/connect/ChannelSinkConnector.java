@@ -55,7 +55,7 @@ public class ChannelSinkConnector extends SinkConnector {
 
     @Override
     public ConfigDef config() {
-        return ChannelSinkConnectorConfig.config();
+        return ChannelSinkConnectorConfig.createConfig();
     }
 
     @Override

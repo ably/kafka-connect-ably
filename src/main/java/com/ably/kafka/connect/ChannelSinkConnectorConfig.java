@@ -218,7 +218,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   }
 
   public ChannelSinkConnectorConfig(Map<?, ?> originals) {
-    super(config(), originals);
+    super(createConfig(), originals);
     this.channel = this.getString(CHANNEL_CONFIG);
 
     ClientOptions clientOpts = null;
@@ -335,7 +335,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     return parsedParams;
   }
 
-  public static ConfigDef config() {
+  public static ConfigDef createConfig() {
     return new ConfigDef()
       .define(
         ConfigKeyBuilder.of(CHANNEL_CONFIG, Type.STRING)
