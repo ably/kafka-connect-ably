@@ -97,6 +97,7 @@
                             <ownerType>organization</ownerType>
                             <ownerName>Ably</ownerName>
                             <ownerUrl>https://ably.com/</ownerUrl>
+                            <ownerLogo>logos/ably.png</ownerLogo>
 
                             <componentTypes>
                                 <componentType>sink</componentType>
