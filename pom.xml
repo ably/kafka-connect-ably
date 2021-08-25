@@ -86,10 +86,12 @@
                             <title>Ably Kafka Connector</title>
                             <documentationUrl>https://github.com/ably/kafka-connect-ably</documentationUrl>
                             <description>The Ably Kafka Connector is a sink connector used to publish data from Apache Kafka into Ably.</description>
+                            <logo>logos/ably.png</logo>
 
                             <supportProviderName>Ably</supportProviderName>
                             <supportUrl>https://ably.com/support</supportUrl>
                             <supportSummary><![CDATA[This connector is <a href="https://ably.com/support">supported by Ably</a>]]></supportSummary>
+                            <supportLogo>logos/ably.png</supportLogo>
 
                             <ownerUsername>ably</ownerUsername>
                             <ownerType>organization</ownerType>
