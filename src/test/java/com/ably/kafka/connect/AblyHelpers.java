@@ -70,7 +70,7 @@ public class AblyHelpers {
      * spec in the body to /apps.
      */
     public static AppSpec createTestApp() throws AblyException {
-        ClientOptions opts = new ClientOptions("");
+        ClientOptions opts = new ClientOptions("a.b:c");
         opts.environment = TEST_ENVIRONMENT;
         AblyRest ably = new AblyRest(opts);
 

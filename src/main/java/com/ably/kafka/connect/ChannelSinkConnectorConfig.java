@@ -199,6 +199,14 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   private static final String CLIENT_CHANNEL_PARAMS_DOC = "Additional channel parameters used to configure the " +
     "behaviour of the channel. This should be specified in the form \"key1=value1,key2=value2,...\".";
 
+  // The name of the extra agent identifier to add to the Ably-Agent header to
+  // identify this client as using the Ably Kafka Connector.
+  private static final String ABLY_AGENT_HEADER_NAME = "kafka-connect-ably";
+
+  // The default Ably-Agent version to use when the library version can't be
+  // determined (for example in the tests).
+  private static final String ABLY_AGENT_DEFAULT_VERSION = "0.0.0";
+
   private static final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
   public final String channelName;
@@ -279,6 +287,14 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     opts.transportParams = convertTransportParams(getList(CLIENT_TRANSPORT_PARAMS));
     opts.asyncHttpThreadpoolSize = getInt(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE);
     opts.pushFullWait = getBoolean(CLIENT_PUSH_FULL_WAIT);
+
+    // Add the library version to the list of Ably-Agent identifiers.
+    String version = getClass().getPackage().getImplementationVersion();
+    if(version == null) {
+      version = ABLY_AGENT_DEFAULT_VERSION;
+    }
+    opts.agents = Map.of(ABLY_AGENT_HEADER_NAME, version);
+
     return opts;
   }
 
