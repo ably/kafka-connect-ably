@@ -134,3 +134,7 @@ The advanced properties that can be configured for the connector are:
 | client.transport.params | Any additional parameters to be sent in the query string when initiating a realtime connection in the format `key1=value1,key2=value` without URL encoding. | *List* ||
 | client.use.binary.protocol | Set to `false` to force the library to use JSON encoding for REST and realtime operations, instead of msgpack encoding. | *Boolean* | True |
 | client.loglevel | Sets the verbosity of logging. | *Integer* | 0 |
+
+## Contributing
+
+For guidance on how to contribute to this project, see [CONTRIBUTING.md](CONTRIBUTING.md).
