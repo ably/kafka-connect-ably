@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.0.2](https://github.com/ably/kafka-connect-ably/tree/v1.0.2) (2021-09-29)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v1.0.1...v1.0.2)
+
+**Merged pull requests:**
+
+- Document the release process [\#31](https://github.com/ably/kafka-connect-ably/pull/31) ([lmars](https://github.com/lmars))
+- Set 'kafka-connect-ably' in the Ably-Agent header [\#30](https://github.com/ably/kafka-connect-ably/pull/30) ([lmars](https://github.com/lmars))
+- Conform license and copyright [\#28](https://github.com/ably/kafka-connect-ably/pull/28) ([QuintinWillison](https://github.com/QuintinWillison))
+- Conform overview section of readme [\#27](https://github.com/ably/kafka-connect-ably/pull/27) ([QuintinWillison](https://github.com/QuintinWillison))
+- Add Maven version for those using ASDF or compatible tooling [\#26](https://github.com/ably/kafka-connect-ably/pull/26) ([QuintinWillison](https://github.com/QuintinWillison))
+- Explicitly specify workflow `permissions` required to succeed when our org switches default access from 'permissive' to 'restricted' [\#25](https://github.com/ably/kafka-connect-ably/pull/25) ([QuintinWillison](https://github.com/QuintinWillison))
+
 ## [v1.0.1](https://github.com/ably/kafka-connect-ably/tree/v1.0.1) (2021-08-25)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v1.0.0...v1.0.1)
