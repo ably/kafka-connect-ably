@@ -4,7 +4,7 @@ _[Ably](https://ably.com) is the platform that powers synchronized digital exper
 
 ## Overview
 
-The Ably Kafka Connector is a sink connector used to publish data from [Apache Kafka](http://kafka.apache.org/) into [Ably](https://ably.com).
+The Ably Kafka Connector is a sink connector used to publish data from [Apache Kafka](http://kafka.apache.org/) into [Ably](https://ably.com) and is available on [Confluent Hub](https://www.confluent.io/hub/ably/kafka-connect-ably).
 
 The connector will publish data from one or more [Kafka topics](https://docs.confluent.io/platform/current/kafka/introduction.html#main-concepts-and-terminology) into a single [Ably channel](https://ably.com/documentation/core-features/channels).
 
@@ -12,25 +12,47 @@ The connector is built on top of [Apache Kafka Connect](http://docs.confluent.io
 
 ## Install
 
-The connector can be installed on [Confluent Platform](#confluent-platform) or deployed locally using [Docker](#docker).
+Install the connector using the [Confluent Hub Client](#confluent-hub-installation) or [manually](#manual-installation) on Confluent Platform. Alternatively deploy it locally using [Docker](#docker).
 
-### Confluent Platform
+### Confluent Hub installation
 
-To install the connector on a local installation of Confluent:
+To install the connector on a local installation of Confluent using the Confluent Hub Client:
 
-1. Clone this Github repository:
+1. Ensure that the Confluent Hub Client is installed. See the [Confluent instructions](https://docs.confluent.io/home/connect/confluent-hub/client.html#installing-c-hub-client) for steps to complete this.
 
-    `git clone git@github.com:ably/kafka-connect-ably.git`
+2. Run the following command to install the Ably Kafka Connector:
 
-2. Build the connector using [Maven](https://maven.apache.org/):
+    `confluent-hub install ably/kafka-connect-ably:<version>`
 
-    `mvn clean package`
+    Where `<version>` is the latest version of the connector.
 
-3. A `.zip` file will be produced in the `/target/components/packages/` folder after the process has run.
+3. [Configure](#configuration) the connector.
 
-4. Install the `.zip` into a directory specified in the `plugin.path` of your connect worker's configuration properties file. See the [Confluent instructions](https://docs.confluent.io/home/connect/install.html#install-connector-manually) for further information on this step.
+### Manual installation
 
-5. [Configure](#configuration) the connector.
+To manually install the connector on a local installation of Confluent:
+
+1. Obtain the `.zip` of the connector from Confluent Hub or this repository:
+
+    **From Confluent Hub**:
+
+    Visit the [Ably Kafka Connector](https://www.confluent.io/hub/ably/kafka-connect-ably) page on Confluent Hub and click the **Download** button.
+
+    **From this repository**:
+
+    1. Clone the repository:
+
+        `git clone git@github.com:ably/kafka-connect-ably.git`
+
+    2. Build the connector using [Maven](https://maven.apache.org/):
+
+        `mvn clean package`
+
+    3. A `.zip` file will be produced in the `/target/components/packages/` folder after the process has run.
+
+2. Extract the `.zip` into a directory specified in the `plugin.path` of your connect worker's configuration properties file. See the [Confluent instructions](https://docs.confluent.io/home/connect/install.html#install-connector-manually) for further information on this step.
+
+3. [Configure](#configuration) the connector.
 
 ### Docker
 
