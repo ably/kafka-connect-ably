@@ -123,8 +123,7 @@ public class ChannelSinkTask extends SinkTask {
 
                 channel.publish(message);
             } catch (AblyException e) {
-            
-                e.printStackTrace();
+                logger.error("Failed to publish message", e);
             }
         }
     }
