@@ -127,7 +127,7 @@ public class ChannelSinkTask extends SinkTask {
                 if (ably.options.queueMessages) {
                     logger.error("Failed to publish message", e);
                 } else {
-                    throw new RetriableException(e.getMessage());
+                    throw new RetriableException("Failed to publish to Ably when queueMessages is disabled.",e);
                 }
             }
         }
