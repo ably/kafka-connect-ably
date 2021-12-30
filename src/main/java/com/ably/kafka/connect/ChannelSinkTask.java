@@ -25,6 +25,7 @@ import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.ConnectException;
+import org.apache.kafka.connect.errors.RetriableException;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
@@ -123,7 +124,12 @@ public class ChannelSinkTask extends SinkTask {
 
                 channel.publish(message);
             } catch (AblyException e) {
-                logger.error("Failed to publish message", e);
+                if(ably.options.queueMessages){
+                    logger.error("Failed to publish message", e);
+                }else{
+                    throw new RetriableException(e.getMessage());
+                }
+                
             }
         }
     }
