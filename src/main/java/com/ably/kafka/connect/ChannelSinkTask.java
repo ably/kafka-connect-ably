@@ -124,12 +124,11 @@ public class ChannelSinkTask extends SinkTask {
 
                 channel.publish(message);
             } catch (AblyException e) {
-                if(ably.options.queueMessages){
+                if (ably.options.queueMessages) {
                     logger.error("Failed to publish message", e);
-                }else{
+                } else {
                     throw new RetriableException(e.getMessage());
                 }
-                
             }
         }
     }
