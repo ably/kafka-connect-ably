@@ -123,9 +123,8 @@ public class ChannelSinkTask extends SinkTask {
 
                 channel.publish(message);
             } catch (AblyException e) {
-                // The ably client should attempt retries itself, so if we do have to handle an exception here,
-                // we can assume that it is not retryably.
-                throw new ConnectException("ably client failed to publish", e);
+            
+                e.printStackTrace();
             }
         }
     }
