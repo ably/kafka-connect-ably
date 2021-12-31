@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.0.3](https://github.com/ably/kafka-connect-ably/tree/v1.0.3) (2021-12-31)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v1.0.2...v1.0.3)
+
+**Fixed bugs:**
+
+- Caught exception and printed stack trace instead of throwing it to resume task [\#36](https://github.com/ably/kafka-connect-ably/pull/36) ([ikbalkaya](https://github.com/ikbalkaya))
+
 ## [v1.0.2](https://github.com/ably/kafka-connect-ably/tree/v1.0.2) (2021-09-29)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v1.0.1...v1.0.2)
