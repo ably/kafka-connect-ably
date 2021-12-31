@@ -25,6 +25,7 @@ import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.ConnectException;
+import org.apache.kafka.connect.errors.RetriableException;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
@@ -123,9 +124,11 @@ public class ChannelSinkTask extends SinkTask {
 
                 channel.publish(message);
             } catch (AblyException e) {
-                // The ably client should attempt retries itself, so if we do have to handle an exception here,
-                // we can assume that it is not retryably.
-                throw new ConnectException("ably client failed to publish", e);
+                if (ably.options.queueMessages) {
+                    logger.error("Failed to publish message", e);
+                } else {
+                    throw new RetriableException("Failed to publish to Ably when queueMessages is disabled.",e);
+                }
             }
         }
     }
