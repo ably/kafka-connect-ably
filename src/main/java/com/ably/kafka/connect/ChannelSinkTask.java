@@ -46,7 +46,6 @@ public class ChannelSinkTask extends SinkTask {
     private static final String[] severities = new String[]{"", "", "VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "ASSERT"};
 
     private AblyRealtime ably;
-    private Channel channel;
 
     @Override
     public void start(Map<String, String> settings) {
@@ -97,7 +96,6 @@ public class ChannelSinkTask extends SinkTask {
 
         try {
             ably = new AblyRealtime(config.clientOptions);
-            channel = ably.channels.get(config.channelName, config.channelOptions);
         } catch(AblyException e) {
             logger.error("error initializing ably client", e);
         }
@@ -105,11 +103,6 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public void put(Collection<SinkRecord> records) {
-        if (channel == null) {
-            // Put is not retryable, throwing error will indicate this
-            throw new ConnectException("ably client is uninitialized");
-        }
-
         for (SinkRecord r : records) {
             // TODO: add configuration to change the event name
             try {
@@ -120,8 +113,7 @@ public class ChannelSinkTask extends SinkTask {
                 if(kafkaExtras.toJson().size() > 0 ) {
                     message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
                 }
-
-                channel.publish(message);
+                ably.channels.get(r.topic()).publish(message);
             } catch (AblyException e) {
                 if (ably.options.queueMessages) {
                     logger.error("Failed to publish message", e);
@@ -145,7 +137,6 @@ public class ChannelSinkTask extends SinkTask {
         if (ably != null) {
             ably.close();
             ably = null;
-            channel = null;
         }
     }
 
