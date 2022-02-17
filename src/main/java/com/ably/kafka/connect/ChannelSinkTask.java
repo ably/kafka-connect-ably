@@ -45,15 +45,14 @@ public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
     private static final String[] severities = new String[]{"", "", "VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "ASSERT"};
 
-    ChannelSinkConnectorConfig config;
-    AblyRealtime ably;
-    Channel channel;
+    private AblyRealtime ably;
+    private Channel channel;
 
     @Override
     public void start(Map<String, String> settings) {
         logger.info("Starting Ably channel Sink task");
 
-        config = new ChannelSinkConnectorConfig(settings);
+        ChannelSinkConnectorConfig config = new ChannelSinkConnectorConfig(settings);
 
         if (config.clientOptions == null) {
             logger.error("Ably client options were not initialized due to invalid configuration.");
