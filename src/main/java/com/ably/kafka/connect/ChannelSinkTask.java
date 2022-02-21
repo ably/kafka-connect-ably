@@ -26,6 +26,7 @@ import io.ably.lib.util.JsonUtils;
 import io.ably.lib.util.JsonUtils.JsonUtilsObject;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.errors.RetriableException;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
@@ -95,6 +96,10 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public void put(Collection<SinkRecord> records) {
+        if (ably == null) {
+            // Cannot retry for this case
+            throw new ConnectException("ably client is uninitialized");
+        }
         for (SinkRecord r : records) {
             // TODO: add configuration to change the event name
             try {
