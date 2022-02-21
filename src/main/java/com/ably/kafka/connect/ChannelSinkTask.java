@@ -43,17 +43,24 @@ public class ChannelSinkTask extends SinkTask {
     private static final String[] severities = new String[]{"", "", "VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "ASSERT"};
 
     private AblyRealtime ably;
+    private ChannelSinkChannelConfig channelConfig;
 
     @Override
     public void start(Map<String, String> settings) {
         logger.info("Starting Ably channel Sink task");
 
-        ChannelSinkConnectorConfig config = new ChannelSinkConnectorConfig(settings);
+        final ChannelSinkConnectorConfig config = new ChannelSinkConnectorConfig(settings);
 
         if (config.clientOptions == null) {
             logger.error("Ably client options were not initialized due to invalid configuration.");
             return;
         }
+
+        if (config.channelConfig == null) {
+            logger.error("Ably channel configuration was not initialized due to invalid configuration.");
+            return;
+        }
+        channelConfig = config.channelConfig;
 
         config.clientOptions.logHandler = (severity, tag, msg, tr) -> {
             if (severity < 0 || severity >= severities.length) {
@@ -100,6 +107,7 @@ public class ChannelSinkTask extends SinkTask {
             // Cannot retry for this case
             throw new ConnectException("ably client is uninitialized");
         }
+        //also make sure channel config is given
         for (SinkRecord sinkRecord : records) {
             // TODO: add configuration to change the event name
             try {
@@ -110,8 +118,8 @@ public class ChannelSinkTask extends SinkTask {
                 if(kafkaExtras.toJson().size() > 0 ) {
                     message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
                 }
-
-                final  Channel channel = ably.channels.get(sinkRecord.topic());
+                final String channelName = channelConfig.channelName(sinkRecord);
+                final  Channel channel = ably.channels.get(channelName);
                 channel.publish(message);
             } catch (AblyException e) {
                 if (ably.options.queueMessages) {

@@ -19,6 +19,7 @@ package com.ably.kafka.connect;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Type;
+import org.apache.kafka.common.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -187,6 +188,10 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   private static final String CLIENT_PUSH_FULL_WAIT_DOC = "Whether to tell Ably to wait for push REST requests to " +
     "fully wait for all their effects before responding.";
 
+  public static final String CHANNEL_SINK_CONFIG_CLASS = "channel.sink.config.class";
+  private static final String CHANNEL_SINK_CONFIG_CLASS_DOC = "The fully qualified class name of the channel sink " +
+    "configuration class to use";
+
   // The name of the extra agent identifier to add to the Ably-Agent header to
   // identify this client as using the Ably Kafka Connector.
   private static final String ABLY_AGENT_HEADER_NAME = "kafka-connect-ably";
@@ -198,6 +203,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   private static final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
   public final ClientOptions clientOptions;
+  public final ChannelSinkChannelConfig channelConfig;
 
   private static class ConfigException extends Exception {
     private static final long serialVersionUID = 6225540388729441285L;
@@ -221,7 +227,16 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
       logger.error("Error configuring Ably client options", e);
     }
     clientOptions = clientOpts;
+
+    final Object channelConfigInstance = Utils.newInstance(getClass(CHANNEL_SINK_CONFIG_CLASS));
+    if (channelConfigInstance instanceof ChannelSinkChannelConfig) {
+      channelConfig = (ChannelSinkChannelConfig) channelConfigInstance;
+    }else {
+      channelConfig = null;
+      logger.error("Please provide correct class name for channel sink config class");
+    }
   }
+
 
   private ClientOptions getAblyClientOptions() throws AblyException, ConfigException {
     ClientOptions opts = new ClientOptions(getPassword(CLIENT_KEY).value());
@@ -538,6 +553,13 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
           .importance(Importance.MEDIUM)
           .defaultValue(false)
           .build()
-      );
+      )
+      .define(
+         ConfigKeyBuilder.of(CHANNEL_SINK_CONFIG_CLASS, Type.CLASS)
+                 .documentation(CHANNEL_SINK_CONFIG_CLASS_DOC)
+                 .importance(Importance.HIGH)
+                 .defaultValue(DefaultChannelSinkChannelConfig.class)
+                 .build()
+            ) ;
   }
 }
