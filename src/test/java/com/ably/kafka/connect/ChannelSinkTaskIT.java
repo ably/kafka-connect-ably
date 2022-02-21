@@ -86,7 +86,6 @@ public class ChannelSinkTaskIT {
         settings.put(TOPICS_CONFIG, "kafka-connect-ably-test");
         settings.put(KEY_CONVERTER_CLASS_CONFIG, ByteArrayConverter.class.getName());
         settings.put(VALUE_CONVERTER_CLASS_CONFIG, ByteArrayConverter.class.getName());
-        settings.put(ChannelSinkConnectorConfig.CHANNEL_CONFIG, "kafka-connect-ably-test");
         settings.put(ChannelSinkConnectorConfig.CLIENT_KEY, appSpec.key());
         settings.put(ChannelSinkConnectorConfig.CLIENT_ID, "kafka-connect-ably-test");
         settings.put(ChannelSinkConnectorConfig.CLIENT_ENVIRONMENT, AblyHelpers.TEST_ENVIRONMENT);
