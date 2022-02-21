@@ -43,10 +43,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ChannelSinkConnectorConfig extends AbstractConfig {
-
-  public static final String CHANNEL_CONFIG = "channel";
-  private static final String CHANNEL_CONFIG_DOC = "The ably channel name to use for publishing.";
-
   public static final String CLIENT_KEY = "client.key";
   private static final String CLIENT_KEY_DOC = "The Ably API key string. The key string is obtained from the " +
     "application dashboard.";
@@ -191,14 +187,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   private static final String CLIENT_PUSH_FULL_WAIT_DOC = "Whether to tell Ably to wait for push REST requests to " +
     "fully wait for all their effects before responding.";
 
-  public static final String CLIENT_CHANNEL_CIPHER_KEY = "client.channel.cipher.key";
-  private static final String CLIENT_CHANNEL_CIPHER_KEY_DOC = "Requests encryption for this channel when not null, " +
-    "and specifies encryption-related parameters (such as algorithm, chaining mode, key length and key).";
-
-  public static final String CLIENT_CHANNEL_PARAMS = "client.channel.params";
-  private static final String CLIENT_CHANNEL_PARAMS_DOC = "Additional channel parameters used to configure the " +
-    "behaviour of the channel. This should be specified in the form \"key1=value1,key2=value2,...\".";
-
   // The name of the extra agent identifier to add to the Ably-Agent header to
   // identify this client as using the Ably Kafka Connector.
   private static final String ABLY_AGENT_HEADER_NAME = "kafka-connect-ably";
@@ -209,9 +197,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
   private static final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
-  public final String channelName;
   public final ClientOptions clientOptions;
-  public final ChannelOptions channelOptions;
 
   private static class ConfigException extends Exception {
     private static final long serialVersionUID = 6225540388729441285L;
@@ -227,7 +213,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
   public ChannelSinkConnectorConfig(Map<?, ?> originals) {
     super(createConfig(), originals);
-    channelName = getString(CHANNEL_CONFIG);
 
     ClientOptions clientOpts = null;
     try {
@@ -236,14 +221,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
       logger.error("Error configuring Ably client options", e);
     }
     clientOptions = clientOpts;
-
-    ChannelOptions channelOpts = null;
-    try {
-      channelOpts = getAblyChannelOptions();
-    } catch (ConfigException e) {
-      logger.error("Error configuring Ably channel options", e);
-    }
-    channelOptions = channelOpts;
   }
 
   private ClientOptions getAblyClientOptions() throws AblyException, ConfigException {
@@ -298,27 +275,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     return opts;
   }
 
-  private ChannelOptions getAblyChannelOptions() throws ConfigException {
-    ChannelOptions opts;
-    String cipherKey = getString(CLIENT_CHANNEL_CIPHER_KEY);
-
-    if (cipherKey != null && !cipherKey.trim().isEmpty()) {
-      try {
-        opts = ChannelOptions.withCipherKey(cipherKey);
-      } catch (AblyException e) {
-        logger.error("Error configuring channel cipher key", e);
-        throw new ConfigException("Error configuring channel cipher key", e);
-      }
-    } else {
-      opts = new ChannelOptions();
-    }
-
-    // Since we're only publishing, set the channel mode to publish only
-    opts.modes = new ChannelMode[]{ ChannelMode.publish };
-    opts.params = convertChannelParams(getList(CLIENT_CHANNEL_PARAMS));
-    return opts;
-  }
-
   private static Param[] convertTransportParams(List<String> params) throws ConfigException {
     List<Param> parsedParams = new ArrayList<Param>(params.size());
     for (String param : params) {
@@ -335,30 +291,9 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     return parsedParams.toArray(new Param[0]);
   }
 
-  private static Map<String, String> convertChannelParams(List<String> params) throws ConfigException {
-    Map<String, String> parsedParams = new HashMap<String, String>();
-    for (String param : params) {
-      String[] parts = param.split("=");
-      if (parts.length == 2) {
-        parsedParams.put(parts[0], parts[1]);
-      } else {
-        ConfigException e = new ConfigException(String.format("invalid param string %s", param));
-        logger.error("invalid param in channel params configuration", e);
-        throw e;
-      }
-    }
-
-    return parsedParams;
-  }
 
   public static ConfigDef createConfig() {
     return new ConfigDef()
-      .define(
-        ConfigKeyBuilder.of(CHANNEL_CONFIG, Type.STRING)
-          .documentation(CHANNEL_CONFIG_DOC)
-          .importance(Importance.HIGH)
-          .build()
-      )
       .define(
         ConfigKeyBuilder.of(CLIENT_KEY, Type.PASSWORD)
           .documentation(CLIENT_KEY_DOC)
@@ -602,20 +537,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
           .documentation(CLIENT_PUSH_FULL_WAIT_DOC)
           .importance(Importance.MEDIUM)
           .defaultValue(false)
-          .build()
-      )
-      .define(
-        ConfigKeyBuilder.of(CLIENT_CHANNEL_CIPHER_KEY, Type.STRING)
-          .documentation(CLIENT_CHANNEL_CIPHER_KEY_DOC)
-          .importance(Importance.MEDIUM)
-          .defaultValue(null)
-          .build()
-      )
-      .define(
-        ConfigKeyBuilder.of(CLIENT_CHANNEL_PARAMS, Type.LIST)
-          .documentation(CLIENT_CHANNEL_PARAMS_DOC)
-          .importance(Importance.MEDIUM)
-          .defaultValue("")
           .build()
       );
   }
