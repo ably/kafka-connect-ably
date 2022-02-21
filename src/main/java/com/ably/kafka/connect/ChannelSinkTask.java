@@ -16,22 +16,7 @@
 
 package com.ably.kafka.connect;
 
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Map;
-
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
-
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.connect.errors.ConnectException;
-import org.apache.kafka.connect.errors.RetriableException;
-import org.apache.kafka.connect.header.Header;
-import org.apache.kafka.connect.sink.SinkRecord;
-import org.apache.kafka.connect.sink.SinkTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.AblyException;
@@ -39,7 +24,18 @@ import io.ably.lib.types.Message;
 import io.ably.lib.types.MessageExtras;
 import io.ably.lib.util.JsonUtils;
 import io.ably.lib.util.JsonUtils.JsonUtilsObject;
-import io.ably.lib.util.Log.LogHandler;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.connect.errors.RetriableException;
+import org.apache.kafka.connect.header.Header;
+import org.apache.kafka.connect.sink.SinkRecord;
+import org.apache.kafka.connect.sink.SinkTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Map;
 
 public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
@@ -58,10 +54,6 @@ public class ChannelSinkTask extends SinkTask {
             return;
         }
 
-        if (config.channelOptions == null) {
-            logger.error("Ably channel options were not initialized due to invalid configuration.");
-            return;
-        }
         config.clientOptions.logHandler = (severity, tag, msg, tr) -> {
             if (severity < 0 || severity >= severities.length) {
                 severity = 3;
@@ -113,7 +105,9 @@ public class ChannelSinkTask extends SinkTask {
                 if(kafkaExtras.toJson().size() > 0 ) {
                     message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
                 }
-                ably.channels.get(r.topic()).publish(message);
+
+                final  Channel channel = ably.channels.get(r.topic());
+                channel.publish(message);
             } catch (AblyException e) {
                 if (ably.options.queueMessages) {
                     logger.error("Failed to publish message", e);
