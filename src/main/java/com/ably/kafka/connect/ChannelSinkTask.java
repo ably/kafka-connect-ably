@@ -16,22 +16,7 @@
 
 package com.ably.kafka.connect;
 
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Map;
-
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
-
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.connect.errors.ConnectException;
-import org.apache.kafka.connect.errors.RetriableException;
-import org.apache.kafka.connect.header.Header;
-import org.apache.kafka.connect.sink.SinkRecord;
-import org.apache.kafka.connect.sink.SinkTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.AblyException;
@@ -39,20 +24,30 @@ import io.ably.lib.types.Message;
 import io.ably.lib.types.MessageExtras;
 import io.ably.lib.util.JsonUtils;
 import io.ably.lib.util.JsonUtils.JsonUtilsObject;
-import io.ably.lib.util.Log.LogHandler;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.connect.errors.RetriableException;
+import org.apache.kafka.connect.header.Header;
+import org.apache.kafka.connect.sink.SinkRecord;
+import org.apache.kafka.connect.sink.SinkTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Map;
 
 public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
     private static final String[] severities = new String[]{"", "", "VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "ASSERT"};
 
-    ChannelSinkConnectorConfig config;
-    AblyRealtime ably;
+    private AblyRealtime ably;
 
     @Override
     public void start(Map<String, String> settings) {
         logger.info("Starting Ably channel Sink task");
 
-        config = new ChannelSinkConnectorConfig(settings);
+        ChannelSinkConnectorConfig config = new ChannelSinkConnectorConfig(settings);
 
         if (config.clientOptions == null) {
             logger.error("Ably client options were not initialized due to invalid configuration.");
