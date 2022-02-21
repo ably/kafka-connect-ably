@@ -47,7 +47,6 @@ public class ChannelSinkTask extends SinkTask {
 
     ChannelSinkConnectorConfig config;
     AblyRealtime ably;
-    Channel channel;
 
     @Override
     public void start(Map<String, String> settings) {
@@ -60,10 +59,6 @@ public class ChannelSinkTask extends SinkTask {
             return;
         }
 
-        if (config.channelOptions == null) {
-            logger.error("Ably channel options were not initialized due to invalid configuration.");
-            return;
-        }
         config.clientOptions.logHandler = (severity, tag, msg, tr) -> {
             if (severity < 0 || severity >= severities.length) {
                 severity = 3;
@@ -98,7 +93,6 @@ public class ChannelSinkTask extends SinkTask {
 
         try {
             ably = new AblyRealtime(config.clientOptions);
-            channel = ably.channels.get(config.channelName, config.channelOptions);
         } catch(AblyException e) {
             logger.error("error initializing ably client", e);
         }
@@ -106,11 +100,6 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public void put(Collection<SinkRecord> records) {
-        if (channel == null) {
-            // Put is not retryable, throwing error will indicate this
-            throw new ConnectException("ably client is uninitialized");
-        }
-
         for (SinkRecord r : records) {
             // TODO: add configuration to change the event name
             try {
@@ -122,6 +111,7 @@ public class ChannelSinkTask extends SinkTask {
                     message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
                 }
 
+                final  Channel channel = ably.channels.get(r.topic());
                 channel.publish(message);
             } catch (AblyException e) {
                 if (ably.options.queueMessages) {
@@ -146,7 +136,6 @@ public class ChannelSinkTask extends SinkTask {
         if (ably != null) {
             ably.close();
             ably = null;
-            channel = null;
         }
     }
 
