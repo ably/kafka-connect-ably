@@ -100,18 +100,18 @@ public class ChannelSinkTask extends SinkTask {
             // Cannot retry for this case
             throw new ConnectException("ably client is uninitialized");
         }
-        for (SinkRecord r : records) {
+        for (SinkRecord sinkRecord : records) {
             // TODO: add configuration to change the event name
             try {
-                Message message = new Message("sink", r.value());
-                message.id = String.format("%d:%d:%d", r.topic().hashCode(), r.kafkaPartition(), r.kafkaOffset());
+                Message message = new Message("sink", sinkRecord.value());
+                message.id = String.format("%d:%d:%d", sinkRecord.topic().hashCode(), sinkRecord.kafkaPartition(), sinkRecord.kafkaOffset());
 
-                JsonUtilsObject kafkaExtras = createKafkaExtras(r);
+                JsonUtilsObject kafkaExtras = createKafkaExtras(sinkRecord);
                 if(kafkaExtras.toJson().size() > 0 ) {
                     message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
                 }
 
-                final  Channel channel = ably.channels.get(r.topic());
+                final  Channel channel = ably.channels.get(sinkRecord.topic());
                 channel.publish(message);
             } catch (AblyException e) {
                 if (ably.options.queueMessages) {
