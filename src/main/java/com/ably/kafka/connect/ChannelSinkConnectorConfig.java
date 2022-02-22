@@ -27,8 +27,6 @@ import io.ably.lib.http.HttpAuth;
 import io.ably.lib.rest.Auth.TokenParams;
 import io.ably.lib.transport.Defaults;
 import io.ably.lib.types.AblyException;
-import io.ably.lib.types.ChannelMode;
-import io.ably.lib.types.ChannelOptions;
 import io.ably.lib.types.ClientOptions;
 import io.ably.lib.types.Param;
 import io.ably.lib.types.ProxyOptions;
@@ -39,7 +37,6 @@ import com.github.jcustenborder.kafka.connect.utils.config.recommenders.Recommen
 import com.github.jcustenborder.kafka.connect.utils.config.validators.Validators;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -203,7 +200,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   private static final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
   public final ClientOptions clientOptions;
-  public final ChannelSinkChannelConfig channelConfig;
+  public final ChannelConfig channelConfig;
 
   private static class ConfigException extends Exception {
     private static final long serialVersionUID = 6225540388729441285L;
@@ -229,8 +226,8 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     clientOptions = clientOpts;
 
     final Object channelConfigInstance = Utils.newInstance(getClass(CHANNEL_SINK_CONFIG_CLASS));
-    if (channelConfigInstance instanceof ChannelSinkChannelConfig) {
-      channelConfig = (ChannelSinkChannelConfig) channelConfigInstance;
+    if (channelConfigInstance instanceof ChannelConfig) {
+      channelConfig = (ChannelConfig) channelConfigInstance;
     }else {
       channelConfig = null;
       logger.error("Please provide correct class name for channel sink config class");
@@ -558,7 +555,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
          ConfigKeyBuilder.of(CHANNEL_SINK_CONFIG_CLASS, Type.CLASS)
                  .documentation(CHANNEL_SINK_CONFIG_CLASS_DOC)
                  .importance(Importance.HIGH)
-                 .defaultValue(DefaultChannelSinkChannelConfig.class)
+                 .defaultValue(DefaultChannelConfig.class)
                  .build()
             ) ;
   }

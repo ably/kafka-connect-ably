@@ -43,7 +43,7 @@ public class ChannelSinkTask extends SinkTask {
     private static final String[] severities = new String[]{"", "", "VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "ASSERT"};
 
     private AblyRealtime ably;
-    private ChannelSinkChannelConfig channelConfig;
+    private ChannelConfig channelConfig;
 
     @Override
     public void start(Map<String, String> settings) {
