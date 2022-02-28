@@ -42,8 +42,7 @@ public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
     private static final String[] severities = new String[]{"", "", "VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "ASSERT"};
 
-    ChannelSinkConnectorConfig config;
-    AblyRealtime ably;
+    private AblyRealtime ably;
 
     private ChannelSinkMapping channelSinkMapping;
 
@@ -51,7 +50,7 @@ public class ChannelSinkTask extends SinkTask {
     public void start(Map<String, String> settings) {
         logger.info("Starting Ably channel Sink task");
 
-        config = new ChannelSinkConnectorConfig(settings);
+        final ChannelSinkConnectorConfig config = new ChannelSinkConnectorConfig(settings);
         channelSinkMapping = new DefaultChannelSinkMapping(config);
 
         if (config.clientOptions == null) {
