@@ -16,12 +16,14 @@
 
 package com.ably.kafka.connect;
 
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Map;
-
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
-
+import io.ably.lib.realtime.AblyRealtime;
+import io.ably.lib.realtime.Channel;
+import io.ably.lib.types.AblyException;
+import io.ably.lib.types.Message;
+import io.ably.lib.types.MessageExtras;
+import io.ably.lib.util.JsonUtils;
+import io.ably.lib.util.JsonUtils.JsonUtilsObject;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.ConnectException;
@@ -32,14 +34,9 @@ import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.ably.lib.realtime.AblyRealtime;
-import io.ably.lib.realtime.Channel;
-import io.ably.lib.types.AblyException;
-import io.ably.lib.types.Message;
-import io.ably.lib.types.MessageExtras;
-import io.ably.lib.util.JsonUtils;
-import io.ably.lib.util.JsonUtils.JsonUtilsObject;
-import io.ably.lib.util.Log.LogHandler;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Map;
 
 public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
@@ -47,13 +44,15 @@ public class ChannelSinkTask extends SinkTask {
 
     ChannelSinkConnectorConfig config;
     AblyRealtime ably;
-    Channel channel;
+
+    private ChannelSinkMapping channelSinkMapping;
 
     @Override
     public void start(Map<String, String> settings) {
         logger.info("Starting Ably channel Sink task");
 
         config = new ChannelSinkConnectorConfig(settings);
+        channelSinkMapping = new DefaultChannelSinkMapping(config);
 
         if (config.clientOptions == null) {
             logger.error("Ably client options were not initialized due to invalid configuration.");
@@ -98,7 +97,6 @@ public class ChannelSinkTask extends SinkTask {
 
         try {
             ably = new AblyRealtime(config.clientOptions);
-            channel = ably.channels.get(config.channelName, config.channelOptions);
         } catch(AblyException e) {
             logger.error("error initializing ably client", e);
         }
@@ -106,22 +104,22 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public void put(Collection<SinkRecord> records) {
-        if (channel == null) {
+        if (ably == null) {
             // Put is not retryable, throwing error will indicate this
             throw new ConnectException("ably client is uninitialized");
         }
 
-        for (SinkRecord r : records) {
+        for (SinkRecord record : records) {
             // TODO: add configuration to change the event name
             try {
-                Message message = new Message("sink", r.value());
-                message.id = String.format("%d:%d:%d", r.topic().hashCode(), r.kafkaPartition(), r.kafkaOffset());
+                Message message = new Message("sink", record.value());
+                message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
 
-                JsonUtilsObject kafkaExtras = createKafkaExtras(r);
+                JsonUtilsObject kafkaExtras = createKafkaExtras(record);
                 if(kafkaExtras.toJson().size() > 0 ) {
                     message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
                 }
-
+                final Channel channel = channelSinkMapping.getChannel(record,ably);
                 channel.publish(message);
             } catch (AblyException e) {
                 if (ably.options.queueMessages) {
@@ -146,7 +144,6 @@ public class ChannelSinkTask extends SinkTask {
         if (ably != null) {
             ably.close();
             ably = null;
-            channel = null;
         }
     }
 
