@@ -5,6 +5,8 @@ import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.connect.sink.SinkRecord;
 
+import javax.annotation.Nonnull;
+
 public interface ChannelSinkMapping {
     /**
      * Returns the channel for the given sink record.
@@ -13,5 +15,5 @@ public interface ChannelSinkMapping {
      * @param ablyRealtime AblyRealtime instance.
      * @return The channel.
      */
-    Channel getChannel(SinkRecord sinkRecord, AblyRealtime ablyRealtime) throws AblyException;
+    Channel getChannel(@Nonnull SinkRecord sinkRecord,@Nonnull AblyRealtime ablyRealtime) throws AblyException;
 }
