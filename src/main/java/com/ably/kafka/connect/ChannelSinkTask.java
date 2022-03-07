@@ -1,12 +1,12 @@
 /**
  * Copyright © 2021 Ably Real-time Ltd. (support@ably.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -58,10 +58,6 @@ public class ChannelSinkTask extends SinkTask {
             return;
         }
 
-        if (config.channelOptions == null) {
-            logger.error("Ably channel options were not initialized due to invalid configuration.");
-            return;
-        }
         config.clientOptions.logHandler = (severity, tag, msg, tr) -> {
             if (severity < 0 || severity >= severities.length) {
                 severity = 3;
@@ -85,10 +81,10 @@ public class ChannelSinkTask extends SinkTask {
                 case "default":
                     if (logger.isDebugEnabled()) {
                         logger.debug(
-                            String.format(
-                                "severity: %d, tag: %s, msg: %s, err",
-                                severity, tag, msg, (tr != null) ? tr.getMessage() : "null"
-                            )
+                                String.format(
+                                        "severity: %d, tag: %s, msg: %s, err",
+                                        severity, tag, msg, (tr != null) ? tr.getMessage() : "null"
+                                )
                         );
                     }
             }
@@ -96,7 +92,7 @@ public class ChannelSinkTask extends SinkTask {
 
         try {
             ably = new AblyRealtime(config.clientOptions);
-        } catch(AblyException e) {
+        } catch (AblyException e) {
             logger.error("error initializing ably client", e);
         }
     }
@@ -115,17 +111,19 @@ public class ChannelSinkTask extends SinkTask {
                 message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
 
                 JsonUtilsObject kafkaExtras = createKafkaExtras(record);
-                if(kafkaExtras.toJson().size() > 0 ) {
+                if (kafkaExtras.toJson().size() > 0) {
                     message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
                 }
-                final Channel channel = channelSinkMapping.getChannel(record,ably);
+                final Channel channel = channelSinkMapping.getChannel(record, ably);
                 channel.publish(message);
             } catch (AblyException e) {
                 if (ably.options.queueMessages) {
                     logger.error("Failed to publish message", e);
                 } else {
-                    throw new RetriableException("Failed to publish to Ably when queueMessages is disabled.",e);
+                    throw new RetriableException("Failed to publish to Ably when queueMessages is disabled.", e);
                 }
+            } catch (ChannelSinkConnectorConfig.ConfigException e) {
+                throw new ConnectException("Configuration error", e);
             }
         }
     }
@@ -162,17 +160,17 @@ public class ChannelSinkTask extends SinkTask {
      * in the extras.
      *
      * @param record The sink record representing the Kafka message
-     * @return       The Kafka message extras object
+     * @return The Kafka message extras object
      */
     private JsonUtilsObject createKafkaExtras(SinkRecord record) {
         JsonUtilsObject extras = JsonUtils.object();
 
-        byte[] key = (byte[])record.key();
-        if(key != null) {
+        byte[] key = (byte[]) record.key();
+        if (key != null) {
             extras.add("key", Base64.getEncoder().encodeToString(key));
         }
 
-        if(!record.headers().isEmpty()) {
+        if (!record.headers().isEmpty()) {
             JsonUtilsObject headers = JsonUtils.object();
             for (Header header : record.headers()) {
                 headers.add(header.key(), header.value());

@@ -3,18 +3,74 @@ package com.ably.kafka.connect;
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.AblyException;
+import io.ably.lib.types.ChannelMode;
+import io.ably.lib.types.ChannelOptions;
 import org.apache.kafka.connect.sink.SinkRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.ably.kafka.connect.ChannelSinkConnectorConfig.*;
+
 public class DefaultChannelSinkMapping implements ChannelSinkMapping {
     private final ChannelSinkConnectorConfig sinkConnectorConfig;
+
     public DefaultChannelSinkMapping(@Nonnull ChannelSinkConnectorConfig config) {
         sinkConnectorConfig = config;
     }
 
     @Override
-    public Channel getChannel(@Nonnull SinkRecord sinkRecord, @Nonnull AblyRealtime ablyRealtime) throws AblyException {
-        return ablyRealtime.channels.get(sinkConnectorConfig.channelName, sinkConnectorConfig.channelOptions);
+    public Channel getChannel(@Nonnull SinkRecord sinkRecord, @Nonnull AblyRealtime ablyRealtime) throws AblyException,
+            ChannelSinkConnectorConfig.ConfigException {
+        return ablyRealtime.channels.get(getAblyChannelName(), getAblyChannelOptions());
+    }
+
+    private String getAblyChannelName() {
+        return sinkConnectorConfig.getString(CHANNEL_CONFIG);
+    }
+
+    private ChannelOptions getAblyChannelOptions() throws ChannelSinkConnectorConfig.ConfigException {
+        final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
+        ChannelOptions opts;
+        String cipherKey = sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY);
+
+        if (cipherKey != null && !cipherKey.trim().isEmpty()) {
+            try {
+                opts = ChannelOptions.withCipherKey(cipherKey);
+            } catch (AblyException e) {
+                logger.error("Error configuring channel cipher key", e);
+                throw new ChannelSinkConnectorConfig.ConfigException("Error configuring channel cipher key", e);
+            }
+        } else {
+            opts = new ChannelOptions();
+        }
+
+        // Since we're only publishing, set the channel mode to publish only
+        opts.modes = new ChannelMode[]{ChannelMode.publish};
+        opts.params = convertChannelParams(sinkConnectorConfig.getList(CLIENT_CHANNEL_PARAMS));
+        return opts;
+    }
+
+    private static Map<String, String> convertChannelParams(List<String> params) throws ChannelSinkConnectorConfig.ConfigException {
+        final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
+
+        Map<String, String> parsedParams = new HashMap<String, String>();
+        for (String param : params) {
+            String[] parts = param.split("=");
+            if (parts.length == 2) {
+                parsedParams.put(parts[0], parts[1]);
+            } else {
+                ChannelSinkConnectorConfig.ConfigException e = new ChannelSinkConnectorConfig.ConfigException(String.format("invalid param string %s", param));
+                logger.error("invalid param in channel params configuration", e);
+                throw e;
+            }
+        }
+
+        return parsedParams;
     }
 }

@@ -15,5 +15,5 @@ public interface ChannelSinkMapping {
      * @param ablyRealtime AblyRealtime instance.
      * @return The channel.
      */
-    Channel getChannel(@Nonnull SinkRecord sinkRecord,@Nonnull AblyRealtime ablyRealtime) throws AblyException;
+    Channel getChannel(@Nonnull SinkRecord sinkRecord,@Nonnull AblyRealtime ablyRealtime) throws AblyException, ChannelSinkConnectorConfig.ConfigException;
 }

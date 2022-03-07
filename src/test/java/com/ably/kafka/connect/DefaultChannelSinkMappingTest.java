@@ -36,7 +36,7 @@ class DefaultChannelSinkMappingTest {
     }
 
     @Test
-    void testGetChannel_static_name_is_exactly_the_same() throws AblyException {
+    void testGetChannel_static_name_is_exactly_the_same() throws AblyException, ChannelSinkConnectorConfig.ConfigException {
         SinkRecord record = new SinkRecord("topic", 0, null, null, null, null, 0);
         final Channel channel = SUT.getChannel(record, ablyRealtime);
         assertEquals(STATIC_CHANNEL_NAME, channel.name);
