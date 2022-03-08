@@ -21,20 +21,15 @@ import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.Message;
-import io.ably.lib.types.MessageExtras;
-import io.ably.lib.util.JsonUtils;
-import io.ably.lib.util.JsonUtils.JsonUtilsObject;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.errors.RetriableException;
-import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Map;
 
@@ -45,6 +40,7 @@ public class ChannelSinkTask extends SinkTask {
     private AblyRealtime ably;
 
     private ChannelSinkMapping channelSinkMapping;
+    private MessageSinkMapping messageSinkMapping;
 
     @Override
     public void start(Map<String, String> settings) {
@@ -52,6 +48,7 @@ public class ChannelSinkTask extends SinkTask {
 
         final ChannelSinkConnectorConfig config = new ChannelSinkConnectorConfig(settings);
         channelSinkMapping = new DefaultChannelSinkMapping(config);
+        messageSinkMapping = new MessageSinkMappingImpl();
 
         if (config.clientOptions == null) {
             logger.error("Ably client options were not initialized due to invalid configuration.");
@@ -107,14 +104,8 @@ public class ChannelSinkTask extends SinkTask {
         for (SinkRecord record : records) {
             // TODO: add configuration to change the event name
             try {
-                Message message = new Message("sink", record.value());
-                message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
-
-                JsonUtilsObject kafkaExtras = createKafkaExtras(record);
-                if (kafkaExtras.toJson().size() > 0) {
-                    message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
-                }
                 final Channel channel = channelSinkMapping.getChannel(record, ably);
+                final Message message = messageSinkMapping.getMessage(record);
                 channel.publish(message);
             } catch (AblyException e) {
                 if (ably.options.queueMessages) {
@@ -147,37 +138,5 @@ public class ChannelSinkTask extends SinkTask {
     @Override
     public String version() {
         return VersionUtil.version(this.getClass());
-    }
-
-    /**
-     * Returns the Kafka extras object to use when converting a Kafka message
-     * to an Ably message.
-     *
-     * If the Kafka message has a key, it is base64 encoded and set as the
-     * "key" field in the extras.
-     *
-     * If the Kafka message has headers, they are set as the "headers" field
-     * in the extras.
-     *
-     * @param record The sink record representing the Kafka message
-     * @return The Kafka message extras object
-     */
-    private JsonUtilsObject createKafkaExtras(SinkRecord record) {
-        JsonUtilsObject extras = JsonUtils.object();
-
-        byte[] key = (byte[]) record.key();
-        if (key != null) {
-            extras.add("key", Base64.getEncoder().encodeToString(key));
-        }
-
-        if (!record.headers().isEmpty()) {
-            JsonUtilsObject headers = JsonUtils.object();
-            for (Header header : record.headers()) {
-                headers.add(header.key(), header.value());
-            }
-            extras.add("headers", headers);
-        }
-
-        return extras;
     }
 }
