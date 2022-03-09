@@ -26,39 +26,62 @@ class MessageSinkMappingTest {
      */
     @Test
     void testGetSink_messageNameIsAlwaysSink() {
+        //given
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
+
+        //when
         final Message message = sinkMapping.getMessage(record);
+
+        //then
         assertEquals(message.name, "sink");
     }
 
     //we always expect byte arrays
     @Test
     void testGetSink_messageConversionFailsWithInvalidKeyType() {
+        //given
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key", Schema.BYTES_SCHEMA, "value", 0);
+
+        //then expect
         assertThrows(ClassCastException.class, () -> {
+            //when
             sinkMapping.getMessage(record);
         });
     }
 
     @Test
     void testGetSink_messageDataIsTheSameWithRecordValue() {
+        //given
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
-        final Object recordValue = record.value();
+
+        //when
         final Object messageData = sinkMapping.getMessage(record).data;
-        assertEquals(recordValue, messageData);
+
+        //then
+        assertEquals(record.value(), messageData);
     }
 
     @Test
     void testGetSink_messageId() {
+        //given
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
+
+        //when
         final String messageId = sinkMapping.getMessage(record).id;
+
+        //then
         assertEquals(messageId, String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset()));
     }
 
     @Test
     void testGetSink_messageExtras_sentAndReceivedKeysAreTheSame() {
+        //given
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
+
+        //when
         final MessageExtras messageExtras = sinkMapping.getMessage(record).extras;
+
+        //then
         JsonUtils.JsonUtilsObject extras = JsonUtils.object();
         byte[] key = (byte[]) record.key();
         extras.add("key", Base64.getEncoder().encodeToString(key));
@@ -72,10 +95,10 @@ class MessageSinkMappingTest {
 
     @Test
     void testGetSink_messageExtras_recordHeaders() {
-        JsonUtils.JsonUtilsObject headers = JsonUtils.object();
+        //given
         final List<Header> headersList = new ArrayList<>();
-        final Map<String,String> headersMap = Map.of("key1", "value1", "key2", "value2");
-        for(Map.Entry<String, String> entry : headersMap.entrySet()) {
+        final Map<String, String> headersMap = Map.of("key1", "value1", "key2", "value2");
+        for (Map.Entry<String, String> entry : headersMap.entrySet()) {
             headersList.add(new Header() {
                 @Override
                 public String key() {
@@ -102,14 +125,16 @@ class MessageSinkMappingTest {
                     return null;
                 }
             });
-            headers.add(entry.getKey(), entry.getValue());
         }
-        final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0, 0L,null, headersList);
+        final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0, 0L, null, headersList);
 
+        //when
         final MessageExtras messageExtras = sinkMapping.getMessage(record).extras;
-        final JsonObject receivedObject = messageExtras.asJsonObject().get("kafka").getAsJsonObject();
 
+        //then
+        final JsonObject receivedObject = messageExtras.asJsonObject().get("kafka").getAsJsonObject();
         final JsonObject receivedHeaders = receivedObject.get("headers").getAsJsonObject();
-        assertEquals(receivedHeaders, headers.toJson());
+        assertEquals(receivedHeaders.get("key1").getAsString(), "value1");
+        assertEquals(receivedHeaders.get("key2").getAsString(), "value2");
     }
 }
