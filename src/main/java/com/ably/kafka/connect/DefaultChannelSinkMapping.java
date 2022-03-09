@@ -19,19 +19,21 @@ import static com.ably.kafka.connect.ChannelSinkConnectorConfig.*;
 
 public class DefaultChannelSinkMapping implements ChannelSinkMapping {
     private final ChannelSinkConnectorConfig sinkConnectorConfig;
+    private final ConfigValueEvaluator configValueEvaluator;
 
-    public DefaultChannelSinkMapping(@Nonnull ChannelSinkConnectorConfig config) {
+    public DefaultChannelSinkMapping(@Nonnull ChannelSinkConnectorConfig config, ConfigValueEvaluator configValueEvaluator) {
         sinkConnectorConfig = config;
+        this.configValueEvaluator = configValueEvaluator;
     }
 
     @Override
     public Channel getChannel(@Nonnull SinkRecord sinkRecord, @Nonnull AblyRealtime ablyRealtime) throws AblyException,
             ChannelSinkConnectorConfig.ConfigException {
-        return ablyRealtime.channels.get(getAblyChannelName(), getAblyChannelOptions());
+        return ablyRealtime.channels.get(getAblyChannelName(sinkRecord), getAblyChannelOptions());
     }
 
-    private String getAblyChannelName() {
-        return sinkConnectorConfig.getString(CHANNEL_CONFIG);
+    private String getAblyChannelName(SinkRecord sinkRecord) {
+        return configValueEvaluator.evaluate(sinkRecord,sinkConnectorConfig.getString(CHANNEL_CONFIG));
     }
 
     private ChannelOptions getAblyChannelOptions() throws ChannelSinkConnectorConfig.ConfigException {

@@ -22,7 +22,7 @@ class DefaultChannelSinkMappingTest {
 
     @BeforeEach
     void setUp() throws AblyException {
-        defaultChannelSinkMapping = new DefaultChannelSinkMapping(STATIC_CHANNEL_CONFIG);
+        defaultChannelSinkMapping = new DefaultChannelSinkMapping(STATIC_CHANNEL_CONFIG, configValueEvaluator);
         ablyRealtime = new AblyRealtime(STATIC_CHANNEL_CONFIG.clientOptions);
     }
 
