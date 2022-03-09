@@ -13,7 +13,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultChannelSinkMappingTest {
-    private DefaultChannelSinkMapping SUT;
+    private DefaultChannelSinkMapping defaultChannelSinkMapping;
 
     //dependencies
     private static final String STATIC_CHANNEL_NAME = "sink-channel";
@@ -22,7 +22,7 @@ class DefaultChannelSinkMappingTest {
 
     @BeforeEach
     void setUp() throws AblyException {
-        SUT = new DefaultChannelSinkMapping(STATIC_CHANNEL_CONFIG);
+        defaultChannelSinkMapping = new DefaultChannelSinkMapping(STATIC_CHANNEL_CONFIG);
         ablyRealtime = new AblyRealtime(STATIC_CHANNEL_CONFIG.clientOptions);
     }
 
@@ -34,7 +34,7 @@ class DefaultChannelSinkMappingTest {
     @Test
     void testGetChannel_static_name_is_exactly_the_same() throws AblyException, ChannelSinkConnectorConfig.ConfigException {
         SinkRecord record = new SinkRecord("topic", 0, null, null, null, null, 0);
-        final Channel channel = SUT.getChannel(record, ablyRealtime);
+        final Channel channel = defaultChannelSinkMapping.getChannel(record, ablyRealtime);
         assertEquals(STATIC_CHANNEL_NAME, channel.name);
     }
 }
