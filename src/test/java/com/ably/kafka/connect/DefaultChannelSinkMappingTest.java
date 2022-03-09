@@ -21,13 +21,9 @@ class DefaultChannelSinkMappingTest {
     private AblyRealtime ablyRealtime;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws AblyException {
         SUT = new DefaultChannelSinkMapping(STATIC_CHANNEL_CONFIG);
-        try {
-            ablyRealtime = new AblyRealtime(STATIC_CHANNEL_CONFIG.clientOptions);
-        } catch (AblyException e) {
-            e.printStackTrace();
-        }
+        ablyRealtime = new AblyRealtime(STATIC_CHANNEL_CONFIG.clientOptions);
     }
 
     @AfterEach
