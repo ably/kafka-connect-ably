@@ -41,12 +41,4 @@ class DefaultChannelSinkMappingTest {
         final Channel channel = SUT.getChannel(record, ablyRealtime);
         assertEquals(STATIC_CHANNEL_NAME, channel.name);
     }
-
-    //unfortunately there is not a way to access to options inside Channel so that we can test them agains the config
-   /* @Test
-    void testGetChannel_given_static_channel_options_exaclty_the_same() throws AblyException {
-        SinkRecord record = new SinkRecord("topic", 0, null, null, null, null, 0);
-        final Channel channel = SUT.getChannel(record, ablyRealtime);
-        assertEquals(connectorConfig.channelOptions, channel.options);
-    }*/
 }
