@@ -29,17 +29,17 @@ public class DefaultChannelSinkMapping implements ChannelSinkMapping {
     @Override
     public Channel getChannel(@Nonnull SinkRecord sinkRecord, @Nonnull AblyRealtime ablyRealtime) throws AblyException,
             ChannelSinkConnectorConfig.ConfigException {
-        return ablyRealtime.channels.get(getAblyChannelName(sinkRecord), getAblyChannelOptions());
+        return ablyRealtime.channels.get(getAblyChannelName(sinkRecord), getAblyChannelOptions(sinkRecord));
     }
 
     private String getAblyChannelName(SinkRecord sinkRecord) {
-        return configValueEvaluator.evaluate(sinkRecord,sinkConnectorConfig.getString(CHANNEL_CONFIG));
+        return configValueEvaluator.evaluate(sinkRecord, sinkConnectorConfig.getString(CHANNEL_CONFIG));
     }
 
-    private ChannelOptions getAblyChannelOptions() throws ChannelSinkConnectorConfig.ConfigException {
+    private ChannelOptions getAblyChannelOptions(SinkRecord record) throws ChannelSinkConnectorConfig.ConfigException {
         final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
         ChannelOptions opts;
-        String cipherKey = sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY);
+        String cipherKey = configValueEvaluator.evaluate(record, sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY));
 
         if (cipherKey != null && !cipherKey.trim().isEmpty()) {
             try {
