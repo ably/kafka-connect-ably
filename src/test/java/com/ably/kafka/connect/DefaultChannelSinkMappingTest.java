@@ -19,10 +19,8 @@ class DefaultChannelSinkMappingTest {
     private static final String STATIC_CHANNEL_NAME = "sink-channel";
     private static ChannelSinkConnectorConfig STATIC_CHANNEL_CONFIG = new ChannelSinkConnectorConfig(Map.of("channel", STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
     private AblyRealtime ablyRealtime;
-
     @BeforeEach
     void setUp() throws AblyException {
-        defaultChannelSinkMapping = new DefaultChannelSinkMapping(STATIC_CHANNEL_CONFIG, new ConfigValueEvaluator());
         ablyRealtime = new AblyRealtime(STATIC_CHANNEL_CONFIG.clientOptions);
     }
 
@@ -33,8 +31,20 @@ class DefaultChannelSinkMappingTest {
 
     @Test
     void testGetChannel_static_name_is_exactly_the_same() throws AblyException, ChannelSinkConnectorConfig.ConfigException {
+        defaultChannelSinkMapping = new DefaultChannelSinkMapping(STATIC_CHANNEL_CONFIG, new ConfigValueEvaluator());
         SinkRecord record = new SinkRecord("topic", 0, null, "key".getBytes(), null, null, 0);
         final Channel channel = defaultChannelSinkMapping.getChannel(record, ablyRealtime);
         assertEquals(STATIC_CHANNEL_NAME, channel.name);
+    }
+
+    @Test
+    void testGetChannel_channelNameIsEvaluatingPatterns() throws AblyException, ChannelSinkConnectorConfig.ConfigException {
+        //given
+        SinkRecord record = new SinkRecord("myTopic", 0, null, "myKey".getBytes(), null, null, 0);
+        final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel", "channel_${key}_${topic}", "client.key", "test-key", "client.id", "test-id"));
+        defaultChannelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, new ConfigValueEvaluator());
+        //when
+        final Channel channel = defaultChannelSinkMapping.getChannel(record, ablyRealtime);
+        assertEquals("channel_myKey_myTopic", channel.name);
     }
 }
