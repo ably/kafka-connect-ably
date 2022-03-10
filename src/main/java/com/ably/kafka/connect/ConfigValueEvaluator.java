@@ -2,6 +2,7 @@ package com.ably.kafka.connect;
 
 import org.apache.kafka.connect.sink.SinkRecord;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class ConfigValueEvaluator {
@@ -24,7 +25,7 @@ public class ConfigValueEvaluator {
              throw new IllegalArgumentException("Topic cannot be null");
          }
 
-         final String keyString = Base64.getEncoder().encodeToString(key);
+         final String keyString = new String(key, StandardCharsets.UTF_8);
          return pattern.replace("${key}", keyString).replace("${topic}", record.topic());
     }
 }
