@@ -3,9 +3,12 @@ package com.ably.kafka.connect;
 import org.apache.kafka.connect.sink.SinkRecord;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 public class ConfigValueEvaluator {
+
+    public static final String KEY_TOKEN = "${key}";
+    public static final String TOPIC_TOKEN = "${topic}";
+
     /**
      * Converts a pattern to a value with the help of given record.
      *
@@ -26,6 +29,6 @@ public class ConfigValueEvaluator {
          }
 
          final String keyString = new String(key, StandardCharsets.UTF_8);
-         return pattern.replace("${key}", keyString).replace("${topic}", record.topic());
+         return pattern.replace(KEY_TOKEN, keyString).replace(TOPIC_TOKEN, record.topic());
     }
 }
