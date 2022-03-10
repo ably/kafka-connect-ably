@@ -54,18 +54,20 @@ public class DefaultChannelSinkMapping implements ChannelSinkMapping {
 
         // Since we're only publishing, set the channel mode to publish only
         opts.modes = new ChannelMode[]{ChannelMode.publish};
-        opts.params = convertChannelParams(sinkConnectorConfig.getList(CLIENT_CHANNEL_PARAMS));
+        opts.params = getChannelParams(record, sinkConnectorConfig.getList(CLIENT_CHANNEL_PARAMS));
         return opts;
     }
 
-    private static Map<String, String> convertChannelParams(List<String> params) throws ChannelSinkConnectorConfig.ConfigException {
+    private Map<String, String> getChannelParams(SinkRecord sinkRecord, List<String> params) throws ChannelSinkConnectorConfig.ConfigException {
         final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
         Map<String, String> parsedParams = new HashMap<String, String>();
         for (String param : params) {
             String[] parts = param.split("=");
             if (parts.length == 2) {
-                parsedParams.put(parts[0], parts[1]);
+                final String paramKey = parts[0];
+                final String paramVal = parts[1];
+                parsedParams.put(paramKey, configValueEvaluator.evaluate(sinkRecord, paramVal));
             } else {
                 ChannelSinkConnectorConfig.ConfigException e = new ChannelSinkConnectorConfig.ConfigException(String.format("invalid param string %s", param));
                 logger.error("invalid param in channel params configuration", e);

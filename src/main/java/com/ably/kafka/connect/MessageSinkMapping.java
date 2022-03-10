@@ -17,6 +17,7 @@ class MessageSinkMappingImpl implements MessageSinkMapping {
     public Message getMessage(SinkRecord record) {
 
         Message message = new Message("sink", record.value());
+        //leave this as it is for now
         message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
 
         JsonUtils.JsonUtilsObject kafkaExtras = createKafkaExtras(record);
