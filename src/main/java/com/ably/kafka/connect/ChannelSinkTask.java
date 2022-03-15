@@ -101,7 +101,7 @@ public class ChannelSinkTask extends SinkTask {
             throw new ConnectException("ably client is uninitialized");
         }
 
-        for (SinkRecord record : records) {
+        for (final SinkRecord record : records) {
             // TODO: add configuration to change the event name
             try {
                 final Channel channel = channelSinkMapping.getChannel(record, ably);
