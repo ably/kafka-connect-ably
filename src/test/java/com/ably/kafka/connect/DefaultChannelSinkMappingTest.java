@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Base64;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DefaultChannelSinkMappingTest {
     private DefaultChannelSinkMapping defaultChannelSinkMapping;
@@ -20,6 +20,7 @@ class DefaultChannelSinkMappingTest {
     private static final String STATIC_CHANNEL_NAME = "sink-channel";
     private static ChannelSinkConnectorConfig STATIC_CHANNEL_CONFIG = new ChannelSinkConnectorConfig(Map.of("channel", STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
     private AblyRealtime ablyRealtime;
+
     @BeforeEach
     void setUp() throws AblyException {
         ablyRealtime = new AblyRealtime(STATIC_CHANNEL_CONFIG.clientOptions);
@@ -46,6 +47,9 @@ class DefaultChannelSinkMappingTest {
         defaultChannelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, new ConfigValueEvaluator());
         //when
         final Channel channel = defaultChannelSinkMapping.getChannel(record, ablyRealtime);
-        assertEquals("channel_myKey_myTopic", channel.name);
+
+        final String base64Key = Base64.getEncoder().encodeToString("myKey".getBytes());
+        final String expectedChannelName = "channel_" + base64Key + "_myTopic";
+        assertEquals(expectedChannelName, channel.name);
     }
 }
