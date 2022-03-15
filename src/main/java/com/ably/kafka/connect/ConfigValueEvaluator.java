@@ -16,7 +16,7 @@ public class ConfigValueEvaluator {
      *
      * @param record  The SinkRecord to map
      * @param pattern The pattern to map
-     * @return The String representation of the SinkRecord
+     * @return Evaluated config value given the record and pattern
      */
     public String evaluate(SinkRecord record, String pattern) {
         if (pattern == null) {
