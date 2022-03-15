@@ -4,6 +4,7 @@ import io.ably.lib.util.JsonUtils;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
 
+import javax.annotation.Nonnull;
 import java.util.Base64;
 
 public class KeyExtractor {
@@ -20,6 +21,7 @@ public class KeyExtractor {
      * @param record The sink record representing the Kafka message
      * @return The Kafka message extras object
      */
+    @Nonnull
     public static JsonUtils.JsonUtilsObject createKafkaExtras(SinkRecord record) {
         JsonUtils.JsonUtilsObject extras = JsonUtils.object();
 
