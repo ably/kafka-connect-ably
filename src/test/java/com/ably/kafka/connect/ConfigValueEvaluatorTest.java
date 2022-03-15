@@ -68,4 +68,16 @@ class ConfigValueEvaluatorTest {
         assertEquals("Key is null and pattern contains ${key}", exception.getMessage());
     }
 
+    @Test
+    void testEvaluateNullPatternReturnsNull() {
+        //given
+        SinkRecord sinkRecord = new SinkRecord("topic", 0, null, "key".getBytes(), null, null, 0);
+
+        //when
+        String result = configValueEvaluator.evaluate(sinkRecord, null);
+
+        //then
+        assertNull(result);
+    }
+
 }
