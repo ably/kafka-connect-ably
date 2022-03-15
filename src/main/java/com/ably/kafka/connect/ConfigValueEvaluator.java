@@ -19,6 +19,10 @@ public class ConfigValueEvaluator {
      * @return The String representation of the SinkRecord
      */
     public String evaluate(SinkRecord record, String pattern) {
+        if (pattern == null) {
+            return null;
+        }
+
         final JsonUtils.JsonUtilsObject extras = KeyExtractor.createKafkaExtras(record);
 
         final String key = extras.toJson().get("key") != null ? extras.toJson().get("key").getAsString() : null;
