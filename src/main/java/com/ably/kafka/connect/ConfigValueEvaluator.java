@@ -21,7 +21,7 @@ public class ConfigValueEvaluator {
     public String evaluate(SinkRecord record, String pattern) {
         final JsonUtils.JsonUtilsObject extras = KeyExtractor.createKafkaExtras(record);
 
-        final String key = extras.toJson().get("key").getAsString();
+        final String key = extras.toJson().get("key") != null ? extras.toJson().get("key").getAsString() : null;
         if (key == null && pattern.contains(KEY_TOKEN)) {
             throw new IllegalArgumentException("Key is null and pattern contains ${key}");
         }
@@ -29,7 +29,7 @@ public class ConfigValueEvaluator {
 
         if (key != null) {
             return pattern.replace(KEY_TOKEN, key).replace(TOPIC_TOKEN, record.topic());
-        }else {
+        } else {
             return pattern.replace(TOPIC_TOKEN, record.topic());
         }
     }
