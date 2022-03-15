@@ -58,4 +58,14 @@ class ConfigValueEvaluatorTest {
         assertEquals("key=greatKey,topic=greatTopic", result);
     }
 
+    @Test
+    void testEvaluateNoKeyWithKeyTokenThrowsIllegalArgumentException() {
+        //given
+        SinkRecord sinkRecord = new SinkRecord("topic", 0, null, null, null, null, 0);
+        final String pattern = "pattern_${key}";
+        //then throws IllegalArgumentException when
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> configValueEvaluator.evaluate(sinkRecord, pattern));
+        assertEquals("Key is null and pattern contains ${key}", exception.getMessage());
+    }
+
 }
