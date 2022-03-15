@@ -8,7 +8,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Base64;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,11 +44,11 @@ class DefaultChannelSinkMappingTest {
         SinkRecord record = new SinkRecord("myTopic", 0, null, "myKey".getBytes(), null, null, 0);
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel", "channel_${key}_${topic}", "client.key", "test-key", "client.id", "test-id"));
         defaultChannelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, new ConfigValueEvaluator());
+
         //when
         final Channel channel = defaultChannelSinkMapping.getChannel(record, ablyRealtime);
 
-        final String base64Key = Base64.getEncoder().encodeToString("myKey".getBytes());
-        final String expectedChannelName = "channel_" + base64Key + "_myTopic";
-        assertEquals(expectedChannelName, channel.name);
+        //then
+        assertEquals("channel_myKey_myTopic", channel.name);
     }
 }
