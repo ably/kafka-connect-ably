@@ -23,7 +23,7 @@ public class ConfigValueEvaluator {
             return null;
         }
 
-        final JsonUtils.JsonUtilsObject extras = KeyExtractor.createKafkaExtras(record);
+        final JsonUtils.JsonUtilsObject extras = KafkaExtrasExtractor.createKafkaExtras(record);
 
         final String key = extras.toJson().get("key") != null ? extras.toJson().get("key").getAsString() : null;
         if (key == null && pattern.contains(KEY_TOKEN)) {

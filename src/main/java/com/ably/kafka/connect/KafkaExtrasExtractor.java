@@ -7,7 +7,7 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import javax.annotation.Nonnull;
 import java.util.Base64;
 
-public class KeyExtractor {
+public class KafkaExtrasExtractor {
     /**
      * Returns the Kafka extras object to use when converting a Kafka message
      * to an Ably message.

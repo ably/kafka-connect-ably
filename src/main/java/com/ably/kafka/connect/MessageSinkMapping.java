@@ -3,10 +3,7 @@ package com.ably.kafka.connect;
 import io.ably.lib.types.Message;
 import io.ably.lib.types.MessageExtras;
 import io.ably.lib.util.JsonUtils;
-import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
-
-import java.util.Base64;
 
 public interface MessageSinkMapping {
     Message getMessage(SinkRecord record);
@@ -20,7 +17,7 @@ class MessageSinkMappingImpl implements MessageSinkMapping {
         //leave this as it is for now
         message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
 
-        JsonUtils.JsonUtilsObject kafkaExtras = KeyExtractor.createKafkaExtras(record);
+        JsonUtils.JsonUtilsObject kafkaExtras = KafkaExtrasExtractor.createKafkaExtras(record);
         if (kafkaExtras.toJson().size() > 0) {
             message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
         }
