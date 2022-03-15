@@ -37,7 +37,7 @@ class ConfigValueEvaluatorTest {
     @Test
     void testEvaluateKeyIsEvaluated() {
         //given
-        SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null, Base64.getDecoder().decode("greatKey"), null, null, 0);
+        SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null,"greatKey".getBytes(), null, null, 0);
 
         //when
         String result = configValueEvaluator.evaluate(sinkRecord, "${key}_hello");
@@ -49,7 +49,7 @@ class ConfigValueEvaluatorTest {
     @Test
     void testEvaluateKeyAndTopicIsEvaluated() {
         //given
-        SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null, Base64.getDecoder().decode("greatKey"), null, null, 0);
+        SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null, "greatKey".getBytes(), null, null, 0);
 
         //when
         String result = configValueEvaluator.evaluate(sinkRecord, "key=${key},topic=${topic}");
@@ -65,7 +65,7 @@ class ConfigValueEvaluatorTest {
         final String pattern = "pattern_${key}";
         //then throws IllegalArgumentException when
         Exception exception = assertThrows(IllegalArgumentException.class, () -> configValueEvaluator.evaluate(sinkRecord, pattern));
-        assertEquals("Key is null and pattern contains ${key}", exception.getMessage());
+        assertEquals("Key is null or not a string type but pattern contains ${key}", exception.getMessage());
     }
 
     @Test
