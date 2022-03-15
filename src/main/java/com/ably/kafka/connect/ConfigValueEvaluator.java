@@ -1,6 +1,5 @@
 package com.ably.kafka.connect;
 
-import io.ably.lib.util.JsonUtils;
 import org.apache.kafka.connect.sink.SinkRecord;
 
 import java.nio.charset.StandardCharsets;
@@ -26,15 +25,14 @@ public class ConfigValueEvaluator {
         }
         final byte[] key = (byte[]) record.key();
         String keyString = null;
-        //see if key is utf-8 encoded -
-        if(ByteArrayUtils.isUTF8Encoded(key)) {
+
+        //we only want to evalutate UTF-8 encoded strings
+        if(key != null && ByteArrayUtils.isUTF8Encoded(key)) {
             keyString = new String(key, StandardCharsets.UTF_8);
         }
-       // final String key = extras.toJson().get("key") != null ? extras.toJson().get("key").getAsString() : null;
         if (keyString == null && pattern.contains(KEY_TOKEN)) {
             throw new IllegalArgumentException("Key is null or not a string type but pattern contains ${key}");
         }
-        //topic cannot be null so we don't need to check for it
 
         if (keyString != null) {
             return pattern.replace(KEY_TOKEN, keyString).replace(TOPIC_TOKEN, record.topic());
