@@ -21,13 +21,11 @@ public class ConfigValueEvaluator {
      */
      public String evaluate(SinkRecord record, String pattern) {
          final byte[] key = (byte[]) record.key();
-         if (key == null) {
-             throw new IllegalArgumentException("Key cannot be null");
-         }
-         if (record.topic() == null) {
-             throw new IllegalArgumentException("Topic cannot be null");
+         if (key == null && pattern.contains(KEY_TOKEN)) {
+             throw new IllegalArgumentException("Key is null and pattern contains ${key}");
          }
 
+         //topic cannot be null so we don't need to check for it
          final String keyString = new String(key, StandardCharsets.UTF_8);
          return pattern.replace(KEY_TOKEN, keyString).replace(TOPIC_TOKEN, record.topic());
     }
