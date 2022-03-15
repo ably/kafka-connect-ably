@@ -209,11 +209,9 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
   private static final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
-  public final String channelName;
   public final ClientOptions clientOptions;
-  public final ChannelOptions channelOptions;
 
-  private static class ConfigException extends Exception {
+  static class ConfigException extends Exception {
     private static final long serialVersionUID = 6225540388729441285L;
 
     public ConfigException(String message) {
@@ -227,7 +225,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
   public ChannelSinkConnectorConfig(Map<?, ?> originals) {
     super(createConfig(), originals);
-    channelName = getString(CHANNEL_CONFIG);
 
     ClientOptions clientOpts = null;
     try {
@@ -236,14 +233,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
       logger.error("Error configuring Ably client options", e);
     }
     clientOptions = clientOpts;
-
-    ChannelOptions channelOpts = null;
-    try {
-      channelOpts = getAblyChannelOptions();
-    } catch (ConfigException e) {
-      logger.error("Error configuring Ably channel options", e);
-    }
-    channelOptions = channelOpts;
   }
 
   private ClientOptions getAblyClientOptions() throws AblyException, ConfigException {
@@ -298,27 +287,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     return opts;
   }
 
-  private ChannelOptions getAblyChannelOptions() throws ConfigException {
-    ChannelOptions opts;
-    String cipherKey = getString(CLIENT_CHANNEL_CIPHER_KEY);
-
-    if (cipherKey != null && !cipherKey.trim().isEmpty()) {
-      try {
-        opts = ChannelOptions.withCipherKey(cipherKey);
-      } catch (AblyException e) {
-        logger.error("Error configuring channel cipher key", e);
-        throw new ConfigException("Error configuring channel cipher key", e);
-      }
-    } else {
-      opts = new ChannelOptions();
-    }
-
-    // Since we're only publishing, set the channel mode to publish only
-    opts.modes = new ChannelMode[]{ ChannelMode.publish };
-    opts.params = convertChannelParams(getList(CLIENT_CHANNEL_PARAMS));
-    return opts;
-  }
-
   private static Param[] convertTransportParams(List<String> params) throws ConfigException {
     List<Param> parsedParams = new ArrayList<Param>(params.size());
     for (String param : params) {
@@ -333,22 +301,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     }
 
     return parsedParams.toArray(new Param[0]);
-  }
-
-  private static Map<String, String> convertChannelParams(List<String> params) throws ConfigException {
-    Map<String, String> parsedParams = new HashMap<String, String>();
-    for (String param : params) {
-      String[] parts = param.split("=");
-      if (parts.length == 2) {
-        parsedParams.put(parts[0], parts[1]);
-      } else {
-        ConfigException e = new ConfigException(String.format("invalid param string %s", param));
-        logger.error("invalid param in channel params configuration", e);
-        throw e;
-      }
-    }
-
-    return parsedParams;
   }
 
   public static ConfigDef createConfig() {
