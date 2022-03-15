@@ -104,7 +104,7 @@ public class ChannelSinkTask extends SinkTask {
             throw new ConnectException("ably client is uninitialized");
         }
 
-        for (SinkRecord record : records) {
+        for (final SinkRecord record : records) {
             // TODO: add configuration to change the event name
             try {
                 Message message = new Message("sink", record.value());
