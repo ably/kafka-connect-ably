@@ -12,8 +12,8 @@ public class ConfigValueEvaluator {
     /**
      * Converts a pattern to a value with the help of given record.
      * <p>
-     * ${key} will be replaced with record.key()
-     * ${topic} will be replaced with record.topic
+     * ${key} will be replaced with {@code record.key()} if {@code record.key()} is UTF-8 encoded.
+     * ${topic} will be replaced with {@code record.topic()}
      *
      * @param record  The SinkRecord to map
      * @param pattern The pattern to map
