@@ -47,7 +47,7 @@ class DefaultChannelSinkMappingTest {
     void testGetChannel_channel_name_is_evaluating_patterns() throws AblyException, ChannelSinkConnectorConfig.ConfigException {
         //given
         SinkRecord record = new SinkRecord("myTopic", 0, null, "myKey".getBytes(), null, null, 0);
-        final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel", "channel_${key}_${topic}", "client.key", "test-key", "client.id", "test-id"));
+        final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel", "channel_#{key}_#{topic}", "client.key", "test-key", "client.id", "test-id"));
         defaultChannelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, new ConfigValueEvaluator());
 
         //when

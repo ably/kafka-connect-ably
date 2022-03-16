@@ -28,7 +28,7 @@ class ConfigValueEvaluatorTest {
         SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null, null, null, null, 0);
 
         //when
-        String result = configValueEvaluator.evaluate(sinkRecord, "${topic}_hello");
+        String result = configValueEvaluator.evaluate(sinkRecord, "#{topic}_hello");
 
         //then
         assertEquals("greatTopic_hello", result);
@@ -40,7 +40,7 @@ class ConfigValueEvaluatorTest {
         SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null,"greatKey".getBytes(), null, null, 0);
 
         //when
-        String result = configValueEvaluator.evaluate(sinkRecord, "${key}_hello");
+        String result = configValueEvaluator.evaluate(sinkRecord, "#{key}_hello");
 
         //then
         assertEquals("greatKey_hello", result);
@@ -52,7 +52,7 @@ class ConfigValueEvaluatorTest {
         SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null, "greatKey".getBytes(), null, null, 0);
 
         //when
-        String result = configValueEvaluator.evaluate(sinkRecord, "key=${key},topic=${topic}");
+        String result = configValueEvaluator.evaluate(sinkRecord, "key=#{key},topic=#{topic}");
 
         //then
         assertEquals("key=greatKey,topic=greatTopic", result);
@@ -62,13 +62,13 @@ class ConfigValueEvaluatorTest {
     void testEvaluateNoKeyWithKeyTokenThrowsIllegalArgumentException() {
         //given
         SinkRecord sinkRecord = new SinkRecord("topic", 0, null, null, null, null, 0);
-        final String pattern = "pattern_${key}";
+        final String pattern = "pattern_#{key}";
 
         //then throws IllegalArgumentException when
         Exception exception = assertThrows(IllegalArgumentException.class, () -> configValueEvaluator.evaluate(sinkRecord, pattern));
 
         //then
-        assertEquals("Key is null or not a string type but pattern contains ${key}", exception.getMessage());
+        assertEquals("Key is null or not a string type but pattern contains #{key}", exception.getMessage());
     }
 
     @Test
@@ -77,13 +77,13 @@ class ConfigValueEvaluatorTest {
         //https://stackoverflow.com/a/58210557
         final byte[] nonUTF8Key = new byte[]{(byte)0xC0,  (byte)0xC1, (byte)0xF5, (byte)0xF6, (byte)0xF7, (byte)0xF8};
         SinkRecord sinkRecord = new SinkRecord("topic", 0, null, nonUTF8Key, null, null, 0);
-        final String pattern = "pattern_${key}";
+        final String pattern = "pattern_#{key}";
 
         //then throws IllegalArgumentException when
         Exception exception = assertThrows(IllegalArgumentException.class, () -> configValueEvaluator.evaluate(sinkRecord, pattern));
 
         //then
-        assertEquals("Key is null or not a string type but pattern contains ${key}", exception.getMessage());
+        assertEquals("Key is null or not a string type but pattern contains #{key}", exception.getMessage());
     }
 
     @Test
