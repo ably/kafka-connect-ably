@@ -6,8 +6,8 @@ import java.nio.charset.StandardCharsets;
 
 public class ConfigValueEvaluator {
 
-    public static final String KEY_TOKEN = "${key}";
-    public static final String TOPIC_TOKEN = "${topic}";
+    public static final String KEY_TOKEN = "#{key}";
+    public static final String TOPIC_TOKEN = "#{topic}";
 
     /**
      * Converts a pattern to a value with the help of given record.
@@ -31,7 +31,7 @@ public class ConfigValueEvaluator {
             keyString = new String(key, StandardCharsets.UTF_8);
         }
         if (keyString == null && pattern.contains(KEY_TOKEN)) {
-            throw new IllegalArgumentException("Key is null or not a string type but pattern contains ${key}");
+            throw new IllegalArgumentException("Key is null or not a string type but pattern contains #{key}");
         }
 
         if (keyString != null) {
