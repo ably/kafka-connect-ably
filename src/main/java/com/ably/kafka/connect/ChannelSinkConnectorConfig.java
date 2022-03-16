@@ -47,6 +47,9 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   public static final String CHANNEL_CONFIG = "channel";
   private static final String CHANNEL_CONFIG_DOC = "The ably channel name to use for publishing.";
 
+  public static final String CHANNEL_MESSAGE_CONFIG = "channel.message.name";
+  private static final String CHANNEL_MESSAGE_CONFIG_DOC = "The ably channel message name to use for publishing.";
+
   public static final String CLIENT_KEY = "client.key";
   private static final String CLIENT_KEY_DOC = "The Ably API key string. The key string is obtained from the " +
     "application dashboard.";
@@ -323,6 +326,12 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
           .importance(Importance.HIGH)
           .build()
       )
+      .define(
+        ConfigKeyBuilder.of(CHANNEL_MESSAGE_CONFIG, Type.STRING)
+           .documentation(CHANNEL_MESSAGE_CONFIG_DOC)
+           .importance(Importance.MEDIUM)
+           .build()
+            )
       .define(
         ConfigKeyBuilder.of(CLIENT_LOG_LEVEL, Type.INT)
           .documentation(CLIENT_LOG_LEVEL_DOC)
