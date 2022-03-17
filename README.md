@@ -126,7 +126,8 @@ The advanced properties that can be configured for the connector are:
 
 | Property | Description | Type | Default |
 | -------- | ----------- | ---- | ------- |
-| client.async.http.threadpool.size | The size of the asyncHttp threadpool. | *Integer* | 64 |
+| message.name | Ably message name to publish. | *String* |  |
+| client.async.http.threadpool.size | The size of the asyncHttp threadpool. | *Integer* |  |
 | client.auto.connect | Sets whether the initiation of a connection when the library is instanced is automatic or not. | *Boolean* | True |
 | client.channel.cipher.key | Sets whether encryption is enforced for the channel when not null. Also specifies encryption-related parameters such as algorithm, chaining mode, key length and key. | *String* ||
 | client.channel.params | Specify additional channel parameters in the format `key1=value1,key2=value2`. | *List* ||
