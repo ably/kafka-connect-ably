@@ -18,16 +18,14 @@ class MessageSinkMappingImpl implements MessageSinkMapping {
     private final ChannelSinkConnectorConfig sinkConnectorConfig;
     private final ConfigValueEvaluator configValueEvaluator;
 
-    public MessageSinkMappingImpl(@Nonnull ChannelSinkConnectorConfig config,@Nonnull ConfigValueEvaluator configValueEvaluator) {
+    public MessageSinkMappingImpl(@Nonnull ChannelSinkConnectorConfig config, @Nonnull ConfigValueEvaluator configValueEvaluator) {
         this.sinkConnectorConfig = config;
         this.configValueEvaluator = configValueEvaluator;
     }
 
     @Override
     public Message getMessage(SinkRecord record) {
-        final String configuredName = sinkConnectorConfig.getString(MESSAGE_CONFIG);
-        final String messageName = configuredName != null ?
-                configValueEvaluator.evaluate(record, configuredName) : null;
+        final String messageName = configValueEvaluator.evaluate(record, sinkConnectorConfig.getString(MESSAGE_CONFIG));
         Message message = new Message(messageName, record.value());
         message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
 
