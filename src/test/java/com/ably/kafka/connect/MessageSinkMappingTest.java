@@ -7,7 +7,6 @@ import io.ably.lib.util.JsonUtils;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -15,52 +14,40 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
+import static com.ably.kafka.connect.ChannelSinkConnectorConfig.MESSAGE_CONFIG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class MessageSinkMappingTest {
-    private static final String STATIC_CHANNEL_NAME = "sink-channel";
-    private static ChannelSinkConnectorConfig STATIC_CHANNEL_CONFIG = new ChannelSinkConnectorConfig(Map.of("channel", STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
+    private static final String STATIC_MESSAGE_NAME = "static-message";
+    private static final Map<String,String> baseConfigMap = Map.of("channel", "channelX", "client.key", "test-key", "client.id", "test-id");
+    private static final Map<String,String> configMapWithStaticMessageName = Map.of(MESSAGE_CONFIG, STATIC_MESSAGE_NAME);
+    private final ConfigValueEvaluator evaluator = new ConfigValueEvaluator();
 
     private MessageSinkMapping sinkMapping;
-
-    @BeforeEach
-    void setUp() {
-        sinkMapping = new MessageSinkMappingImpl(STATIC_CHANNEL_CONFIG, new ConfigValueEvaluator());
-    }
 
     /**
      * Follwoing tests only test the current state where the name is static, this is going to change when we base message
      * name on record
      */
     @Test
-    void testGetSink_messageNameIsAlwaysSink() {
+    void testGetMessage_messageNameIsNullWhenNotProvided() {
         //given
-        final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
+        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
+        final SinkRecord record = new SinkRecord("not_important", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
         final Message message = sinkMapping.getMessage(record);
 
         //then
-        assertEquals(message.name, "sink");
+        assertNull(message.name);
     }
 
-    //we always expect byte arrays
-    @Test
-    void testGetSink_messageConversionFailsWithInvalidKeyType() {
-        //given
-        final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key", Schema.BYTES_SCHEMA, "value", 0);
-
-        //then expect
-        assertThrows(ClassCastException.class, () -> {
-            //when
-            sinkMapping.getMessage(record);
-        });
-    }
 
     @Test
-    void testGetSink_messageDataIsTheSameWithRecordValue() {
+    void testGetMessage_messageDataIsTheSameWithRecordValue() {
         //given
+        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -71,8 +58,9 @@ class MessageSinkMappingTest {
     }
 
     @Test
-    void testGetSink_messageId() {
+    void testGetMessage_messageId() {
         //given
+        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -83,8 +71,9 @@ class MessageSinkMappingTest {
     }
 
     @Test
-    void testGetSink_messageExtras_sentAndReceivedKeysAreTheSame() {
+    void testGetMessage_MessageExtras_sentAndReceivedKeysAreTheSame() {
         //given
+        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -103,8 +92,9 @@ class MessageSinkMappingTest {
     }
 
     @Test
-    void testGetSink_messageExtras_recordHeaders() {
+    void testGetMessage_messageExtras_recordHeaders() {
         //given
+        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("key1", "value1", "key2", "value2");
         for (Map.Entry<String, String> entry : headersMap.entrySet()) {
