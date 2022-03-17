@@ -26,8 +26,6 @@ import io.ably.lib.http.HttpAuth;
 import io.ably.lib.rest.Auth.TokenParams;
 import io.ably.lib.transport.Defaults;
 import io.ably.lib.types.AblyException;
-import io.ably.lib.types.ChannelMode;
-import io.ably.lib.types.ChannelOptions;
 import io.ably.lib.types.ClientOptions;
 import io.ably.lib.types.Param;
 import io.ably.lib.types.ProxyOptions;
@@ -38,7 +36,6 @@ import com.github.jcustenborder.kafka.connect.utils.config.recommenders.Recommen
 import com.github.jcustenborder.kafka.connect.utils.config.validators.Validators;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,8 +44,8 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
   public static final String CHANNEL_CONFIG = "channel";
   private static final String CHANNEL_CONFIG_DOC = "The ably channel name to use for publishing.";
 
-  public static final String CHANNEL_MESSAGE_CONFIG = "channel.message.name";
-  private static final String CHANNEL_MESSAGE_CONFIG_DOC = "The ably channel message name to use for publishing.";
+  public static final String MESSAGE_CONFIG = "message.name";
+  private static final String MESSAGE_CONFIG_DOC = "Ably message name to use for publishing.";
 
   public static final String CLIENT_KEY = "client.key";
   private static final String CLIENT_KEY_DOC = "The Ably API key string. The key string is obtained from the " +
@@ -327,8 +324,8 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
           .build()
       )
       .define(
-        ConfigKeyBuilder.of(CHANNEL_MESSAGE_CONFIG, Type.STRING)
-           .documentation(CHANNEL_MESSAGE_CONFIG_DOC)
+        ConfigKeyBuilder.of(MESSAGE_CONFIG, Type.STRING)
+           .documentation(MESSAGE_CONFIG_DOC)
            .importance(Importance.MEDIUM)
            .build()
             )

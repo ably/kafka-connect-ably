@@ -7,10 +7,7 @@ import org.apache.kafka.connect.sink.SinkRecord;
 
 import javax.annotation.Nonnull;
 
-import java.util.PrimitiveIterator;
-
-import static com.ably.kafka.connect.ChannelSinkConnectorConfig.CHANNEL_MESSAGE_CONFIG;
-import static com.ably.kafka.connect.ChannelSinkConnectorConfig.CLIENT_CHANNEL_CIPHER_KEY;
+import static com.ably.kafka.connect.ChannelSinkConnectorConfig.MESSAGE_CONFIG;
 
 public interface MessageSinkMapping {
     Message getMessage(SinkRecord record);
@@ -28,7 +25,7 @@ class MessageSinkMappingImpl implements MessageSinkMapping {
 
     @Override
     public Message getMessage(SinkRecord record) {
-        final String configuredName = sinkConnectorConfig.getString(CHANNEL_MESSAGE_CONFIG);
+        final String configuredName = sinkConnectorConfig.getString(MESSAGE_CONFIG);
         final String messageName = configuredName != null ?
                 configValueEvaluator.evaluate(record, configuredName) : null;
         Message message = new Message(messageName, record.value());
