@@ -7,6 +7,7 @@ import io.ably.lib.util.JsonUtils;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -18,7 +19,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MessageSinkMappingTest {
-    private MessageSinkMapping sinkMapping = new MessageSinkMappingImpl();
+    private static final String STATIC_CHANNEL_NAME = "sink-channel";
+    private static ChannelSinkConnectorConfig STATIC_CHANNEL_CONFIG = new ChannelSinkConnectorConfig(Map.of("channel", STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
+
+    private MessageSinkMapping sinkMapping;
+
+    @BeforeEach
+    void setUp() {
+        sinkMapping = new MessageSinkMappingImpl(STATIC_CHANNEL_CONFIG, new ConfigValueEvaluator());
+    }
 
     /**
      * Follwoing tests only test the current state where the name is static, this is going to change when we base message
