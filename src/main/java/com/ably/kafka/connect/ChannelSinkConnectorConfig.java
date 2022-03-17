@@ -327,6 +327,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         ConfigKeyBuilder.of(MESSAGE_CONFIG, Type.STRING)
            .documentation(MESSAGE_CONFIG_DOC)
            .importance(Importance.MEDIUM)
+           .defaultValue(null)
            .build()
             )
       .define(
