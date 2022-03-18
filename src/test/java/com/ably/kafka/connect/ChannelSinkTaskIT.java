@@ -16,16 +16,19 @@
 
 package com.ably.kafka.connect;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.Message;
 import org.apache.kafka.connect.converters.ByteArrayConverter;
+import org.apache.kafka.connect.storage.StringConverter;
 import org.apache.kafka.connect.util.clusters.EmbeddedConnectCluster;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +103,7 @@ public class ChannelSinkTaskIT {
     }
 
     @Test
-    public void testMessagePublish_MessageReceivedWithTopicPlaceholder() throws Exception {
+    public void testMessagePublish_MessageReceivedWithTopicPlaceholderChannel() throws Exception {
         // topic1
         final String topic = TOPICS.split(",")[0];
         connectCluster.kafka().createTopic(topic);
@@ -126,13 +129,70 @@ public class ChannelSinkTaskIT {
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
+    @Test
+    public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() throws Exception {
+        // topic1
+        final String topic = TOPICS.split(",")[0];
+        connectCluster.kafka().createTopic(topic);
+        final String channelName = "channel1";
+        final String topicedMessageName = "#{topic}_message";
+        Map<String, String> settings = createSettings(channelName,null ,null ,topicedMessageName );
+        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
+
+        // subscribe to the Ably channel
+        Channel channel = ablyClient.channels.get(channelName);
+        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
+
+        // produce a message on the Kafka topic
+        connectCluster.kafka().produce(topic, "foo", "bar");
+
+        // wait 5s for the message to arrive on the Ably channel
+        messageWaiter.waitFor(1, TIMEOUT);
+        final List<Message> receivedMessages = messageWaiter.receivedMessages;
+        assertEquals(receivedMessages.size(), 1, "Unexpected message count");
+        assertEquals(receivedMessages.get(0).name, "topic1_message", "Unexpected message name");
+        // delete connector
+        connectCluster.deleteConnector(CONNECTOR_NAME);
+    }
+
+    //there might be some complexities with sending keys
+    @Test
+    public void testMessagePublish_MessageNameReceivedWithKeyPlaceholder() throws Exception {
+        // topic1
+        final String topic = TOPICS.split(",")[0];
+        connectCluster.kafka().createTopic(topic);
+        final String channelName = "my_channel";
+
+        final String keyedMessageName = "#{key}_message";
+        final String key = "key1";
+        final Map<String, String> settings = createSettings(channelName,null ,null ,keyedMessageName );
+        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
+
+        // subscribe to the Ably channel
+        Channel channel = ablyClient.channels.get(channelName);
+        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
+
+        // produce a message on the Kafka topic
+        connectCluster.kafka().produce(topic, key, "bar");
+
+        // wait 5s for the message to arrive on the Ably channel
+        messageWaiter.waitFor(1, TIMEOUT);
+        final List<Message> receivedMessages = messageWaiter.receivedMessages;
+        assertEquals(receivedMessages.size(), 1, "Unexpected message count");
+
+        // delete connector
+        connectCluster.deleteConnector(CONNECTOR_NAME);
+    }
+
     //let's use this method to create different settings
     private Map<String, String> createSettings(@Nonnull String channel, String cipherKey, String channelParams, String messageName) {
         Map<String, String> settings = new HashMap<>();
         settings.put(CONNECTOR_CLASS_CONFIG, SINK_CONNECTOR_CLASS_NAME);
         settings.put(TASKS_MAX_CONFIG, String.valueOf(NUM_TASKS));
         settings.put(TOPICS_CONFIG, TOPICS);
-        settings.put(KEY_CONVERTER_CLASS_CONFIG, ByteArrayConverter.class.getName());
+        settings.put(KEY_CONVERTER_CLASS_CONFIG, StringConverter.class.getName());
         settings.put(VALUE_CONVERTER_CLASS_CONFIG, ByteArrayConverter.class.getName());
         settings.put(ChannelSinkConnectorConfig.CHANNEL_CONFIG, channel);
         settings.put(ChannelSinkConnectorConfig.CLIENT_KEY, appSpec.key());
