@@ -16,7 +16,6 @@
 
 package com.ably.kafka.connect;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.Message;
@@ -28,7 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,8 +74,8 @@ public class ChannelSinkTaskIT {
     }
 
     @Test
-    public void testMessagePublishMessageReceivedWithStaticChannelName() throws Exception {
-        final String channelName = "kafka-connect-ably-test";
+    public void testMessagePublish_channelExistsWithStaticChannelName() throws Exception {
+        final String channelName = "test-channel";
         // topic1
         final String topic = TOPICS.split(",")[0];
         connectCluster.kafka().createTopic(topic);
@@ -103,7 +101,7 @@ public class ChannelSinkTaskIT {
     }
 
     @Test
-    public void testMessagePublish_MessageReceivedWithTopicPlaceholderChannel() throws Exception {
+    public void testMessagePublish_ChannelExistsWithTopicPlaceholder() throws Exception {
         // topic1
         final String topic = TOPICS.split(",")[0];
         connectCluster.kafka().createTopic(topic);
@@ -128,7 +126,31 @@ public class ChannelSinkTaskIT {
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
+    @Test
+    public void testMessagePublish_ChannelExistsWithKeyPlaceholder() throws Exception {
+        final String topic = TOPICS.split(",")[0];
+        connectCluster.kafka().createTopic(topic);
+        final String keyName = "key1";
+        final String channelName = "#{key}_channel";
+        final String messageName = "message1";
+        Map<String, String> settings = createSettings(channelName,null ,null ,messageName );
+        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
+        // subscribe to interpolated channel
+        Channel channel = ablyClient.channels.get("key1_channel");
+        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
+
+        // produce a message on the Kafka topic
+        connectCluster.kafka().produce(topic, keyName, "bar");
+
+        // wait 5s for the message to arrive on the Ably channel
+        messageWaiter.waitFor(1, TIMEOUT);
+        final List<Message> receivedMessages = messageWaiter.receivedMessages;
+        assertEquals(receivedMessages.size(), 1, "Unexpected message count");
+        // delete connector
+        connectCluster.deleteConnector(CONNECTOR_NAME);
+    }
     @Test
     public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() throws Exception {
         // topic1
@@ -152,6 +174,33 @@ public class ChannelSinkTaskIT {
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertEquals(receivedMessages.size(), 1, "Unexpected message count");
         assertEquals(receivedMessages.get(0).name, "topic1_message", "Unexpected message name");
+        // delete connector
+        connectCluster.deleteConnector(CONNECTOR_NAME);
+    }
+
+    @Test
+    public void testMessagePublish_MessageReceivedWithKeyPlaceholderMessageName() throws Exception {
+        final String topic = TOPICS.split(",")[0];
+        connectCluster.kafka().createTopic(topic);
+        final String keyName = "key1";
+        final String channelName = "channel1";
+        final String topicedMessageName = "#{key}_message";
+        Map<String, String> settings = createSettings(channelName,null ,null ,topicedMessageName );
+        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
+
+        // subscribe to the Ably channel
+        Channel channel = ablyClient.channels.get(channelName);
+        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
+
+        // produce a message on the Kafka topic
+        connectCluster.kafka().produce(topic, keyName, "bar");
+
+        // wait 5s for the message to arrive on the Ably channel
+        messageWaiter.waitFor(1, TIMEOUT);
+        final List<Message> receivedMessages = messageWaiter.receivedMessages;
+        assertEquals(receivedMessages.size(), 1, "Unexpected message count");
+        assertEquals(receivedMessages.get(0).name, "key1_message", "Unexpected message name");
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
@@ -192,7 +241,7 @@ public class ChannelSinkTaskIT {
         settings.put(CONNECTOR_CLASS_CONFIG, SINK_CONNECTOR_CLASS_NAME);
         settings.put(TASKS_MAX_CONFIG, String.valueOf(NUM_TASKS));
         settings.put(TOPICS_CONFIG, TOPICS);
-        settings.put(KEY_CONVERTER_CLASS_CONFIG, StringConverter.class.getName());
+        settings.put(KEY_CONVERTER_CLASS_CONFIG, ByteArrayConverter.class.getName());
         settings.put(VALUE_CONVERTER_CLASS_CONFIG, ByteArrayConverter.class.getName());
         settings.put(ChannelSinkConnectorConfig.CHANNEL_CONFIG, channel);
         settings.put(ChannelSinkConnectorConfig.CLIENT_KEY, appSpec.key());
