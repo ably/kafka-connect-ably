@@ -18,6 +18,7 @@ package com.ably.kafka.connect;
 
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
+import io.ably.lib.types.ChannelOptions;
 import io.ably.lib.types.Message;
 import org.apache.kafka.connect.converters.ByteArrayConverter;
 import org.apache.kafka.connect.storage.StringConverter;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
+import javax.crypto.Cipher;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +75,7 @@ public class ChannelSinkTaskIT {
         AblyHelpers.deleteTestApp(appSpec);
     }
 
+    //channel name tests
     @Test
     public void testMessagePublish_channelExistsWithStaticChannelName() throws Exception {
         final String channelName = "test-channel";
@@ -100,6 +103,7 @@ public class ChannelSinkTaskIT {
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
+
     @Test
     public void testMessagePublish_ChannelExistsWithTopicPlaceholder() throws Exception {
         // topic1
@@ -126,19 +130,21 @@ public class ChannelSinkTaskIT {
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
+
+
     @Test
-    public void testMessagePublish_ChannelExistsWithKeyPlaceholder() throws Exception {
+    public void testMessagePublish_ChannelExistsWithTopicAndKeyPlaceholder() throws Exception {
         final String topic = TOPICS.split(",")[0];
         connectCluster.kafka().createTopic(topic);
         final String keyName = "key1";
-        final String channelName = "#{key}_channel";
+        final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
         Map<String, String> settings = createSettings(channelName,null ,null ,messageName );
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
         // subscribe to interpolated channel
-        Channel channel = ablyClient.channels.get("key1_channel");
+        Channel channel = ablyClient.channels.get("topic1_key1_channel");
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
         // produce a message on the Kafka topic
@@ -151,6 +157,10 @@ public class ChannelSinkTaskIT {
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
+
+  //find a way to test that an exception is thrown when the channel name is invalid (eg key name configured by not sent)
+
+    //messages test
     @Test
     public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() throws Exception {
         // topic1
@@ -258,4 +268,42 @@ public class ChannelSinkTaskIT {
         }
         return settings;
     }
+
+
+    /// when cipher key is given, there seems to be a problem with message publishing
+    /**
+    @Test
+    public void testMessagePublish_messageDecryptableWhenCipherKeyGiven() throws Exception {
+        final String channelName = "test-channel";
+        // topic1
+        final String topic = TOPICS.split(",")[0];
+        connectCluster.kafka().createTopic(topic);
+
+        final String cipherKey = "!A%D*G-KaNdRgUkXp2s5v8y/B?E(H+Mb";
+        Map<String, String> settings = createSettings(channelName, cipherKey,null,null );
+        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
+
+        // subscribe to the Ably channel
+        Channel channel = ablyClient.channels.get(channelName);
+        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
+
+        // produce a message on the Kafka topic
+        connectCluster.kafka().produce(topic, "foo", "bar");
+
+        // wait 5s for the message to arrive on the Ably channel
+        messageWaiter.waitFor(1, TIMEOUT);
+        final List<Message> receivedMessages = messageWaiter.receivedMessages;
+        assertEquals(receivedMessages.size(), 1, "Unexpected message count");
+        final Message message = receivedMessages.get(0);
+        final Message decodedMessage =  Message.fromEncoded(String.valueOf(message.data), ChannelOptions.withCipherKey(cipherKey));
+        assertEquals(decodedMessage.data, "foo", "Unexpected message data");
+        // delete connector
+        connectCluster.deleteConnector(CONNECTOR_NAME);
+    }
+    **/
+
+    //todo add other tests for cipher key
+    //todo add tests for other channel params
+
 }
