@@ -47,7 +47,7 @@ public class ChannelSinkTask extends SinkTask {
         logger.info("Starting Ably channel Sink task");
 
         final ChannelSinkConnectorConfig config = new ChannelSinkConnectorConfig(settings);
-        channelSinkMapping = new DefaultChannelSinkMapping(config);
+        channelSinkMapping = new DefaultChannelSinkMapping(config, new ConfigValueEvaluator());
         messageSinkMapping = new MessageSinkMappingImpl();
 
         if (config.clientOptions == null) {

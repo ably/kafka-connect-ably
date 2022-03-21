@@ -19,25 +19,27 @@ import static com.ably.kafka.connect.ChannelSinkConnectorConfig.*;
 
 public class DefaultChannelSinkMapping implements ChannelSinkMapping {
     private final ChannelSinkConnectorConfig sinkConnectorConfig;
+    private final ConfigValueEvaluator configValueEvaluator;
 
-    public DefaultChannelSinkMapping(@Nonnull ChannelSinkConnectorConfig config) {
+    public DefaultChannelSinkMapping(@Nonnull ChannelSinkConnectorConfig config, ConfigValueEvaluator configValueEvaluator) {
         sinkConnectorConfig = config;
+        this.configValueEvaluator = configValueEvaluator;
     }
 
     @Override
     public Channel getChannel(@Nonnull SinkRecord sinkRecord, @Nonnull AblyRealtime ablyRealtime) throws AblyException,
             ChannelSinkConnectorConfig.ConfigException {
-        return ablyRealtime.channels.get(getAblyChannelName(), getAblyChannelOptions());
+        return ablyRealtime.channels.get(getAblyChannelName(sinkRecord), getAblyChannelOptions(sinkRecord));
     }
 
-    private String getAblyChannelName() {
-        return sinkConnectorConfig.getString(CHANNEL_CONFIG);
+    private String getAblyChannelName(SinkRecord sinkRecord) {
+        return configValueEvaluator.evaluate(sinkRecord, sinkConnectorConfig.getString(CHANNEL_CONFIG));
     }
 
-    private ChannelOptions getAblyChannelOptions() throws ChannelSinkConnectorConfig.ConfigException {
+    private ChannelOptions getAblyChannelOptions(SinkRecord record) throws ChannelSinkConnectorConfig.ConfigException {
         final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
         ChannelOptions opts;
-        String cipherKey = sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY);
+        String cipherKey = configValueEvaluator.evaluate(record, sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY));
 
         if (cipherKey != null && !cipherKey.trim().isEmpty()) {
             try {
@@ -52,18 +54,20 @@ public class DefaultChannelSinkMapping implements ChannelSinkMapping {
 
         // Since we're only publishing, set the channel mode to publish only
         opts.modes = new ChannelMode[]{ChannelMode.publish};
-        opts.params = convertChannelParams(sinkConnectorConfig.getList(CLIENT_CHANNEL_PARAMS));
+        opts.params = getChannelParams(record, sinkConnectorConfig.getList(CLIENT_CHANNEL_PARAMS));
         return opts;
     }
 
-    private static Map<String, String> convertChannelParams(List<String> params) throws ChannelSinkConnectorConfig.ConfigException {
+    private Map<String, String> getChannelParams(SinkRecord sinkRecord, List<String> params) throws ChannelSinkConnectorConfig.ConfigException {
         final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
         Map<String, String> parsedParams = new HashMap<String, String>();
         for (String param : params) {
             String[] parts = param.split("=");
             if (parts.length == 2) {
-                parsedParams.put(parts[0], parts[1]);
+                final String paramKey = parts[0];
+                final String paramVal = parts[1];
+                parsedParams.put(paramKey, configValueEvaluator.evaluate(sinkRecord, paramVal));
             } else {
                 ChannelSinkConnectorConfig.ConfigException e = new ChannelSinkConnectorConfig.ConfigException(String.format("invalid param string %s", param));
                 logger.error("invalid param in channel params configuration", e);

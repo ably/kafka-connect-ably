@@ -12,7 +12,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 class DefaultChannelSinkMappingTest {
     private DefaultChannelSinkMapping defaultChannelSinkMapping;
 
@@ -23,7 +22,6 @@ class DefaultChannelSinkMappingTest {
 
     @BeforeEach
     void setUp() throws AblyException {
-        defaultChannelSinkMapping = new DefaultChannelSinkMapping(STATIC_CHANNEL_CONFIG);
         ablyRealtime = new AblyRealtime(STATIC_CHANNEL_CONFIG.clientOptions);
     }
 
@@ -34,8 +32,28 @@ class DefaultChannelSinkMappingTest {
 
     @Test
     void testGetChannel_static_name_is_exactly_the_same() throws AblyException, ChannelSinkConnectorConfig.ConfigException {
+        //given
+        defaultChannelSinkMapping = new DefaultChannelSinkMapping(STATIC_CHANNEL_CONFIG, new ConfigValueEvaluator());
         SinkRecord record = new SinkRecord("topic", 0, null, null, null, null, 0);
+
+        //when
         final Channel channel = defaultChannelSinkMapping.getChannel(record, ablyRealtime);
+
+        //then
         assertEquals(STATIC_CHANNEL_NAME, channel.name);
+    }
+
+    @Test
+    void testGetChannel_channel_name_is_evaluating_patterns() throws AblyException, ChannelSinkConnectorConfig.ConfigException {
+        //given
+        SinkRecord record = new SinkRecord("myTopic", 0, null, "myKey".getBytes(), null, null, 0);
+        final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel", "channel_#{key}_#{topic}", "client.key", "test-key", "client.id", "test-id"));
+        defaultChannelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, new ConfigValueEvaluator());
+
+        //when
+        final Channel channel = defaultChannelSinkMapping.getChannel(record, ablyRealtime);
+
+        //then
+        assertEquals("channel_myKey_myTopic", channel.name);
     }
 }
