@@ -161,7 +161,7 @@ The advanced properties that can be configured for the connector are:
 You can configure your channels dynamically by using `#{topic}` and/or `#{key}` placeholders in some configuration values. If you specify `#{key}` in your value, you must send a UTF-8 encoded string as your key.
 Configurations that are supported:
 * `channel`
-  * For example. if you define a channel value with `channel_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the channel will be configured with `channel_topic1_key1`
+  * For example. if you define a channel value with `channel_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the channel will be configured with `channel_topic1_key1` value.
 * `client.channel.params`
   * For this configuration individual channel parameters can be configured. For example, if you define a `client.channel.params` 
 value with `key1=value1_#{topic},key2=value2_#{key}` in your configuration,
