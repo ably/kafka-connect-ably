@@ -114,7 +114,7 @@ The basic properties that must be configured for the connector are:
 
 | Property | Description | Type | Default |
 | -------- | ----------- | ---- | ------- |
-| channel | The name of the [Ably channel](https://ably.com/documentation/realtime/channels) to publish to. See Also: [Dynamic channel configuration](#Dynamic-Channel-Configuration) | *String* ||
+| channel | The name of the [Ably channel](https://ably.com/documentation/realtime/channels) to publish to. See also: [Dynamic channel configuration](#Dynamic-Channel-Configuration) | *String* ||
 | client.key | An API key from your Ably dashboard to use for authentication. This must have the [publish capability](https://ably.com/documentation/core-features/authentication#capabilities-explained) for the `channel` being published to by the connector. | *String* ||
 | client.id | The [Ably client ID](https://ably.com/documentation/realtime/authentication#identified-clients) to use for the connector. | *String* | kafka-connect-ably-example |
 | name | A globally unique name for the connector. | *String* | ably-channel-sink |
