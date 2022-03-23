@@ -114,7 +114,7 @@ The basic properties that must be configured for the connector are:
 
 | Property | Description | Type | Default |
 | -------- | ----------- | ---- | ------- |
-| channel | The name of the [Ably channel](https://ably.com/documentation/realtime/channels) to publish to. | *String* ||
+| channel | The name of the [Ably channel](https://ably.com/documentation/realtime/channels) to publish to. See also: [Dynamic channel configuration](#Dynamic-Channel-Configuration) | *String* ||
 | client.key | An API key from your Ably dashboard to use for authentication. This must have the [publish capability](https://ably.com/documentation/core-features/authentication#capabilities-explained) for the `channel` being published to by the connector. | *String* ||
 | client.id | The [Ably client ID](https://ably.com/documentation/realtime/authentication#identified-clients) to use for the connector. | *String* | kafka-connect-ably-example |
 | name | A globally unique name for the connector. | *String* | ably-channel-sink |
@@ -156,6 +156,12 @@ The advanced properties that can be configured for the connector are:
 | client.transport.params | Any additional parameters to be sent in the query string when initiating a realtime connection in the format `key1=value1,key2=value` without URL encoding. | *List* ||
 | client.use.binary.protocol | Set to `false` to force the library to use JSON encoding for REST and realtime operations, instead of msgpack encoding. | *Boolean* | True |
 | client.loglevel | Sets the verbosity of logging. | *Integer* | 0 |
+
+## Dynamic Channel Configuration
+You can configure your channels dynamically by using `#{topic}` and/or `#{key}` placeholders in some configuration values. If you specify `#{key}` in your value, you must send a UTF-8 encoded string as your key.
+Configurations that are supported:
+* `channel`
+  * For example. if you define a channel value with `channel_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the channel will be configured with `channel_topic1_key1` value.
 
 ## Contributing
 
