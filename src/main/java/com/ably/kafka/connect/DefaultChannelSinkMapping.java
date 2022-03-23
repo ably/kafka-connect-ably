@@ -29,14 +29,14 @@ public class DefaultChannelSinkMapping implements ChannelSinkMapping {
     @Override
     public Channel getChannel(@Nonnull SinkRecord sinkRecord, @Nonnull AblyRealtime ablyRealtime) throws AblyException,
             ChannelSinkConnectorConfig.ConfigException {
-        return ablyRealtime.channels.get(getAblyChannelName(sinkRecord), getAblyChannelOptions(sinkRecord));
+        return ablyRealtime.channels.get(getAblyChannelName(sinkRecord), getAblyChannelOptions());
     }
 
     private String getAblyChannelName(SinkRecord sinkRecord) {
         return configValueEvaluator.evaluate(sinkRecord, sinkConnectorConfig.getString(CHANNEL_CONFIG));
     }
 
-    private ChannelOptions getAblyChannelOptions(SinkRecord record) throws ChannelSinkConnectorConfig.ConfigException {
+    private ChannelOptions getAblyChannelOptions() throws ChannelSinkConnectorConfig.ConfigException {
         final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
         ChannelOptions opts;
         String cipherKey = sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY);
@@ -54,11 +54,11 @@ public class DefaultChannelSinkMapping implements ChannelSinkMapping {
 
         // Since we're only publishing, set the channel mode to publish only
         opts.modes = new ChannelMode[]{ChannelMode.publish};
-        opts.params = getChannelParams(record, sinkConnectorConfig.getList(CLIENT_CHANNEL_PARAMS));
+        opts.params = getChannelParams(sinkConnectorConfig.getList(CLIENT_CHANNEL_PARAMS));
         return opts;
     }
 
-    private Map<String, String> getChannelParams(SinkRecord sinkRecord, List<String> params) throws ChannelSinkConnectorConfig.ConfigException {
+    private Map<String, String> getChannelParams(List<String> params) throws ChannelSinkConnectorConfig.ConfigException {
         final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
         Map<String, String> parsedParams = new HashMap<String, String>();
@@ -67,7 +67,7 @@ public class DefaultChannelSinkMapping implements ChannelSinkMapping {
             if (parts.length == 2) {
                 final String paramKey = parts[0];
                 final String paramVal = parts[1];
-                parsedParams.put(paramKey, configValueEvaluator.evaluate(sinkRecord, paramVal));
+                parsedParams.put(paramKey, paramVal);
             } else {
                 ChannelSinkConnectorConfig.ConfigException e = new ChannelSinkConnectorConfig.ConfigException(String.format("invalid param string %s", param));
                 logger.error("invalid param in channel params configuration", e);
