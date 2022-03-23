@@ -114,7 +114,7 @@ The basic properties that must be configured for the connector are:
 
 | Property | Description | Type | Default |
 | -------- | ----------- | ---- | ------- |
-| channel | The name of the [Ably channel](https://ably.com/documentation/realtime/channels) to publish to. | *String* ||
+| channel | The name of the [Ably channel](https://ably.com/documentation/realtime/channels) to publish to. See also: [Dynamic channel configuration](#Dynamic-Channel-Configuration) | *String* ||
 | client.key | An API key from your Ably dashboard to use for authentication. This must have the [publish capability](https://ably.com/documentation/core-features/authentication#capabilities-explained) for the `channel` being published to by the connector. | *String* ||
 | client.id | The [Ably client ID](https://ably.com/documentation/realtime/authentication#identified-clients) to use for the connector. | *String* | kafka-connect-ably-example |
 | name | A globally unique name for the connector. | *String* | ably-channel-sink |
@@ -127,7 +127,7 @@ The advanced properties that can be configured for the connector are:
 | Property | Description | Type | Default |
 | -------- | ----------- | ---- | ------- |
 | message.name | Ably message name to publish. | *String* |  |
-| client.async.http.threadpool.size | The size of the asyncHttp threadpool. | *Integer* |  |
+| client.async.http.threadpool.size | The size of the asyncHttp threadpool. | *Integer* | 64 |
 | client.auto.connect | Sets whether the initiation of a connection when the library is instanced is automatic or not. | *Boolean* | True |
 | client.channel.cipher.key | Sets whether encryption is enforced for the channel when not null. Also specifies encryption-related parameters such as algorithm, chaining mode, key length and key. | *String* ||
 | client.channel.params | Specify additional channel parameters in the format `key1=value1,key2=value2`. | *List* ||
@@ -159,18 +159,13 @@ The advanced properties that can be configured for the connector are:
 | client.loglevel | Sets the verbosity of logging. | *Integer* | 0 |
 
 ## Dynamic Channel Configuration
-You can configure your channels dynamically by using `#{topic}` and/or `#{key}` placeholders in same configuration values. If you specify `#{key}` in your value, you must send a UTF-8 encoded string as your key.
+You can configure your channels dynamically by using `#{topic}` and/or `#{key}` placeholders in some configuration values. If you specify `#{key}` in your value, you must send a UTF-8 encoded string as your key.
 Configurations that are supported:
 * `channel`
-  * For example. if you define a channel value with `channel_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the channel will be configured with `channel_topic1_key1`
-* `client.channel.cipher.key`
-  * For example. if you define a `client.channel.cipher.key` value with `client.channel.cipher.key_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the channel will be configured with `client.channel.cipher.key_topic1_key1`
-* `client.channel.params`
-  * For this configuration individual channel parameters can be configured. For example, if you define a `client.channel.params` 
-value with `key1=value1_#{topic},key2=value2_#{key}` in your configuration,
-and publish a message to "topic1" with key "key1", the `client.channel.params`  will be configured with `key1=value1_topic1,key2=value2_key1`
+  * For example. if you define a channel value with `channel_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the channel will be configured with `channel_topic1_key1` value.
 * `message.name`
-  * For example, if you define a `message.name` value with `message_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the `message.name` will be configured with `message_topic1_key1`
+  * For example, if you define a `message.name` value with `message_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the `message.name` will be configured with `message_topic1_key1` value.
+
 ## Contributing
 
 For guidance on how to contribute to this project, see [CONTRIBUTING.md](CONTRIBUTING.md).
