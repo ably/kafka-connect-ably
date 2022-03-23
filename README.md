@@ -165,7 +165,7 @@ Configurations that are supported:
 * `client.channel.params`
   * For this configuration individual channel parameters can be configured. For example, if you define a `client.channel.params` 
 value with `key1=value1_#{topic},key2=value2_#{key}` in your configuration,
-and publish a message to "topic1" with key "key1", the `client.channel.params`  will be configured with `key1=value1_topic1,key2=value2_key1`
+and publish a message to "topic1" with key "key1", the `client.channel.params`  will be configured with `key1=value1_topic1,key2=value2_key1` value.
 ## Contributing
 
 For guidance on how to contribute to this project, see [CONTRIBUTING.md](CONTRIBUTING.md).
