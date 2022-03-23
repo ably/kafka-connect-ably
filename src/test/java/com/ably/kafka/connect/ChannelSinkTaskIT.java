@@ -155,9 +155,35 @@ public class ChannelSinkTaskIT {
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
+    @Test
+    public void testMessagePublish_TaskFailedWhenKeyIsNotProvidedButPlaceholderProvided() throws Exception {
+        final String topic = TOPICS.split(",")[0];
+        connectCluster.kafka().createTopic(topic);
+        final String channelName = "#{topic}_#{key}_channel";
+        final String messageName = "message1";
+        Map<String, String> settings = createSettings(channelName,null ,null ,messageName );
+        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
+
+        // subscribe to interpolated channel
+        Channel channel = ablyClient.channels.get("topic1_key1_channel");
+        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
+
+        // produce a message on the Kafka topic
+        connectCluster.kafka().produce(topic, null, "bar");
+        connectCluster.assertions().assertConnectorIsRunningAndTasksHaveFailed(CONNECTOR_NAME,1, "Connector tasks did not start in time.");
+
+        // wait 5s for the message to arrive on the Ably channel
+        messageWaiter.waitFor(1, TIMEOUT);
+        final List<Message> receivedMessages = messageWaiter.receivedMessages;
+        assertEquals(receivedMessages.size(), 0, "Unexpected message count");
+        // delete connector
+        connectCluster.deleteConnector(CONNECTOR_NAME);
+    }
+
   //find a way to test that an exception is thrown when the channel name is invalid (eg key name configured by not sent)
 
-    //messages test
+    //message name tests
     @Test
     public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() throws Exception {
         // topic1
@@ -212,17 +238,14 @@ public class ChannelSinkTaskIT {
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
-    //there might be some complexities with sending keys
     @Test
-    public void testMessagePublish_MessageNameReceivedWithKeyPlaceholder() throws Exception {
-        // topic1
+    public void testMessagePublish_MessageReceivedWithTopicAndKeyPlaceholderMessageName() throws Exception {
         final String topic = TOPICS.split(",")[0];
         connectCluster.kafka().createTopic(topic);
-        final String channelName = "my_channel";
-
-        final String keyedMessageName = "#{key}_message";
-        final String key = "key1";
-        final Map<String, String> settings = createSettings(channelName,null ,null ,keyedMessageName );
+        final String keyName = "key1";
+        final String channelName = "channel1";
+        final String topicedMessageName = "#{topic}_#{key}_message";
+        Map<String, String> settings = createSettings(channelName,null ,null ,topicedMessageName );
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
@@ -231,17 +254,16 @@ public class ChannelSinkTaskIT {
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
         // produce a message on the Kafka topic
-        connectCluster.kafka().produce(topic, key, "bar");
+        connectCluster.kafka().produce(topic, keyName, "bar");
 
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertEquals(receivedMessages.size(), 1, "Unexpected message count");
-
+        assertEquals(receivedMessages.get(0).name, "topic1_key1_message", "Unexpected message name");
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
-
     //let's use this method to create different settings
     private Map<String, String> createSettings(@Nonnull String channel, String cipherKey, String channelParams, String messageName) {
         Map<String, String> settings = new HashMap<>();
