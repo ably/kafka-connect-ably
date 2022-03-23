@@ -162,8 +162,6 @@ You can configure your channels dynamically by using `#{topic}` and/or `#{key}` 
 Configurations that are supported:
 * `channel`
   * For example. if you define a channel value with `channel_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the channel will be configured with `channel_topic1_key1`
-* `client.channel.cipher.key`
-  * For example. if you define a `client.channel.cipher.key` value with `client.channel.cipher.key_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the channel will be configured with `client.channel.cipher.key_topic1_key1`
 * `client.channel.params`
   * For this configuration individual channel parameters can be configured. For example, if you define a `client.channel.params` 
 value with `key1=value1_#{topic},key2=value2_#{key}` in your configuration,

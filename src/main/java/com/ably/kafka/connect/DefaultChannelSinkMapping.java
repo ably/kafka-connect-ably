@@ -39,7 +39,7 @@ public class DefaultChannelSinkMapping implements ChannelSinkMapping {
     private ChannelOptions getAblyChannelOptions(SinkRecord record) throws ChannelSinkConnectorConfig.ConfigException {
         final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
         ChannelOptions opts;
-        String cipherKey = configValueEvaluator.evaluate(record, sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY));
+        String cipherKey = sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY);
 
         if (cipherKey != null && !cipherKey.trim().isEmpty()) {
             try {
