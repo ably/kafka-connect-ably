@@ -33,7 +33,7 @@ class DefaultChannelSinkMappingTest {
     @Test
     void testGetChannel_static_name_is_exactly_the_same() throws AblyException, ChannelSinkConnectorConfig.ConfigException {
         //given
-        defaultChannelSinkMapping = new DefaultChannelSinkMapping(STATIC_CHANNEL_CONFIG, new ConfigValueEvaluator());
+        defaultChannelSinkMapping = new DefaultChannelSinkMapping(STATIC_CHANNEL_CONFIG, new ConfigValueEvaluator(), new ChannelConfigImpl(STATIC_CHANNEL_CONFIG));
         SinkRecord record = new SinkRecord("topic", 0, null, null, null, null, 0);
 
         //when
@@ -48,7 +48,7 @@ class DefaultChannelSinkMappingTest {
         //given
         SinkRecord record = new SinkRecord("myTopic", 0, null, "myKey".getBytes(), null, null, 0);
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel", "channel_#{key}_#{topic}", "client.key", "test-key", "client.id", "test-id"));
-        defaultChannelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, new ConfigValueEvaluator());
+        defaultChannelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, new ConfigValueEvaluator(), new ChannelConfigImpl(connectorConfig));
 
         //when
         final Channel channel = defaultChannelSinkMapping.getChannel(record, ablyRealtime);

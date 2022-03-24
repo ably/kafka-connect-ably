@@ -46,17 +46,18 @@ public class ChannelSinkTask extends SinkTask {
     public void start(Map<String, String> settings) {
         logger.info("Starting Ably channel Sink task");
 
-        final ChannelSinkConnectorConfig config = new ChannelSinkConnectorConfig(settings);
+        final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(settings);
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
-        channelSinkMapping = new DefaultChannelSinkMapping(config, configValueEvaluator);
-        messageSinkMapping = new MessageSinkMappingImpl(config, configValueEvaluator);
+        final ChannelConfig channelConfig = new ChannelConfigImpl(connectorConfig);
+        channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator, channelConfig);
+        messageSinkMapping = new MessageSinkMappingImpl(connectorConfig, configValueEvaluator);
 
-        if (config.clientOptions == null) {
+        if (connectorConfig.clientOptions == null) {
             logger.error("Ably client options were not initialized due to invalid configuration.");
             return;
         }
 
-        config.clientOptions.logHandler = (severity, tag, msg, tr) -> {
+        connectorConfig.clientOptions.logHandler = (severity, tag, msg, tr) -> {
             if (severity < 0 || severity >= severities.length) {
                 severity = 3;
             }
@@ -89,7 +90,7 @@ public class ChannelSinkTask extends SinkTask {
         };
 
         try {
-            ably = new AblyRealtime(config.clientOptions);
+            ably = new AblyRealtime(connectorConfig.clientOptions);
         } catch (AblyException e) {
             logger.error("error initializing ably client", e);
         }
