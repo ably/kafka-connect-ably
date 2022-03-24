@@ -264,6 +264,9 @@ public class ChannelSinkTaskIT {
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
+
+
+
     //let's use this method to create different settings
     private Map<String, String> createSettings(@Nonnull String channel, String cipherKey, String channelParams, String messageName) {
         Map<String, String> settings = new HashMap<>();
@@ -289,40 +292,5 @@ public class ChannelSinkTaskIT {
     }
 
 
-    /// when cipher key is given, there seems to be a problem with message publishing
-    /**
-    @Test
-    public void testMessagePublish_messageDecryptableWhenCipherKeyGiven() throws Exception {
-        final String channelName = "test-channel";
-        // topic1
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
-
-        final String cipherKey = "!A%D*G-KaNdRgUkXp2s5v8y/B?E(H+Mb";
-        Map<String, String> settings = createSettings(channelName, cipherKey,null,null );
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
-        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
-
-        // subscribe to the Ably channel
-        Channel channel = ablyClient.channels.get(channelName);
-        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
-
-        // produce a message on the Kafka topic
-        connectCluster.kafka().produce(topic, "foo", "bar");
-
-        // wait 5s for the message to arrive on the Ably channel
-        messageWaiter.waitFor(1, TIMEOUT);
-        final List<Message> receivedMessages = messageWaiter.receivedMessages;
-        assertEquals(receivedMessages.size(), 1, "Unexpected message count");
-        final Message message = receivedMessages.get(0);
-        final Message decodedMessage =  Message.fromEncoded(String.valueOf(message.data), ChannelOptions.withCipherKey(cipherKey));
-        assertEquals(decodedMessage.data, "foo", "Unexpected message data");
-        // delete connector
-        connectCluster.deleteConnector(CONNECTOR_NAME);
-    }
-    **/
-
-    //todo add other tests for cipher key
-    //todo add tests for other channel params
 
 }
