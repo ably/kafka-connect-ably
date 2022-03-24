@@ -1,12 +1,12 @@
 /**
  * Copyright © 2021 Ably Real-time Ltd. (support@ably.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -80,7 +80,7 @@ public class ChannelSinkTaskIT {
         final String topic = TOPICS.split(",")[0];
         connectCluster.kafka().createTopic(topic);
 
-        Map<String, String> settings = createSettings(channelName,null ,null ,null );
+        Map<String, String> settings = createSettings(channelName, null, null, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
@@ -108,7 +108,7 @@ public class ChannelSinkTaskIT {
         connectCluster.kafka().createTopic(topic);
 
         final String topicedChannelName = "#{topic}_channel";
-        Map<String, String> settings = createSettings(topicedChannelName,null ,null ,null );
+        Map<String, String> settings = createSettings(topicedChannelName, null, null, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
@@ -136,7 +136,7 @@ public class ChannelSinkTaskIT {
         final String keyName = "key1";
         final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
-        Map<String, String> settings = createSettings(channelName,null ,null ,messageName );
+        Map<String, String> settings = createSettings(channelName, null, null, messageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
@@ -161,7 +161,7 @@ public class ChannelSinkTaskIT {
         connectCluster.kafka().createTopic(topic);
         final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
-        Map<String, String> settings = createSettings(channelName,null ,null ,messageName );
+        Map<String, String> settings = createSettings(channelName, null, null, messageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
@@ -171,7 +171,7 @@ public class ChannelSinkTaskIT {
 
         // produce a message on the Kafka topic
         connectCluster.kafka().produce(topic, null, "bar");
-        connectCluster.assertions().assertConnectorIsRunningAndTasksHaveFailed(CONNECTOR_NAME,1, "Connector tasks did not start in time.");
+        connectCluster.assertions().assertConnectorIsRunningAndTasksHaveFailed(CONNECTOR_NAME, 1, "Connector tasks did not start in time.");
 
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
@@ -181,8 +181,6 @@ public class ChannelSinkTaskIT {
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
-  //find a way to test that an exception is thrown when the channel name is invalid (eg key name configured by not sent)
-
     //message name tests
     @Test
     public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() throws Exception {
@@ -191,7 +189,7 @@ public class ChannelSinkTaskIT {
         connectCluster.kafka().createTopic(topic);
         final String channelName = "channel1";
         final String topicedMessageName = "#{topic}_message";
-        Map<String, String> settings = createSettings(channelName,null ,null ,topicedMessageName );
+        Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
@@ -218,7 +216,7 @@ public class ChannelSinkTaskIT {
         final String keyName = "key1";
         final String channelName = "channel1";
         final String topicedMessageName = "#{key}_message";
-        Map<String, String> settings = createSettings(channelName,null ,null ,topicedMessageName );
+        Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
@@ -245,7 +243,7 @@ public class ChannelSinkTaskIT {
         final String keyName = "key1";
         final String channelName = "channel1";
         final String topicedMessageName = "#{topic}_#{key}_message";
-        Map<String, String> settings = createSettings(channelName,null ,null ,topicedMessageName );
+        Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
@@ -266,8 +264,7 @@ public class ChannelSinkTaskIT {
     }
 
 
-
-    //let's use this method to create different settings
+    //Use this method to create different settings
     private Map<String, String> createSettings(@Nonnull String channel, String cipherKey, String channelParams, String messageName) {
         Map<String, String> settings = new HashMap<>();
         settings.put(CONNECTOR_CLASS_CONFIG, SINK_CONNECTOR_CLASS_NAME);
@@ -290,7 +287,4 @@ public class ChannelSinkTaskIT {
         }
         return settings;
     }
-
-
-
 }
