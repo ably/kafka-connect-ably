@@ -3,8 +3,6 @@ package com.ably.kafka.connect;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.ChannelMode;
 import io.ably.lib.types.ChannelOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +25,6 @@ class DefaultChannelConfig implements ChannelConfig {
     }
 
     public ChannelOptions getOptions() throws ChannelSinkConnectorConfig.ConfigException {
-        final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
         ChannelOptions channelOptions;
         final String cipherKey = sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY);
 
@@ -35,7 +32,6 @@ class DefaultChannelConfig implements ChannelConfig {
             try {
                 channelOptions = ChannelOptions.withCipherKey(cipherKey);
             } catch (AblyException e) {
-                logger.error("Error configuring channel cipher key", e);
                 throw new ChannelSinkConnectorConfig.ConfigException("Error configuring channel cipher key", e);
             }
         } else {
@@ -49,8 +45,6 @@ class DefaultChannelConfig implements ChannelConfig {
     }
 
     private Map<String, String> getParams(final List<String> params) throws ChannelSinkConnectorConfig.ConfigException {
-        final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
-
         final Map<String, String> parsedParams = new HashMap<>();
         for (final String param : params) {
             final String[] parts = param.split("=");
@@ -59,9 +53,7 @@ class DefaultChannelConfig implements ChannelConfig {
                 final String paramVal = parts[1];
                 parsedParams.put(paramKey, paramVal);
             } else {
-                ChannelSinkConnectorConfig.ConfigException e = new ChannelSinkConnectorConfig.ConfigException(String.format("invalid param string %s", param));
-                logger.error("invalid param in channel params configuration", e);
-                throw e;
+                throw new ChannelSinkConnectorConfig.ConfigException(String.format("invalid param in channel params configuration %s", param));
             }
         }
 

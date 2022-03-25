@@ -116,6 +116,7 @@ public class ChannelSinkTask extends SinkTask {
                     throw new RetriableException("Failed to publish to Ably when queueMessages is disabled.", e);
                 }
             } catch (ChannelSinkConnectorConfig.ConfigException e) {
+                logger.error(e.getMessage(), e);
                 throw new ConnectException("Configuration error", e);
             }
         }
