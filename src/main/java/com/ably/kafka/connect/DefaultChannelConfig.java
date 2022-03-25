@@ -31,7 +31,7 @@ class DefaultChannelConfig implements ChannelConfig {
         ChannelOptions channelOptions;
         final String cipherKey = sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY);
 
-        if (cipherKey != null && !cipherKey.trim().isEmpty()) {
+        if (cipherKey != null) {
             try {
                 channelOptions = ChannelOptions.withCipherKey(cipherKey);
             } catch (AblyException e) {
