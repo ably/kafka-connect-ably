@@ -47,8 +47,9 @@ public class ChannelSinkTask extends SinkTask {
         logger.info("Starting Ably channel Sink task");
 
         final ChannelSinkConnectorConfig config = new ChannelSinkConnectorConfig(settings);
-        channelSinkMapping = new DefaultChannelSinkMapping(config, new ConfigValueEvaluator());
-        messageSinkMapping = new MessageSinkMappingImpl();
+        final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
+        channelSinkMapping = new DefaultChannelSinkMapping(config, configValueEvaluator);
+        messageSinkMapping = new MessageSinkMappingImpl(config, configValueEvaluator);
 
         if (config.clientOptions == null) {
             logger.error("Ably client options were not initialized due to invalid configuration.");

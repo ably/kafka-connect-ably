@@ -126,6 +126,7 @@ The advanced properties that can be configured for the connector are:
 
 | Property | Description | Type | Default |
 | -------- | ----------- | ---- | ------- |
+| message.name | Ably message name to publish. | *String* |  |
 | client.async.http.threadpool.size | The size of the asyncHttp threadpool. | *Integer* | 64 |
 | client.auto.connect | Sets whether the initiation of a connection when the library is instanced is automatic or not. | *Boolean* | True |
 | client.channel.cipher.key | Sets whether encryption is enforced for the channel when not null. Also specifies encryption-related parameters such as algorithm, chaining mode, key length and key. | *String* ||
@@ -162,6 +163,8 @@ You can configure your channels dynamically by using `#{topic}` and/or `#{key}` 
 Configurations that are supported:
 * `channel`
   * For example. if you define a channel value with `channel_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the channel will be configured with `channel_topic1_key1` value.
+* `message.name`
+  * For example, if you define a `message.name` value with `message_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the `message.name` will be configured with `message_topic1_key1` value.
 
 ## Contributing
 

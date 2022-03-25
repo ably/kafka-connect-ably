@@ -15,43 +15,67 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class MessageSinkMappingTest {
-    private MessageSinkMapping sinkMapping = new MessageSinkMappingImpl();
+    private static final String STATIC_MESSAGE_NAME = "static-message";
+    private static final String DYNAMIC_MESSAGE_PATTERN = "message_#{topic}_#{key}";
+    private static final Map<String,String> baseConfigMap = Map.of("channel", "channelX", "client.key",
+            "test-key", "client.id", "test-id");
+    private static final   Map<String,String> configMapWithStaticMessageName = Map.of("channel", "channelX", "client.key",
+            "test-key", "client.id", "test-id","message.name", STATIC_MESSAGE_NAME);
+    private static final   Map<String,String> configMapWithPatternedMessageName = Map.of("channel", "channelX", "client.key",
+            "test-key", "client.id", "test-id","message.name", DYNAMIC_MESSAGE_PATTERN);
+    private final ConfigValueEvaluator evaluator = new ConfigValueEvaluator();
 
-    /**
-     * Follwoing tests only test the current state where the name is static, this is going to change when we base message
-     * name on record
-     */
+    private MessageSinkMapping sinkMapping;
+
+
     @Test
-    void testGetSink_messageNameIsAlwaysSink() {
+    void testGetMessage_messageNameIsNullWhenNotProvided() {
         //given
-        final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
+        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
+        final SinkRecord record = new SinkRecord("not_important", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
         final Message message = sinkMapping.getMessage(record);
 
         //then
-        assertEquals(message.name, "sink");
-    }
-
-    //we always expect byte arrays
-    @Test
-    void testGetSink_messageConversionFailsWithInvalidKeyType() {
-        //given
-        final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key", Schema.BYTES_SCHEMA, "value", 0);
-
-        //then expect
-        assertThrows(ClassCastException.class, () -> {
-            //when
-            sinkMapping.getMessage(record);
-        });
+        assertNull(message.name);
     }
 
     @Test
-    void testGetSink_messageDataIsTheSameWithRecordValue() {
+    void testGetMessage_messageNameIsStaticWhenStaticConfigProvided() {
         //given
+        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(configMapWithStaticMessageName),evaluator);
+        final SinkRecord record = new SinkRecord("not_important", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
+
+        //when
+        final Message message = sinkMapping.getMessage(record);
+
+        //then
+        assertEquals(STATIC_MESSAGE_NAME,message.name);
+    }
+
+    @Test
+    void testGetMessage_messageNameIsInterpolatedWhenPatternedConfigProvided() {
+        //given
+        //"message_#{topic}_#{key}"
+        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(configMapWithPatternedMessageName),evaluator);
+        final SinkRecord record = new SinkRecord("niceTopic", 0, Schema.BYTES_SCHEMA, "niceKey".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
+
+        //when
+        final Message message = sinkMapping.getMessage(record);
+
+        //then
+        assertEquals("message_niceTopic_niceKey",message.name);
+    }
+
+
+    @Test
+    void testGetMessage_messageDataIsTheSameWithRecordValue() {
+        //given
+        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -61,9 +85,11 @@ class MessageSinkMappingTest {
         assertEquals(record.value(), messageData);
     }
 
+
     @Test
-    void testGetSink_messageId() {
+    void testGetMessage_messageIdIsSetBasedOnRecordValues() {
         //given
+        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -73,15 +99,15 @@ class MessageSinkMappingTest {
         assertEquals(messageId, String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset()));
     }
 
+    ///Please beware that keyws we are using here are not the same as the ones used here is different than the key we use for interpolation
     @Test
-    void testGetSink_messageExtras_sentAndReceivedKeysAreTheSame() {
+    void testGetMessage_sentAndReceivedExtrasKeysAreTheSame() {
         //given
+        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
         final MessageExtras messageExtras = sinkMapping.getMessage(record).extras;
-
-        //then
         JsonUtils.JsonUtilsObject extras = JsonUtils.object();
         byte[] key = (byte[]) record.key();
         extras.add("key", Base64.getEncoder().encodeToString(key));
@@ -90,12 +116,15 @@ class MessageSinkMappingTest {
 
         String receivedKey = receivedObject.get("key").getAsString();
         String sentKey = Base64.getEncoder().encodeToString(key);
+
+        //then
         assertEquals(receivedKey, sentKey);
     }
 
     @Test
-    void testGetSink_messageExtras_recordHeaders() {
+    void testGetMessage_recordHeadersAreReceivedCorrectly() {
         //given
+        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("key1", "value1", "key2", "value2");
         for (Map.Entry<String, String> entry : headersMap.entrySet()) {
