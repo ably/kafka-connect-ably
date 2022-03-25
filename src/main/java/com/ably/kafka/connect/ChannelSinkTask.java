@@ -48,7 +48,7 @@ public class ChannelSinkTask extends SinkTask {
 
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(settings);
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
-        final ChannelConfig channelConfig = new ChannelConfigImpl(connectorConfig);
+        final ChannelConfig channelConfig = new DefaultChannelConfig(connectorConfig);
         channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator, channelConfig);
         messageSinkMapping = new MessageSinkMappingImpl(connectorConfig, configValueEvaluator);
 
