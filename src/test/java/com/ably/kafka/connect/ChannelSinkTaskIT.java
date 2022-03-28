@@ -72,6 +72,21 @@ public class ChannelSinkTaskIT {
         AblyHelpers.deleteTestApp(appSpec);
     }
 
+    // verify task is running
+    @Test
+    public void testMessagePublish_correctConfigAtLeastATaskIsRunning() throws Exception {
+        final String channelName = "test-channel";
+        final String topic = TOPICS.split(",")[0];
+
+        connectCluster.kafka().createTopic(topic);
+        Map<String, String> settings = createSettings(channelName, null, null, null);
+        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
+
+        // delete connector
+        connectCluster.deleteConnector(CONNECTOR_NAME);
+    }
+
     //channel name tests
     @Test
     public void testMessagePublish_channelExistsWithStaticChannelName() throws Exception {
@@ -82,7 +97,6 @@ public class ChannelSinkTaskIT {
 
         Map<String, String> settings = createSettings(channelName, null, null, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
-        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
         // subscribe to the Ably channel
         Channel channel = ablyClient.channels.get(channelName);
@@ -110,7 +124,6 @@ public class ChannelSinkTaskIT {
         final String topicedChannelName = "#{topic}_channel";
         Map<String, String> settings = createSettings(topicedChannelName, null, null, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
-        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
         // subscribe to the Ably channel
         Channel channel = ablyClient.channels.get("topic1_channel");
@@ -138,7 +151,6 @@ public class ChannelSinkTaskIT {
         final String messageName = "message1";
         Map<String, String> settings = createSettings(channelName, null, null, messageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
-        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
         // subscribe to interpolated channel
         Channel channel = ablyClient.channels.get("topic1_key1_channel");
@@ -191,7 +203,6 @@ public class ChannelSinkTaskIT {
         final String topicedMessageName = "#{topic}_message";
         Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
-        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
         // subscribe to the Ably channel
         Channel channel = ablyClient.channels.get(channelName);
@@ -218,7 +229,6 @@ public class ChannelSinkTaskIT {
         final String topicedMessageName = "#{key}_message";
         Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
-        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
         // subscribe to the Ably channel
         Channel channel = ablyClient.channels.get(channelName);
@@ -245,7 +255,6 @@ public class ChannelSinkTaskIT {
         final String topicedMessageName = "#{topic}_#{key}_message";
         Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
-        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
         // subscribe to the Ably channel
         Channel channel = ablyClient.channels.get(channelName);
