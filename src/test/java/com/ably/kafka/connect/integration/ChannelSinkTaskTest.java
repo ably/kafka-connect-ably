@@ -127,8 +127,7 @@ public class ChannelSinkTaskTest {
     @Test
     public void testMessagePublish_ChannelExistsWithTopicPlaceholder() {
         // topic1
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
+        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
 
         final String topicedChannelName = "#{topic}_channel";
         Map<String, String> settings = createSettings(topicedChannelName, null, null, null);
@@ -139,7 +138,7 @@ public class ChannelSinkTaskTest {
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
         // produce a message on the Kafka topic
-        connectCluster.kafka().produce(topic, "foo", "bar");
+        connectCluster.kafka().produce(DEFAULT_TOPIC, "foo", "bar");
 
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
