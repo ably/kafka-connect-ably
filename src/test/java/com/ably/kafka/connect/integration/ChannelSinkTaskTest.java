@@ -40,6 +40,15 @@ import static org.apache.kafka.connect.runtime.ConnectorConfig.VALUE_CONVERTER_C
 import static org.apache.kafka.connect.runtime.SinkConnectorConfig.TOPICS_CONFIG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Integration test for {@link ChannelSinkTask}
+ * This test class contains tests to specifically test the conditions where the {@link ChannelSinkTask} should run and
+ * different behviours we expect from it. EmbeddedConnectCluster is used to start a Kafka Connect cluster  and to
+ * do some assertions of our interest.
+ * System under test class is implicitly provided by connector configuration settings.
+ * See settings.put(CONNECTOR_CLASS_CONFIG, SINK_CONNECTOR_CLASS_NAME);
+ */
+
 public class ChannelSinkTaskTest {
     private static final String CONNECTOR_NAME = "ably-test-connector";
     private static final String SINK_CONNECTOR_CLASS_NAME = ChannelSinkConnector.class.getSimpleName();
