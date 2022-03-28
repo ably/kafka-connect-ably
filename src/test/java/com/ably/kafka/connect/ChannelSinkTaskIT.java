@@ -177,18 +177,10 @@ public class ChannelSinkTaskIT {
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
-        // subscribe to interpolated channel
-        Channel channel = ablyClient.channels.get("topic1_key1_channel");
-        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
-
         // produce a message on the Kafka topic
         connectCluster.kafka().produce(topic, null, "bar");
         connectCluster.assertions().assertConnectorIsRunningAndTasksHaveFailed(CONNECTOR_NAME, 1, "Connector tasks did not start in time.");
 
-        // wait 5s for the message to arrive on the Ably channel
-        messageWaiter.waitFor(1, TIMEOUT);
-        final List<Message> receivedMessages = messageWaiter.receivedMessages;
-        assertEquals(receivedMessages.size(), 0, "Unexpected message count");
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
