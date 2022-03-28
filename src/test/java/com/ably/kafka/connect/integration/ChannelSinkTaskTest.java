@@ -14,8 +14,11 @@
   limitations under the License.
  */
 
-package com.ably.kafka.connect;
+package com.ably.kafka.connect.integration;
 
+import com.ably.kafka.connect.AblyHelpers;
+import com.ably.kafka.connect.ChannelSinkConnector;
+import com.ably.kafka.connect.ChannelSinkConnectorConfig;
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.Message;
@@ -37,7 +40,7 @@ import static org.apache.kafka.connect.runtime.ConnectorConfig.VALUE_CONVERTER_C
 import static org.apache.kafka.connect.runtime.SinkConnectorConfig.TOPICS_CONFIG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ChannelSinkTaskIT {
+public class ChannelSinkTaskTest {
     private static final String CONNECTOR_NAME = "ably-test-connector";
     private static final String SINK_CONNECTOR_CLASS_NAME = ChannelSinkConnector.class.getSimpleName();
     private static final int NUM_WORKERS = 1;
