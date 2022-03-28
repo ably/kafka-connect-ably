@@ -41,8 +41,8 @@ import static org.apache.kafka.connect.runtime.SinkConnectorConfig.TOPICS_CONFIG
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Integration test for {@link ChannelSinkTask}
- * This test class contains tests to specifically test the conditions where the {@link ChannelSinkTask} should run and
+ * Integration test for {@link com.ably.kafka.connect.ChannelSinkTask}
+ * This test class contains tests to specifically test the conditions where the {@link com.ably.kafka.connect.ChannelSinkTask} should run and
  * different behviours we expect from it. EmbeddedConnectCluster is used to start a Kafka Connect cluster  and to
  * do some assertions of our interest.
  * System under test class is implicitly provided by connector configuration settings.
