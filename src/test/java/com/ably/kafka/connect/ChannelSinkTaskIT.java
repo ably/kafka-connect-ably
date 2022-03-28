@@ -89,7 +89,7 @@ public class ChannelSinkTaskIT {
 
     //channel name tests
     @Test
-    public void testMessagePublish_channelExistsWithStaticChannelName() throws Exception {
+    public void testMessagePublish_channelExistsWithStaticChannelName() {
         final String channelName = "test-channel";
         // topic1
         final String topic = TOPICS.split(",")[0];
@@ -114,9 +114,8 @@ public class ChannelSinkTaskIT {
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
-
     @Test
-    public void testMessagePublish_ChannelExistsWithTopicPlaceholder() throws Exception {
+    public void testMessagePublish_ChannelExistsWithTopicPlaceholder() {
         // topic1
         final String topic = TOPICS.split(",")[0];
         connectCluster.kafka().createTopic(topic);
@@ -141,9 +140,8 @@ public class ChannelSinkTaskIT {
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
-
     @Test
-    public void testMessagePublish_ChannelExistsWithTopicAndKeyPlaceholder() throws Exception {
+    public void testMessagePublish_ChannelExistsWithTopicAndKeyPlaceholder() {
         final String topic = TOPICS.split(",")[0];
         connectCluster.kafka().createTopic(topic);
         final String keyName = "key1";
@@ -187,7 +185,7 @@ public class ChannelSinkTaskIT {
 
     //message name tests
     @Test
-    public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() throws Exception {
+    public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() {
         // topic1
         final String topic = TOPICS.split(",")[0];
         connectCluster.kafka().createTopic(topic);
@@ -213,7 +211,7 @@ public class ChannelSinkTaskIT {
     }
 
     @Test
-    public void testMessagePublish_MessageReceivedWithKeyPlaceholderMessageName() throws Exception {
+    public void testMessagePublish_MessageReceivedWithKeyPlaceholderMessageName() {
         final String topic = TOPICS.split(",")[0];
         connectCluster.kafka().createTopic(topic);
         final String keyName = "key1";
@@ -239,7 +237,7 @@ public class ChannelSinkTaskIT {
     }
 
     @Test
-    public void testMessagePublish_MessageReceivedWithTopicAndKeyPlaceholderMessageName() throws Exception {
+    public void testMessagePublish_MessageReceivedWithTopicAndKeyPlaceholderMessageName() {
         final String topic = TOPICS.split(",")[0];
         connectCluster.kafka().createTopic(topic);
         final String keyName = "key1";
@@ -263,7 +261,6 @@ public class ChannelSinkTaskIT {
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
-
 
     //Use this method to create different settings
     private Map<String, String> createSettings(@Nonnull String channel, String cipherKey, String channelParams, String messageName) {
