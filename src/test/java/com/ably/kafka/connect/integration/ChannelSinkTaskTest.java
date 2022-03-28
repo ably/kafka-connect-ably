@@ -1,6 +1,4 @@
 /*
-  Copyright © 2021 Ably Real-time Ltd. (support@ably.com)
-  <p>
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -64,17 +62,12 @@ public class ChannelSinkTaskTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        // create a test Ably app
         appSpec = AblyHelpers.createTestApp();
 
-        // setup Connect cluster with defaults
         connectCluster = new EmbeddedConnectCluster.Builder().build();
-
-        // start Connect cluster
         connectCluster.start();
         connectCluster.assertions().assertAtLeastNumWorkersAreUp(NUM_WORKERS, "Initial group of workers did not start in time.");
 
-        // connect Ably client
         ablyClient = AblyHelpers.realtimeClient(appSpec);
     }
 
@@ -85,17 +78,16 @@ public class ChannelSinkTaskTest {
         AblyHelpers.deleteTestApp(appSpec);
     }
 
-    // verify task is running
     @Test
     public void testMessagePublish_correctConfigAtLeastATaskIsRunning() throws Exception {
         final String channelName = "test-channel";
 
         connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         Map<String, String> settings = createSettings(channelName, null, null, null);
+
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
-        // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
@@ -108,44 +100,35 @@ public class ChannelSinkTaskTest {
         Map<String, String> settings = createSettings(channelName, null, null, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
-        // subscribe to the Ably channel
         Channel channel = ablyClient.channels.get(channelName);
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
-        // produce a message on the Kafka topic
         connectCluster.kafka().produce(DEFAULT_TOPIC, "foo", "bar");
 
-        // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 1);
 
-        // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     @Test
     public void testMessagePublish_ChannelExistsWithTopicPlaceholder() {
-        // topic1
         connectCluster.kafka().createTopic(DEFAULT_TOPIC);
 
         final String topicedChannelName = "#{topic}_channel";
         Map<String, String> settings = createSettings(topicedChannelName, null, null, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
-        // subscribe to the Ably channel
         Channel channel = ablyClient.channels.get("topic1_channel");
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
-        // produce a message on the Kafka topic
         connectCluster.kafka().produce(DEFAULT_TOPIC, "foo", "bar");
 
-        // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 1);
 
-        // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
@@ -158,18 +141,15 @@ public class ChannelSinkTaskTest {
         Map<String, String> settings = createSettings(channelName, null, null, messageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
-        // subscribe to interpolated channel
         Channel channel = ablyClient.channels.get("topic1_key1_channel");
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
-        // produce a message on the Kafka topic
         connectCluster.kafka().produce(DEFAULT_TOPIC, keyName, "bar");
 
-        // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 1);
-        // delete connector
+
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
@@ -182,15 +162,12 @@ public class ChannelSinkTaskTest {
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
-        // produce a message on the Kafka topic
         connectCluster.kafka().produce(DEFAULT_TOPIC, null, "bar");
         connectCluster.assertions().assertConnectorIsRunningAndTasksHaveFailed(CONNECTOR_NAME, 1, "Connector tasks did not start in time.");
 
-        // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
-    //message name tests
     @Test
     public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() {
         connectCluster.kafka().createTopic(DEFAULT_TOPIC);
@@ -199,19 +176,16 @@ public class ChannelSinkTaskTest {
         Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
-        // subscribe to the Ably channel
         Channel channel = ablyClient.channels.get(channelName);
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
-        // produce a message on the Kafka topic
         connectCluster.kafka().produce(DEFAULT_TOPIC, "foo", "bar");
 
-        // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 1);
         assertEquals(receivedMessages.get(0).name, "topic1_message", "Unexpected message name");
-        // delete connector
+
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
@@ -224,19 +198,16 @@ public class ChannelSinkTaskTest {
         Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
-        // subscribe to the Ably channel
         Channel channel = ablyClient.channels.get(channelName);
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
-        // produce a message on the Kafka topic
         connectCluster.kafka().produce(DEFAULT_TOPIC, keyName, "bar");
 
-        // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 1);
         assertEquals(receivedMessages.get(0).name, "key1_message", "Unexpected message name");
-        // delete connector
+
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
@@ -249,19 +220,16 @@ public class ChannelSinkTaskTest {
         Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
-        // subscribe to the Ably channel
         Channel channel = ablyClient.channels.get(channelName);
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
-        // produce a message on the Kafka topic
         connectCluster.kafka().produce(DEFAULT_TOPIC, keyName, "bar");
 
-        // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 1);
         assertEquals(receivedMessages.get(0).name, "topic1_key1_message", "Unexpected message name");
-        // delete connector
+
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
@@ -269,7 +237,6 @@ public class ChannelSinkTaskTest {
         assertEquals(receivedMessages.size(), expectedMessageCount, "Unexpected message count");
     }
 
-    //Use this method to create different settings
     private Map<String, String> createSettings(@Nonnull String channel, String cipherKey, String channelParams, String messageName) {
         Map<String, String> settings = new HashMap<>();
         settings.put(CONNECTOR_CLASS_CONFIG, SINK_CONNECTOR_CLASS_NAME);
