@@ -118,7 +118,7 @@ public class ChannelSinkTaskTest {
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
-        assertEquals(receivedMessages.size(), 1, "Unexpected message count");
+        assertReceivedExactAmountOfMessages(receivedMessages, 1);
 
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
@@ -143,7 +143,7 @@ public class ChannelSinkTaskTest {
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
-        assertEquals(receivedMessages.size(), 1, "Unexpected message count");
+        assertReceivedExactAmountOfMessages(receivedMessages, 1);
 
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
@@ -168,7 +168,7 @@ public class ChannelSinkTaskTest {
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
-        assertEquals(receivedMessages.size(), 1, "Unexpected message count");
+        assertReceivedExactAmountOfMessages(receivedMessages, 1);
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
@@ -209,7 +209,7 @@ public class ChannelSinkTaskTest {
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
-        assertEquals(receivedMessages.size(), 1, "Unexpected message count");
+        assertReceivedExactAmountOfMessages(receivedMessages, 1);
         assertEquals(receivedMessages.get(0).name, "topic1_message", "Unexpected message name");
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
@@ -234,7 +234,7 @@ public class ChannelSinkTaskTest {
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
-        assertEquals(receivedMessages.size(), 1, "Unexpected message count");
+        assertReceivedExactAmountOfMessages(receivedMessages, 1);
         assertEquals(receivedMessages.get(0).name, "key1_message", "Unexpected message name");
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
@@ -259,10 +259,14 @@ public class ChannelSinkTaskTest {
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
-        assertEquals(receivedMessages.size(), 1, "Unexpected message count");
+        assertReceivedExactAmountOfMessages(receivedMessages, 1);
         assertEquals(receivedMessages.get(0).name, "topic1_key1_message", "Unexpected message name");
         // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
+    }
+
+    private void assertReceivedExactAmountOfMessages(final List<Message> receivedMessages, int expectedMessageCount) {
+        assertEquals(receivedMessages.size(), expectedMessageCount, "Unexpected message count");
     }
 
     //Use this method to create different settings
