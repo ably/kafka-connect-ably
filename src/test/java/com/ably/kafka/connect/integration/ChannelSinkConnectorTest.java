@@ -1,5 +1,8 @@
-package com.ably.kafka.connect;
+package com.ably.kafka.connect.integration;
 
+import com.ably.kafka.connect.AblyHelpers;
+import com.ably.kafka.connect.ChannelSinkConnector;
+import com.ably.kafka.connect.ChannelSinkConnectorConfig;
 import org.apache.kafka.connect.converters.ByteArrayConverter;
 import org.apache.kafka.connect.util.clusters.EmbeddedConnectCluster;
 import org.junit.jupiter.api.AfterEach;
@@ -15,7 +18,7 @@ import static org.apache.kafka.connect.runtime.ConnectorConfig.TASKS_MAX_CONFIG;
 import static org.apache.kafka.connect.runtime.ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG;
 import static org.apache.kafka.connect.runtime.SinkConnectorConfig.TOPICS_CONFIG;
 
-public class ChannelSinkConnectorIT {
+public class ChannelSinkConnectorTest {
 
     private static final String CONNECTOR_NAME = "ably-test-connector";
     private static final String SINK_CONNECTOR_CLASS_NAME = ChannelSinkConnector.class.getSimpleName();
