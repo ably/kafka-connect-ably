@@ -30,13 +30,9 @@ public class ChannelSinkConnectorTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        // setup Connect cluster with defaults
         connectCluster = new EmbeddedConnectCluster.Builder().build();
-
-        // start Connect cluster
         connectCluster.start();
         connectCluster.assertions().assertAtLeastNumWorkersAreUp(NUM_WORKERS, "Initial group of workers did not start in time.");
-
     }
 
     @AfterEach
@@ -47,65 +43,53 @@ public class ChannelSinkConnectorTest {
     @Test
     public void testConnector_connectorWorksWithValidConfiguration() throws Exception {
         final String channelName = "test-channel";
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
 
         Map<String, String> settings = createSettings(channelName, "test-key", "some_client_id", TOPICS);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
-        // delete connector
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     @Test
     public void testConnector_connectorFailsWithNoChannelNameGiven() throws Exception {
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
-
         Map<String, String> settings = createSettings(null, "test-key", "some_client_id", TOPICS);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndTasksAreStopped(CONNECTOR_NAME, "Connector was expected to fail when channel name is not available.");
-        // delete connector
+
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     @Test
     public void testConnector_connectorFailsWithNoClientKeyGiven() throws Exception {
         final String channelName = "test-channel";
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
 
         Map<String, String> settings = createSettings(channelName, null, "some_client_id", TOPICS);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndTasksAreStopped(CONNECTOR_NAME, "Connector was expected to fail when client key is not available.");
-        // delete connector
+
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     @Test
     public void testConnector_connectorFailsWithNoClientIdGiven() throws Exception {
         final String channelName = "test-channel";
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
 
         Map<String, String> settings = createSettings(channelName, null, "some_client_id", TOPICS);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndTasksAreStopped(CONNECTOR_NAME, "Connector was expected to fail when client id is not available.");
-        // delete connector
+
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     @Test
     public void testConnector_connectorFailsWithNoTopicsGiven() throws Exception {
         final String channelName = "test-channel";
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
 
         Map<String, String> settings = createSettings(channelName, "some_fake_key", "some_client_id", null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndTasksAreStopped(CONNECTOR_NAME, "Connector was expected to fail when client id is not available.");
-        // delete connector
+
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
