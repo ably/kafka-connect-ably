@@ -56,6 +56,7 @@ public class ChannelSinkTaskTest {
     private static final int NUM_TASKS = 1;
     public static final long TIMEOUT = 5000L;
     private static final String TOPICS = "topic1,topic2,topic3";
+    private static final String DEFAULT_TOPIC = TOPICS.split(",")[0];
 
     private EmbeddedConnectCluster connectCluster;
     private AblyHelpers.AppSpec appSpec;
@@ -88,9 +89,8 @@ public class ChannelSinkTaskTest {
     @Test
     public void testMessagePublish_correctConfigAtLeastATaskIsRunning() throws Exception {
         final String channelName = "test-channel";
-        final String topic = TOPICS.split(",")[0];
 
-        connectCluster.kafka().createTopic(topic);
+        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         Map<String, String> settings = createSettings(channelName, null, null, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
@@ -103,10 +103,8 @@ public class ChannelSinkTaskTest {
     @Test
     public void testMessagePublish_channelExistsWithStaticChannelName() {
         final String channelName = "test-channel";
-        // topic1
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
 
+        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         Map<String, String> settings = createSettings(channelName, null, null, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
@@ -115,7 +113,7 @@ public class ChannelSinkTaskTest {
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
         // produce a message on the Kafka topic
-        connectCluster.kafka().produce(topic, "foo", "bar");
+        connectCluster.kafka().produce(DEFAULT_TOPIC, "foo", "bar");
 
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
@@ -154,8 +152,7 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_ChannelExistsWithTopicAndKeyPlaceholder() {
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
+        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         final String keyName = "key1";
         final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
@@ -167,7 +164,7 @@ public class ChannelSinkTaskTest {
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
         // produce a message on the Kafka topic
-        connectCluster.kafka().produce(topic, keyName, "bar");
+        connectCluster.kafka().produce(DEFAULT_TOPIC, keyName, "bar");
 
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
@@ -179,8 +176,7 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_TaskFailedWhenKeyIsNotProvidedButPlaceholderProvided() throws Exception {
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
+        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
         Map<String, String> settings = createSettings(channelName, null, null, messageName);
@@ -188,7 +184,7 @@ public class ChannelSinkTaskTest {
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
         // produce a message on the Kafka topic
-        connectCluster.kafka().produce(topic, null, "bar");
+        connectCluster.kafka().produce(DEFAULT_TOPIC, null, "bar");
         connectCluster.assertions().assertConnectorIsRunningAndTasksHaveFailed(CONNECTOR_NAME, 1, "Connector tasks did not start in time.");
 
         // delete connector
@@ -198,9 +194,7 @@ public class ChannelSinkTaskTest {
     //message name tests
     @Test
     public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() {
-        // topic1
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
+        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         final String channelName = "channel1";
         final String topicedMessageName = "#{topic}_message";
         Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
@@ -211,7 +205,7 @@ public class ChannelSinkTaskTest {
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
         // produce a message on the Kafka topic
-        connectCluster.kafka().produce(topic, "foo", "bar");
+        connectCluster.kafka().produce(DEFAULT_TOPIC, "foo", "bar");
 
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
@@ -224,8 +218,7 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_MessageReceivedWithKeyPlaceholderMessageName() {
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
+        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         final String keyName = "key1";
         final String channelName = "channel1";
         final String topicedMessageName = "#{key}_message";
@@ -237,7 +230,7 @@ public class ChannelSinkTaskTest {
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
         // produce a message on the Kafka topic
-        connectCluster.kafka().produce(topic, keyName, "bar");
+        connectCluster.kafka().produce(DEFAULT_TOPIC, keyName, "bar");
 
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
@@ -250,8 +243,7 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_MessageReceivedWithTopicAndKeyPlaceholderMessageName() {
-        final String topic = TOPICS.split(",")[0];
-        connectCluster.kafka().createTopic(topic);
+        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         final String keyName = "key1";
         final String channelName = "channel1";
         final String topicedMessageName = "#{topic}_#{key}_message";
@@ -263,7 +255,7 @@ public class ChannelSinkTaskTest {
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
 
         // produce a message on the Kafka topic
-        connectCluster.kafka().produce(topic, keyName, "bar");
+        connectCluster.kafka().produce(DEFAULT_TOPIC, keyName, "bar");
 
         // wait 5s for the message to arrive on the Ably channel
         messageWaiter.waitFor(1, TIMEOUT);
