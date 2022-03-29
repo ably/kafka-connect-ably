@@ -53,6 +53,14 @@ public class ChannelSinkConnectorTest {
     }
 
     @Test
+    public void testConnector_connectorFailsWithNoTopicsGiven() {
+        final String channelName = "test-channel";
+
+        Map<String, String> settings = createSettings(channelName, "some_fake_key", "some_client_id", null);
+        assertThrows(org.apache.kafka.connect.runtime.rest.errors.ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
+    }
+
+    @Test
     public void testConnector_connectorWorksWithProxyNoPassword() throws Exception {
         final String channelName = "test-channel";
 
@@ -65,16 +73,6 @@ public class ChannelSinkConnectorTest {
 
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
-
-
-    @Test
-    public void testConnector_connectorFailsWithNoTopicsGiven() {
-        final String channelName = "test-channel";
-
-        Map<String, String> settings = createSettings(channelName, "some_fake_key", "some_client_id", null);
-        assertThrows(org.apache.kafka.connect.runtime.rest.errors.ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
-    }
-
 
 
    /* Settings that accepts all required properties as parameters,
