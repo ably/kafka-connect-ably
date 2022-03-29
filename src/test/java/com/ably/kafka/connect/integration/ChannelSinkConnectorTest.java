@@ -17,6 +17,7 @@ import static org.apache.kafka.connect.runtime.ConnectorConfig.KEY_CONVERTER_CLA
 import static org.apache.kafka.connect.runtime.ConnectorConfig.TASKS_MAX_CONFIG;
 import static org.apache.kafka.connect.runtime.ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG;
 import static org.apache.kafka.connect.runtime.SinkConnectorConfig.TOPICS_CONFIG;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ChannelSinkConnectorTest {
 
@@ -52,45 +53,26 @@ public class ChannelSinkConnectorTest {
     }
 
     @Test
-    public void testConnector_connectorFailsWithNoChannelNameGiven() throws Exception {
-        Map<String, String> settings = createSettings(null, "test-key", "some_client_id", TOPICS);
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
-        connectCluster.assertions().assertConnectorAndTasksAreStopped(CONNECTOR_NAME, "Connector was expected to fail when channel name is not available.");
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
-    }
-
-    @Test
-    public void testConnector_connectorFailsWithNoClientKeyGiven() throws Exception {
+    public void testConnector_connectorWorksWithProxyNoPassword() throws Exception {
         final String channelName = "test-channel";
 
-        Map<String, String> settings = createSettings(channelName, null, "some_client_id", TOPICS);
+        final Map<String, String> settings = createSettings(channelName, "test-key", "some_client_id", TOPICS);
+        settings.put(ChannelSinkConnectorConfig.CLIENT_PROXY,"true");
+        settings.put(ChannelSinkConnectorConfig.CLIENT_PROXY_HOST,"localhost");
+        settings.put(ChannelSinkConnectorConfig.CLIENT_PROXY_PORT,"8080");
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
-        connectCluster.assertions().assertConnectorAndTasksAreStopped(CONNECTOR_NAME, "Connector was expected to fail when client key is not available.");
+        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
-    @Test
-    public void testConnector_connectorFailsWithNoClientIdGiven() throws Exception {
-        final String channelName = "test-channel";
-
-        Map<String, String> settings = createSettings(channelName, null, "some_client_id", TOPICS);
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
-        connectCluster.assertions().assertConnectorAndTasksAreStopped(CONNECTOR_NAME, "Connector was expected to fail when client id is not available.");
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
-    }
 
     @Test
-    public void testConnector_connectorFailsWithNoTopicsGiven() throws Exception {
+    public void testConnector_connectorFailsWithNoTopicsGiven() {
         final String channelName = "test-channel";
 
         Map<String, String> settings = createSettings(channelName, "some_fake_key", "some_client_id", null);
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
-        connectCluster.assertions().assertConnectorAndTasksAreStopped(CONNECTOR_NAME, "Connector was expected to fail when client id is not available.");
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
+        assertThrows(org.apache.kafka.connect.runtime.rest.errors.ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
     }
 
 
@@ -105,7 +87,7 @@ public class ChannelSinkConnectorTest {
         Map<String, String> settings = new HashMap<>();
         settings.put(CONNECTOR_CLASS_CONFIG, SINK_CONNECTOR_CLASS_NAME);
         settings.put(TASKS_MAX_CONFIG, String.valueOf(NUM_TASKS));
-        settings.put(TOPICS_CONFIG, TOPICS);
+        settings.put(TOPICS_CONFIG, topics);
         settings.put(KEY_CONVERTER_CLASS_CONFIG, ByteArrayConverter.class.getName());
         settings.put(VALUE_CONVERTER_CLASS_CONFIG, ByteArrayConverter.class.getName());
         settings.put(ChannelSinkConnectorConfig.CHANNEL_CONFIG, channel);
