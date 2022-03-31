@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ChannelNameValidatorTest {
     final static String CHANNEL_KEY = "channel";
-    private ChannelNameValidator validator = new ChannelNameValidator();
+    private final ChannelNameValidator validator = new ChannelNameValidator();
 
     @Test
     void testValidChannelName() {
