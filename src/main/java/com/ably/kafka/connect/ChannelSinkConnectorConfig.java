@@ -295,6 +295,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .documentation(CHANNEL_CONFIG_DOC)
                     .importance(Importance.HIGH)
                     .validator(new ConfigDef.NonNullValidator())
+                    .validator(new ConfigDef.NonEmptyString())
                     .build()
             )
             .define(
@@ -309,6 +310,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .documentation(CLIENT_ID_DOC)
                     .importance(Importance.HIGH)
                     .validator(new ConfigDef.NonNullValidator())
+                    .validator(new ConfigDef.NonEmptyString())
                     .build()
             )
             .define(
