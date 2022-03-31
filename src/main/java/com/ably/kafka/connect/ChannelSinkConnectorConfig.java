@@ -5,6 +5,7 @@ import com.ably.kafka.connect.validators.AblyConfigValidators;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Type;
+import org.apache.kafka.connect.transforms.util.RegexValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -295,7 +296,8 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                 ConfigKeyBuilder.of(CHANNEL_CONFIG, Type.STRING)
                     .documentation(CHANNEL_CONFIG_DOC)
                     .importance(Importance.HIGH)
-                    .validator(new AblyConfigValidators(new ConfigDef.Validator[]{new ConfigDef.NonNullValidator(),new ConfigDef.NonEmptyString()}))
+                    .validator(new AblyConfigValidators(new ConfigDef.Validator[]{new ConfigDef.NonNullValidator(),
+                        new ConfigDef.NonEmptyString()}))
                     .build()
             )
             .define(
