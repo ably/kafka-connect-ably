@@ -67,6 +67,14 @@ public class ChannelSinkConnectorTest {
     }
 
     @Test
+    public void testConnector_connectorFailsWithEmptyClientIdGiven() {
+        final String channelName = "test-channel";
+
+        Map<String, String> settings = createSettings(channelName, "some_fake_key", "", TOPICS);
+        assertThrows(ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
+    }
+
+    @Test
     public void testConnector_connectorFailsWithNoClientKeyGiven() {
         final String channelName = "test-channel";
 
@@ -77,6 +85,18 @@ public class ChannelSinkConnectorTest {
     @Test
     public void testConnector_connectorFailsWithNoChannelNameGiven() {
         Map<String, String> settings = createSettings(null, "some_fake_key", "client_id", TOPICS);
+        assertThrows(ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
+    }
+
+    @Test
+    public void testConnector_connectorFailsWithEmptyChannelNameGiven() {
+        Map<String, String> settings = createSettings("", "some_fake_key", "client_id", TOPICS);
+        assertThrows(ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
+    }
+
+    @Test
+    public void testConnector_connectorFailsWithInvalidChannelNameGiven() {
+        Map<String, String> settings = createSettings("[invalid", "some_fake_key", "client_id", TOPICS);
         assertThrows(ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
     }
 
