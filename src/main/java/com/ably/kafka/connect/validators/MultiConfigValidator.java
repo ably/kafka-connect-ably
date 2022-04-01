@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  * This validator should be used to check the format of the channel name.
  * Other priority validators must be used first
  * */
-public class ChannelNameValidator implements ConfigDef.Validator {
+public class MultiConfigValidator implements ConfigDef.Validator {
     @Override
     public void ensureValid(String name, Object value) {
         final String patternString = "^([^:,\\s\\[].*)$";
