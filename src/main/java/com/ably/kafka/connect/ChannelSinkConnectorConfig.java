@@ -296,9 +296,11 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                 ConfigKeyBuilder.of(CHANNEL_CONFIG, Type.STRING)
                     .documentation(CHANNEL_CONFIG_DOC)
                     .importance(Importance.HIGH)
-                    .validator(new MultiConfigValidator(new ConfigDef.Validator[]{new ConfigDef.NonNullValidator(),
+                    .validator(new MultiConfigValidator(new ConfigDef.Validator[]{
+                        new ConfigDef.NonNullValidator(),
                         new ConfigDef.NonEmptyString(),
-                        new ChannelNameValidator()}))
+                        new ChannelNameValidator()
+                    }))
                     .build()
             )
             .define(
@@ -312,7 +314,10 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                 ConfigKeyBuilder.of(CLIENT_ID, Type.STRING)
                     .documentation(CLIENT_ID_DOC)
                     .importance(Importance.HIGH)
-                    .validator(new MultiConfigValidator(new ConfigDef.Validator[]{new ConfigDef.NonNullValidator(), new ConfigDef.NonEmptyString()}))
+                    .validator(new MultiConfigValidator(new ConfigDef.Validator[]{
+                        new ConfigDef.NonNullValidator(),
+                        new ConfigDef.NonEmptyString()
+                    }))
                     .build()
             )
             .define(
