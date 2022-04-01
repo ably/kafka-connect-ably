@@ -23,4 +23,15 @@ class ChannelNameValidatorTest {
     void testInvalidChannelName_withStartWithOpeningBracket_ThrowsException() {
         assertThrows(ConfigException.class, () -> validator.ensureValid(CHANNEL_KEY,"[invalid_channel"));
     }
+
+    @Test
+    void testInvalidChannelName_withStartWithComma_ThrowsException() {
+        assertThrows(ConfigException.class, () -> validator.ensureValid(CHANNEL_KEY,",invalid_channel"));
+    }
+
+    @Test
+    void testInvalidChannelName_withStartWithWhiteSpace_ThrowsException() {
+        assertThrows(ConfigException.class, () -> validator.ensureValid(CHANNEL_KEY," invalid_channel"));
+    }
+
 }
