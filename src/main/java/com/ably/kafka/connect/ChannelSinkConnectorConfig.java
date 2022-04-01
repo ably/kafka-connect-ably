@@ -1,7 +1,7 @@
 
 package com.ably.kafka.connect;
 
-import com.ably.kafka.connect.validators.AblyConfigValidators;
+import com.ably.kafka.connect.validators.MultiConfigValidator;
 import com.ably.kafka.connect.validators.ChannelNameValidator;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
@@ -296,7 +296,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                 ConfigKeyBuilder.of(CHANNEL_CONFIG, Type.STRING)
                     .documentation(CHANNEL_CONFIG_DOC)
                     .importance(Importance.HIGH)
-                    .validator(new AblyConfigValidators(new ConfigDef.Validator[]{new ConfigDef.NonNullValidator(),
+                    .validator(new MultiConfigValidator(new ConfigDef.Validator[]{new ConfigDef.NonNullValidator(),
                         new ConfigDef.NonEmptyString(),
                         new ChannelNameValidator()}))
                     .build()
@@ -312,7 +312,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                 ConfigKeyBuilder.of(CLIENT_ID, Type.STRING)
                     .documentation(CLIENT_ID_DOC)
                     .importance(Importance.HIGH)
-                    .validator(new AblyConfigValidators(new ConfigDef.Validator[]{new ConfigDef.NonNullValidator(), new ConfigDef.NonEmptyString()}))
+                    .validator(new MultiConfigValidator(new ConfigDef.Validator[]{new ConfigDef.NonNullValidator(), new ConfigDef.NonEmptyString()}))
                     .build()
             )
             .define(

@@ -7,13 +7,13 @@ import javax.annotation.Nonnull;
 Currently connector configurations take only a single validator per configuration. This class intends to combine and
 support multiple validators.
 * */
-public class AblyConfigValidators implements ConfigDef.Validator {
+public class MultiConfigValidator implements ConfigDef.Validator {
    private final ConfigDef.Validator[] validators;
 
    /**
     * @param validators validators to use. Please provide them by their priority of importance.
     */
-    public AblyConfigValidators(@Nonnull ConfigDef.Validator[] validators) {
+    public MultiConfigValidator(@Nonnull ConfigDef.Validator[] validators) {
         this.validators = validators;
     }
 
