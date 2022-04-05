@@ -108,7 +108,10 @@ public class ChannelSinkTask extends SinkTask {
             try {
                 final Channel channel = channelSinkMapping.getChannel(record, ably);
                 final Message message = messageSinkMapping.getMessage(record);
+                logger.info("Publishing message to channel {}", channel.name);
+                logger.info("Message: {}", message);
                 channel.publish(message);
+                logger.info("Published message to channel {}", channel.name);
             } catch (AblyException e) {
                 if (ably.options.queueMessages) {
                     logger.error("Failed to publish message", e);
