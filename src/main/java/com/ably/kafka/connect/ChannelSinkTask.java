@@ -19,6 +19,7 @@ package com.ably.kafka.connect;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
+import io.ably.lib.realtime.ConnectionState;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.Message;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -56,6 +57,7 @@ public class ChannelSinkTask extends SinkTask {
             logger.error("Ably client options were not initialized due to invalid configuration.");
             return;
         }
+        logger.info("Initializing Ably client with key: {}", connectorConfig.clientOptions.key);
 
         connectorConfig.clientOptions.logHandler = (severity, tag, msg, tr) -> {
             if (severity < 0 || severity >= severities.length) {
@@ -91,6 +93,7 @@ public class ChannelSinkTask extends SinkTask {
 
         try {
             ably = new AblyRealtime(connectorConfig.clientOptions);
+            ably.connection.on(connectionStateChange -> logger.info("Connection state changed to {}", connectionStateChange.current));
         } catch (AblyException e) {
             logger.error("error initializing ably client", e);
         }
@@ -101,6 +104,12 @@ public class ChannelSinkTask extends SinkTask {
         if (ably == null) {
             // Put is not retryable, throwing error will indicate this
             throw new ConnectException("ably client is uninitialized");
+        }
+
+        if (ably.connection.state != ConnectionState.connected) {
+            logger.error("Ably client is not connected.");
+            ably.connect();
+            return;
         }
 
         for (final SinkRecord record : records) {
