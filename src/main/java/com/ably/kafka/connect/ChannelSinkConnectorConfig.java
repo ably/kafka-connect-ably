@@ -325,7 +325,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                 ConfigKeyBuilder.of(CLIENT_LOG_LEVEL, Type.INT)
                     .documentation(CLIENT_LOG_LEVEL_DOC)
                     .importance(Importance.LOW)
-                    .defaultValue(0)
+                    .defaultValue(2)
                     .build()
             )
             .define(
