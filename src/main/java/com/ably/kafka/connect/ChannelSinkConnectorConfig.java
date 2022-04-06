@@ -85,11 +85,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final String CLIENT_ECHO_MESSAGES_DOC = "If false, suppresses messages originating from this " +
         "connection being echoed back on the same connection.";
 
-    public static final String CLIENT_RECOVER = "client.recover";
-    private static final String CLIENT_RECOVER_DOC = "A connection recovery string, specified by a client when " +
-        "initialising the library with the intention of inheriting the state of an earlier connection. See the Ably " +
-        "Realtime API documentation for further information on connection state recovery.";
-
     public static final String CLIENT_PROXY = "client.proxy";
     private static final String CLIENT_PROXY_DOC = "If true, use the configured proxy options to proxy connections.";
 
@@ -236,7 +231,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         opts.useBinaryProtocol = getBoolean(CLIENT_USE_BINARY_PROTOCOL);
         opts.queueMessages = getBoolean(CLIENT_QUEUE_MESSAGES);
         opts.echoMessages = getBoolean(CLIENT_ECHO_MESSAGES);
-        opts.recover = getString(CLIENT_RECOVER);
         if (getBoolean(CLIENT_PROXY)) {
             ProxyOptions proxyOpts = new ProxyOptions();
             proxyOpts.host = getString(CLIENT_PROXY_HOST);
@@ -395,13 +389,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .documentation(CLIENT_ECHO_MESSAGES_DOC)
                     .importance(Importance.MEDIUM)
                     .defaultValue(true)
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_RECOVER, Type.STRING)
-                    .documentation(CLIENT_RECOVER_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue("")
                     .build()
             )
             .define(
