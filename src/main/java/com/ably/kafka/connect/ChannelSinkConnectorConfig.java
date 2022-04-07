@@ -72,10 +72,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final String CLIENT_AUTO_CONNECT_DOC = "If false, suppresses the automatic initiation of a " +
         "connection when the library is instanced.";
 
-    public static final String CLIENT_USE_BINARY_PROTOCOL = "client.use.binary.protocol";
-    private static final String CLIENT_USE_BINARY_PROTOCOL_DOC = "If false, forces the library to use the JSON " +
-        "encoding for REST and Realtime operations, instead of the default binary msgpack encoding.";
-
     public static final String CLIENT_QUEUE_MESSAGES = "client.queue.messages";
     private static final String CLIENT_QUEUE_MESSAGES_DOC = "If false, suppresses the default queueing of messages " +
         "when connection states that anticipate imminent connection (connecting and disconnected). Instead, publish " +
@@ -228,7 +224,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         opts.port = getInt(CLIENT_PORT);
         opts.tlsPort = getInt(CLIENT_TLS_PORT);
         opts.autoConnect = getBoolean(CLIENT_AUTO_CONNECT);
-        opts.useBinaryProtocol = getBoolean(CLIENT_USE_BINARY_PROTOCOL);
         opts.queueMessages = getBoolean(CLIENT_QUEUE_MESSAGES);
         opts.echoMessages = getBoolean(CLIENT_ECHO_MESSAGES);
         if (getBoolean(CLIENT_PROXY)) {
@@ -366,13 +361,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
             .define(
                 ConfigKeyBuilder.of(CLIENT_AUTO_CONNECT, Type.BOOLEAN)
                     .documentation(CLIENT_AUTO_CONNECT_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue(true)
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_USE_BINARY_PROTOCOL, Type.BOOLEAN)
-                    .documentation(CLIENT_USE_BINARY_PROTOCOL_DOC)
                     .importance(Importance.MEDIUM)
                     .defaultValue(true)
                     .build()
