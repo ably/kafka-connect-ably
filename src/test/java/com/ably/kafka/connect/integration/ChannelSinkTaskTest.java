@@ -8,9 +8,12 @@ import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.Message;
 import org.apache.kafka.connect.converters.ByteArrayConverter;
 import org.apache.kafka.connect.util.clusters.EmbeddedConnectCluster;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -33,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * See settings.put(CONNECTOR_CLASS_CONFIG, SINK_CONNECTOR_CLASS_NAME);
  */
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ChannelSinkTaskTest {
     private static final String CONNECTOR_NAME = "ably-test-connector";
     private static final String SINK_CONNECTOR_CLASS_NAME = ChannelSinkConnector.class.getSimpleName();
@@ -46,10 +50,18 @@ public class ChannelSinkTaskTest {
     private AblyHelpers.AppSpec appSpec;
     private AblyRealtime ablyClient;
 
+    @BeforeAll
+    public void createApp() throws Exception {
+        appSpec = AblyHelpers.createTestApp();
+    }
+
+    @AfterAll
+    public void deleteApp() throws Exception {
+        AblyHelpers.deleteTestApp(appSpec);
+    }
+
     @BeforeEach
     public void setup() throws Exception {
-        appSpec = AblyHelpers.createTestApp();
-
         connectCluster = new EmbeddedConnectCluster.Builder().build();
         connectCluster.start();
         connectCluster.assertions().assertAtLeastNumWorkersAreUp(NUM_WORKERS, "Initial group of workers did not start in time.");
@@ -61,7 +73,6 @@ public class ChannelSinkTaskTest {
     public void close() {
         connectCluster.stop();
         ablyClient.close();
-        AblyHelpers.deleteTestApp(appSpec);
     }
 
     @Test
