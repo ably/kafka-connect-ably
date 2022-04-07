@@ -255,8 +255,8 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
       proxyOpts.host = getString(CLIENT_PROXY_HOST);
       proxyOpts.port = getInt(CLIENT_PROXY_PORT);
       proxyOpts.username = getString(CLIENT_PROXY_USERNAME);
-      proxyOpts.password = getPassword(CLIENT_PROXY_PASSWORD).value();
-      proxyOpts.nonProxyHosts = getList(CLIENT_PROXY_NON_PROXY_HOSTS).toArray(new String[0]);
+      proxyOpts.password = getPassword(CLIENT_PROXY_PASSWORD) != null ? getPassword(CLIENT_PROXY_PASSWORD).value() : null;
+      proxyOpts.nonProxyHosts = getList(CLIENT_PROXY_NON_PROXY_HOSTS) != null  ? getList(CLIENT_PROXY_NON_PROXY_HOSTS).toArray(new String[0]): null;
       proxyOpts.prefAuthType = HttpAuth.Type.valueOf(getString(CLIENT_PROXY_PREF_AUTH_TYPE));
     }
     opts.environment = getString(CLIENT_ENVIRONMENT);
