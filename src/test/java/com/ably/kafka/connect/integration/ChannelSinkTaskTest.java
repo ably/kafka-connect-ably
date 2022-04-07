@@ -48,7 +48,9 @@ public class ChannelSinkTaskTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        appSpec = AblyHelpers.createTestApp();
+        if (appSpec == null) {
+            appSpec = AblyHelpers.createTestApp();
+        }
 
         connectCluster = new EmbeddedConnectCluster.Builder().build();
         connectCluster.start();
