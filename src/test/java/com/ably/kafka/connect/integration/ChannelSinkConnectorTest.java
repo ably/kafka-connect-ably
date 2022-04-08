@@ -4,6 +4,7 @@ import com.ably.kafka.connect.AblyHelpers;
 import com.ably.kafka.connect.ChannelSinkConnector;
 import com.ably.kafka.connect.ChannelSinkConnectorConfig;
 import org.apache.kafka.connect.converters.ByteArrayConverter;
+import org.apache.kafka.connect.runtime.rest.errors.ConnectRestException;
 import org.apache.kafka.connect.util.clusters.EmbeddedConnectCluster;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,10 +14,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.kafka.connect.runtime.ConnectorConfig.CONNECTOR_CLASS_CONFIG;
-import static org.apache.kafka.connect.runtime.ConnectorConfig.KEY_CONVERTER_CLASS_CONFIG;
 import static org.apache.kafka.connect.runtime.ConnectorConfig.TASKS_MAX_CONFIG;
-import static org.apache.kafka.connect.runtime.ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG;
 import static org.apache.kafka.connect.runtime.SinkConnectorConfig.TOPICS_CONFIG;
+import static org.apache.kafka.connect.runtime.SinkConnectorConfig.KEY_CONVERTER_CLASS_CONFIG;
+import static org.apache.kafka.connect.runtime.SinkConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ChannelSinkConnectorTest {
@@ -57,7 +59,49 @@ public class ChannelSinkConnectorTest {
         final String channelName = "test-channel";
 
         Map<String, String> settings = createSettings(channelName, "some_fake_key", "some_client_id", null);
-        assertThrows(org.apache.kafka.connect.runtime.rest.errors.ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
+        assertThrows(ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
+    }
+
+    @Test
+    public void testConnector_connectorFailsWithNoClientIdGiven() {
+        final String channelName = "test-channel";
+
+        Map<String, String> settings = createSettings(channelName, "some_fake_key", null, TOPICS);
+        assertThrows(ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
+    }
+
+    @Test
+    public void testConnector_connectorFailsWithEmptyClientIdGiven() {
+        final String channelName = "test-channel";
+
+        Map<String, String> settings = createSettings(channelName, "some_fake_key", "", TOPICS);
+        assertThrows(ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
+    }
+
+    @Test
+    public void testConnector_connectorFailsWithNoClientKeyGiven() {
+        final String channelName = "test-channel";
+
+        Map<String, String> settings = createSettings(channelName, null, "client_id", TOPICS);
+        assertThrows(ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
+    }
+
+    @Test
+    public void testConnector_connectorFailsWithNoChannelNameGiven() {
+        Map<String, String> settings = createSettings(null, "some_fake_key", "client_id", TOPICS);
+        assertThrows(ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
+    }
+
+    @Test
+    public void testConnector_connectorFailsWithEmptyChannelNameGiven() {
+        Map<String, String> settings = createSettings("", "some_fake_key", "client_id", TOPICS);
+        assertThrows(ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
+    }
+
+    @Test
+    public void testConnector_connectorFailsWithInvalidChannelNameGiven() {
+        Map<String, String> settings = createSettings("[invalid", "some_fake_key", "client_id", TOPICS);
+        assertThrows(ConnectRestException.class, () -> connectCluster.configureConnector(CONNECTOR_NAME, settings));
     }
 
     @Test
