@@ -45,20 +45,23 @@ public class ChannelSinkTask extends SinkTask {
         logger.info("Initializing Ably client with key: {}", connectorConfig.clientOptions.key);
         connectorConfig.clientOptions.logHandler = new ClientOptionsLogHandler(logger);
 
-        //block until ably is connected
-        final CountDownLatch connectedSignal = new CountDownLatch(1);
+        //We want to wait for connection to be made before processing any sink record
+        syncAblyConnect(connectorConfig);
+    }
 
+    private void syncAblyConnect(ChannelSinkConnectorConfig connectorConfig) {
+        final CountDownLatch connectedSignal = new CountDownLatch(1);
         try {
             ably = new AblyRealtime(connectorConfig.clientOptions);
             ably.connection.on(connectionStateChange -> {
                 logger.info("Connection state changed to {}", connectionStateChange.current);
                 if (connectionStateChange.current == ConnectionState.failed) {
-                    logger.error("Connection failed with error: {}. Will retry", connectionStateChange.reason);
-                    ably.connect();
-                } else if (connectionStateChange.current == ConnectionState.connected) {
-                    logger.info("Connection established");
+                    logger.error("Connection failed with error: {}", connectionStateChange.reason);
+                    //We want to unblock the thread, the next check point put should handle the error
                     connectedSignal.countDown();
-                    logger.info("connectedSignal counted down to {}", connectedSignal.getCount());
+                } else if (connectionStateChange.current == ConnectionState.connected) {
+                    logger.info("Ably connection successfully established");
+                    connectedSignal.countDown();
                 }
             });
 
