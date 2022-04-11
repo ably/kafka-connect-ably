@@ -98,30 +98,30 @@ public class ChannelSinkTask extends SinkTask {
             try {
                 final Channel channel = channelSinkMapping.getChannel(record, ably);
                 final Message message = messageSinkMapping.getMessage(record);
-                logger.info("Publishing message to channel {}", channel.name);
-                logger.info("Message: {}", message);
+
                 channel.publish(message, new CompletionListener() {
                     @Override
-                    public void onSuccess() {
-                        logger.info("Message published successfully");
-                    }
+                    public void onSuccess() {}
 
                     @Override
                     public void onError(ErrorInfo errorInfo) {
-                        logger.error("Error publishing message: {}", errorInfo.message);
+                        handleAblyException(AblyException.fromErrorInfo(errorInfo));
                     }
                 });
-                logger.info("Published message to channel {}", channel.name);
             } catch (AblyException e) {
-                if (ably.options.queueMessages) {
-                    logger.error("Failed to publish message", e);
-                } else {
-                    throw new RetriableException("Failed to publish to Ably when queueMessages is disabled.", e);
-                }
+                handleAblyException(e);
             } catch (ChannelSinkConnectorConfig.ConfigException e) {
                 logger.error(e.getMessage(), e);
                 throw new ConnectException("Configuration error", e);
             }
+        }
+    }
+
+    private void handleAblyException(AblyException e) {
+        if (ably.options.queueMessages) {
+            logger.error("Failed to publish message", e);
+        } else {
+            throw new RetriableException("Failed to publish to Ably when queueMessages is disabled.", e);
         }
     }
 
