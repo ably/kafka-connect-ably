@@ -7,6 +7,7 @@ import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.realtime.ConnectionState;
 import io.ably.lib.realtime.ConnectionStateListener;
+import io.ably.lib.types.AblyException;
 import io.ably.lib.types.Message;
 import org.apache.kafka.connect.converters.ByteArrayConverter;
 import org.apache.kafka.connect.util.clusters.EmbeddedConnectCluster;
@@ -61,6 +62,10 @@ public class ChannelSinkTaskTest {
         connectCluster.start();
         connectCluster.kafka().createTopic(DEFAULT_TOPIC);
 
+        assertAblyClientIsConnected();
+    }
+
+    private void assertAblyClientIsConnected() throws AblyException, InterruptedException {
         ablyClient = AblyHelpers.realtimeClient(appSpec);
         final CountDownLatch latch = new CountDownLatch(1);
         ablyClient.connection.on(connectionStateChange -> {
