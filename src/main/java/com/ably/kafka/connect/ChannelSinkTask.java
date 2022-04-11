@@ -95,25 +95,29 @@ public class ChannelSinkTask extends SinkTask {
         }
 
         for (final SinkRecord record : records) {
-            try {
-                final Channel channel = channelSinkMapping.getChannel(record, ably);
-                final Message message = messageSinkMapping.getMessage(record);
+            processRecord(record);
+        }
+    }
 
-                channel.publish(message, new CompletionListener() {
-                    @Override
-                    public void onSuccess() {}
+    private void processRecord(SinkRecord record) {
+        try {
+            final Channel channel = channelSinkMapping.getChannel(record, ably);
+            final Message message = messageSinkMapping.getMessage(record);
 
-                    @Override
-                    public void onError(ErrorInfo errorInfo) {
-                        handleAblyException(AblyException.fromErrorInfo(errorInfo));
-                    }
-                });
-            } catch (AblyException e) {
-                handleAblyException(e);
-            } catch (ChannelSinkConnectorConfig.ConfigException e) {
-                logger.error(e.getMessage(), e);
-                throw new ConnectException("Configuration error", e);
-            }
+            channel.publish(message, new CompletionListener() {
+                @Override
+                public void onSuccess() {}
+
+                @Override
+                public void onError(ErrorInfo errorInfo) {
+                    handleAblyException(AblyException.fromErrorInfo(errorInfo));
+                }
+            });
+        } catch (AblyException e) {
+            handleAblyException(e);
+        } catch (ChannelSinkConnectorConfig.ConfigException e) {
+            logger.error(e.getMessage(), e);
+            throw new ConnectException("Configuration error", e);
         }
     }
 
