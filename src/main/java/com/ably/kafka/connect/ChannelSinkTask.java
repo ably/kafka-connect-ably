@@ -7,7 +7,7 @@ import com.ably.kafka.connect.config.DefaultChannelConfig;
 import com.ably.kafka.connect.mapping.ChannelSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
-import com.ably.kafka.connect.mapping.MessageSinkMappingImpl;
+import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
 import com.ably.kafka.connect.utils.ClientOptionsLogHandler;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import io.ably.lib.realtime.AblyRealtime;
@@ -46,7 +46,7 @@ public class ChannelSinkTask extends SinkTask {
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
         final ChannelConfig channelConfig = new DefaultChannelConfig(connectorConfig);
         channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator, channelConfig);
-        messageSinkMapping = new MessageSinkMappingImpl(connectorConfig, configValueEvaluator);
+        messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
         if (connectorConfig.clientOptions == null) {
             logger.error("Ably client options were not initialized due to invalid configuration.");
             return;

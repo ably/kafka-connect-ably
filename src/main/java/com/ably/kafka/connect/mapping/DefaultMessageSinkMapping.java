@@ -12,12 +12,12 @@ import javax.annotation.Nonnull;
 
 import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.MESSAGE_CONFIG;
 
-public class MessageSinkMappingImpl implements MessageSinkMapping {
+public class DefaultMessageSinkMapping implements MessageSinkMapping {
 
     private final ChannelSinkConnectorConfig sinkConnectorConfig;
     private final ConfigValueEvaluator configValueEvaluator;
 
-    public MessageSinkMappingImpl(@Nonnull ChannelSinkConnectorConfig config, @Nonnull ConfigValueEvaluator configValueEvaluator) {
+    public DefaultMessageSinkMapping(@Nonnull ChannelSinkConnectorConfig config, @Nonnull ConfigValueEvaluator configValueEvaluator) {
         this.sinkConnectorConfig = config;
         this.configValueEvaluator = configValueEvaluator;
     }
