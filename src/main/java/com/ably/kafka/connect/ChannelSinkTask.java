@@ -19,7 +19,10 @@ package com.ably.kafka.connect;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
+import io.ably.lib.realtime.CompletionListener;
+import io.ably.lib.realtime.ConnectionState;
 import io.ably.lib.types.AblyException;
+import io.ably.lib.types.ErrorInfo;
 import io.ably.lib.types.Message;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -32,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
@@ -51,11 +55,11 @@ public class ChannelSinkTask extends SinkTask {
         final ChannelConfig channelConfig = new DefaultChannelConfig(connectorConfig);
         channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator, channelConfig);
         messageSinkMapping = new MessageSinkMappingImpl(connectorConfig, configValueEvaluator);
-
         if (connectorConfig.clientOptions == null) {
             logger.error("Ably client options were not initialized due to invalid configuration.");
             return;
         }
+        logger.info("Initializing Ably client with key: {}", connectorConfig.clientOptions.key);
 
         connectorConfig.clientOptions.logHandler = (severity, tag, msg, tr) -> {
             if (severity < 0 || severity >= severities.length) {
@@ -80,35 +84,69 @@ public class ChannelSinkTask extends SinkTask {
                 case "default":
                     if (logger.isDebugEnabled()) {
                         logger.debug(
-                                String.format(
-                                        "severity: %d, tag: %s, msg: %s, err",
-                                        severity, tag, msg, (tr != null) ? tr.getMessage() : "null"
-                                )
+                            String.format(
+                                "severity: %d, tag: %s, msg: %s, err",
+                                severity, tag, msg, (tr != null) ? tr.getMessage() : "null"
+                            )
                         );
                     }
             }
         };
+        //block until ably is connected
+        final CountDownLatch connectedSignal = new CountDownLatch(1);
 
         try {
             ably = new AblyRealtime(connectorConfig.clientOptions);
-        } catch (AblyException e) {
+            ably.connection.on(connectionStateChange -> {
+                logger.info("Connection state changed to {}", connectionStateChange.current);
+                if (connectionStateChange.current == ConnectionState.failed) {
+                    logger.error("Connection failed with error: {}. Will retry", connectionStateChange.reason);
+                    ably.connect();
+                } else if (connectionStateChange.current == ConnectionState.connected) {
+                    logger.info("Connection established");
+                    connectedSignal.countDown();
+                    logger.info("connectedSignal counted down to {}", connectedSignal.getCount());
+                }
+            });
+
+            connectedSignal.await();
+
+        } catch (AblyException | InterruptedException e) {
             logger.error("error initializing ably client", e);
         }
     }
 
     @Override
     public void put(Collection<SinkRecord> records) {
+        logger.info("Received {} records", records.size());
         if (ably == null) {
             // Put is not retryable, throwing error will indicate this
             throw new ConnectException("ably client is uninitialized");
         }
 
+        if (ably.connection.state != ConnectionState.connected) {
+            logger.error("Ably client is not connected.");
+            return;
+        }
+
         for (final SinkRecord record : records) {
-            // TODO: add configuration to change the event name
             try {
                 final Channel channel = channelSinkMapping.getChannel(record, ably);
                 final Message message = messageSinkMapping.getMessage(record);
-                channel.publish(message);
+                logger.info("Publishing message to channel {}", channel.name);
+                logger.info("Message: {}", message);
+                channel.publish(message, new CompletionListener() {
+                    @Override
+                    public void onSuccess() {
+                        logger.info("Message published successfully");
+                    }
+
+                    @Override
+                    public void onError(ErrorInfo errorInfo) {
+                        logger.error("Error publishing message: {}", errorInfo.message);
+                    }
+                });
+                logger.info("Published message to channel {}", channel.name);
             } catch (AblyException e) {
                 if (ably.options.queueMessages) {
                     logger.error("Failed to publish message", e);
