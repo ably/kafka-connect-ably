@@ -75,14 +75,14 @@ public class ChannelSinkTask extends SinkTask {
     @Override
     public void put(Collection<SinkRecord> records) {
         logger.info("Received {} records", records.size());
+
         if (ably == null) {
-            // Put is not retryable, throwing error will indicate this
-            throw new ConnectException("ably client is uninitialized");
+            throw new ConnectException("Ably client is unitialized");
         }
 
         if (ably.connection.state != ConnectionState.connected) {
             logger.error("Ably client is not connected.");
-            return;
+            throw new ConnectException("Ably client is not connected");
         }
 
         for (final SinkRecord record : records) {
