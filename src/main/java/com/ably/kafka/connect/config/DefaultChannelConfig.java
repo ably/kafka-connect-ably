@@ -14,7 +14,7 @@ import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CHANNEL_C
 import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CLIENT_CHANNEL_CIPHER_KEY;
 import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CLIENT_CHANNEL_PARAMS;
 
-class DefaultChannelConfig implements ChannelConfig {
+public class DefaultChannelConfig implements ChannelConfig {
     private final ChannelSinkConnectorConfig sinkConnectorConfig;
 
     public DefaultChannelConfig(final ChannelSinkConnectorConfig sinkConnectorConfig) {

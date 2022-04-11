@@ -16,28 +16,3 @@ public interface MessageSinkMapping {
     Message getMessage(SinkRecord record);
 }
 
-class MessageSinkMappingImpl implements MessageSinkMapping {
-
-    private final ChannelSinkConnectorConfig sinkConnectorConfig;
-    private final ConfigValueEvaluator configValueEvaluator;
-
-    public MessageSinkMappingImpl(@Nonnull ChannelSinkConnectorConfig config, @Nonnull ConfigValueEvaluator configValueEvaluator) {
-        this.sinkConnectorConfig = config;
-        this.configValueEvaluator = configValueEvaluator;
-    }
-
-    @Override
-    public Message getMessage(SinkRecord record) {
-        final String messageName = configValueEvaluator.evaluate(record, sinkConnectorConfig.getString(MESSAGE_CONFIG));
-        Message message = new Message(messageName, record.value());
-        message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
-
-        JsonUtils.JsonUtilsObject kafkaExtras = KafkaExtrasExtractor.createKafkaExtras(record);
-        if (kafkaExtras.toJson().size() > 0) {
-            message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
-        }
-        return message;
-    }
-
-
-}
