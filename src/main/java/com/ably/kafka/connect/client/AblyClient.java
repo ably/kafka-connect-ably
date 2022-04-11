@@ -8,7 +8,6 @@ public interface AblyClient {
     void connect() throws ConnectException;
     void publishFrom(SinkRecord message) throws ConnectException, RetriableException;
     void stop();
-
     boolean isConnected();
 }
 
