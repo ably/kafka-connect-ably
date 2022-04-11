@@ -30,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
 /**
  * Integration test for {@link com.ably.kafka.connect.ChannelSinkTask}
  * This test class contains tests to specifically test the conditions where the {@link com.ably.kafka.connect.ChannelSinkTask} should run and
@@ -103,7 +102,6 @@ public class ChannelSinkTaskTest {
     public void testMessagePublish_channelExistsWithStaticChannelName() {
         final String channelName = "test-channel";
 
-
         Map<String, String> settings = createSettings(channelName, null, null, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
@@ -121,8 +119,6 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_ChannelExistsWithTopicPlaceholder() {
-
-
         final String topicedChannelName = "#{topic}_channel";
         Map<String, String> settings = createSettings(topicedChannelName, null, null, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
@@ -141,7 +137,6 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_ChannelExistsWithTopicAndKeyPlaceholder() {
-
         final String keyName = "key1";
         final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
@@ -162,7 +157,6 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_TaskFailedWhenKeyIsNotProvidedButPlaceholderProvided() throws Exception {
-
         final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
         Map<String, String> settings = createSettings(channelName, null, null, messageName);
@@ -177,7 +171,6 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() {
-
         final String channelName = "channel1";
         final String topicedMessageName = "#{topic}_message";
         Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
@@ -198,7 +191,6 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_MessageReceivedWithKeyPlaceholderMessageName() {
-
         final String keyName = "key1";
         final String channelName = "channel1";
         final String topicedMessageName = "#{key}_message";
@@ -220,7 +212,6 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_MessageReceivedWithTopicAndKeyPlaceholderMessageName() {
-
         final String keyName = "key1";
         final String channelName = "channel1";
         final String topicedMessageName = "#{topic}_#{key}_message";
