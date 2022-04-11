@@ -1,5 +1,6 @@
-package com.ably.kafka.connect;
+package com.ably.kafka.connect.config;
 
+import com.ably.kafka.connect.utils.ByteArrayUtils;
 import org.apache.kafka.connect.sink.SinkRecord;
 
 import java.nio.charset.StandardCharsets;

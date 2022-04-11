@@ -1,4 +1,4 @@
-package com.ably.kafka.connect;
+package com.ably.kafka.connect.utils;
 
 import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;

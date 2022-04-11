@@ -1,5 +1,9 @@
 package com.ably.kafka.connect;
 
+import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
+import com.ably.kafka.connect.config.ConfigValueEvaluator;
+import com.ably.kafka.connect.mapping.MessageSinkMapping;
+import com.ably.kafka.connect.mapping.MessageSinkMappingImpl;
 import com.google.gson.JsonObject;
 import io.ably.lib.types.Message;
 import io.ably.lib.types.MessageExtras;

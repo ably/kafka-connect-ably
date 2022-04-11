@@ -2,7 +2,7 @@ package com.ably.kafka.connect.integration;
 
 import com.ably.kafka.connect.AblyHelpers;
 import com.ably.kafka.connect.ChannelSinkConnector;
-import com.ably.kafka.connect.ChannelSinkConnectorConfig;
+import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.realtime.ConnectionState;

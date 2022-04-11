@@ -1,4 +1,4 @@
-package com.ably.kafka.connect;
+package com.ably.kafka.connect.utils;
 
 import io.ably.lib.util.Log;
 import org.slf4j.Logger;

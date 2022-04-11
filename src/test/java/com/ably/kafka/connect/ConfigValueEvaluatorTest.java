@@ -1,9 +1,8 @@
 package com.ably.kafka.connect;
 
+import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.junit.jupiter.api.Test;
-
-import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.*;
 

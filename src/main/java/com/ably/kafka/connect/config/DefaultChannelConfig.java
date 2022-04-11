@@ -1,5 +1,7 @@
-package com.ably.kafka.connect;
+package com.ably.kafka.connect.config;
 
+import com.ably.kafka.connect.config.ChannelConfig;
+import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.ChannelMode;
 import io.ably.lib.types.ChannelOptions;
@@ -8,9 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.ably.kafka.connect.ChannelSinkConnectorConfig.CHANNEL_CONFIG;
-import static com.ably.kafka.connect.ChannelSinkConnectorConfig.CLIENT_CHANNEL_CIPHER_KEY;
-import static com.ably.kafka.connect.ChannelSinkConnectorConfig.CLIENT_CHANNEL_PARAMS;
+import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CHANNEL_CONFIG;
+import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CLIENT_CHANNEL_CIPHER_KEY;
+import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CLIENT_CHANNEL_PARAMS;
 
 class DefaultChannelConfig implements ChannelConfig {
     private final ChannelSinkConnectorConfig sinkConnectorConfig;

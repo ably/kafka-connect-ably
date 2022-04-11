@@ -1,4 +1,4 @@
-package com.ably.kafka.connect;
+package com.ably.kafka.connect.utils;
 
 import io.ably.lib.util.JsonUtils;
 import org.apache.kafka.connect.header.Header;

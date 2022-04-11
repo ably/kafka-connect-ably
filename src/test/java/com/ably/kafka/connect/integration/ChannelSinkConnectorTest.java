@@ -2,7 +2,7 @@ package com.ably.kafka.connect.integration;
 
 import com.ably.kafka.connect.AblyHelpers;
 import com.ably.kafka.connect.ChannelSinkConnector;
-import com.ably.kafka.connect.ChannelSinkConnectorConfig;
+import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import org.apache.kafka.connect.converters.ByteArrayConverter;
 import org.apache.kafka.connect.runtime.rest.errors.ConnectRestException;
 import org.apache.kafka.connect.util.clusters.EmbeddedConnectCluster;

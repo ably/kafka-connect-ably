@@ -1,5 +1,14 @@
 package com.ably.kafka.connect;
 
+import com.ably.kafka.connect.config.ChannelConfig;
+import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
+import com.ably.kafka.connect.config.ConfigValueEvaluator;
+import com.ably.kafka.connect.config.DefaultChannelConfig;
+import com.ably.kafka.connect.mapping.ChannelSinkMapping;
+import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
+import com.ably.kafka.connect.mapping.MessageSinkMapping;
+import com.ably.kafka.connect.mapping.MessageSinkMappingImpl;
+import com.ably.kafka.connect.utils.ClientOptionsLogHandler;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
