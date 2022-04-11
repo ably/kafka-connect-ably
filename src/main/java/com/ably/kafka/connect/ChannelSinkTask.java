@@ -23,7 +23,6 @@ import java.util.concurrent.CountDownLatch;
 
 public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
-    private static final String[] severities = new String[]{"", "", "VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "ASSERT"};
 
     private AblyRealtime ably;
 
@@ -44,38 +43,8 @@ public class ChannelSinkTask extends SinkTask {
             return;
         }
         logger.info("Initializing Ably client with key: {}", connectorConfig.clientOptions.key);
+        connectorConfig.clientOptions.logHandler = new ClientOptionsLogHandler(logger);
 
-        connectorConfig.clientOptions.logHandler = (severity, tag, msg, tr) -> {
-            if (severity < 0 || severity >= severities.length) {
-                severity = 3;
-            }
-            switch (severities[severity]) {
-                case "VERBOSE":
-                    logger.trace(msg, tr);
-                    break;
-                case "DEBUG":
-                    logger.debug(msg, tr);
-                    break;
-                case "INFO":
-                    logger.info(msg, tr);
-                    break;
-                case "WARN":
-                    logger.warn(msg, tr);
-                    break;
-                case "ERROR":
-                    logger.error(msg, tr);
-                    break;
-                case "default":
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(
-                            String.format(
-                                "severity: %d, tag: %s, msg: %s, err",
-                                severity, tag, msg, (tr != null) ? tr.getMessage() : "null"
-                            )
-                        );
-                    }
-            }
-        };
         //block until ably is connected
         final CountDownLatch connectedSignal = new CountDownLatch(1);
 
