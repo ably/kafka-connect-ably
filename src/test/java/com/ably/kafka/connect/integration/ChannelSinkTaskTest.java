@@ -29,6 +29,7 @@ import static org.apache.kafka.connect.runtime.SinkConnectorConfig.TOPICS_CONFIG
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Integration test for {@link com.ably.kafka.connect.ChannelSinkTask}
@@ -72,14 +73,14 @@ public class ChannelSinkTaskTest {
                 latch.countDown();
             } else if (connectionStateChange.current == ConnectionState.failed) {
                 latch.countDown();
-                assertTrue(false, "Connection failed");
+                fail("Connection failed");
             }
         });
         latch.await();
     }
 
     @AfterAll
-    public void clearTestEnvironment() throws Exception {
+    public void clearTestEnvironment() {
         ablyClient.close();
         AblyHelpers.deleteTestApp(appSpec);
         connectCluster.stop();
