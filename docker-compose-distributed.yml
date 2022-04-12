@@ -86,25 +86,6 @@ services:
       - kafka
       - schema-registry
 
-  # The test cli allows us to run tests with access the kafka nework
-  # test-cli:
-  #   image: cnfldemos/cp-server-connect-datagen:0.4.0-6.0.1
-  #   tty: true
-  #   working_dir: /opt/kafka-connect-ably
-  #   command: /bin/bash # ./bin/debug.sh
-  #   networks:
-  #     kafka_distributed_network:
-  #   ports:
-  #     - '5005:5005'  # expose the debug port
-  #   depends_on:
-  #     - zookeeper
-  #     - kafka
-  #     - schema-registry
-  #     - control-center
-  #   volumes:
-  #     - "./:/opt/kafka-connect-ably"
-  #   environment:
-  #     CONNECT_PLUGIN_PATH: '/usr/share/java,/usr/share/confluent-hub-components'
 
 networks:
   kafka_distributed_network:
