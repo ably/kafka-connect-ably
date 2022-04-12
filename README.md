@@ -56,23 +56,39 @@ To manually install the connector on a local installation of Confluent:
 
 ### Docker
 
-There is a [`docker-compose.yml`](docker-compose.yml) file included in this repository that can be used to run the connector locally using [Docker Compose](https://docs.docker.com/compose/). The Docker Compose file is based on the [Confluent Platform Docker images](https://docs.confluent.io/platform/current/installation/docker/image-reference.html).
+There is a [`docker-compose.yml`](docker-compose.yml) file for standalone mode and an alternative [`docker-compose-distributed.yml`](docker-compose-distributed.yml) for distributed mode included in this repository that can be used to run the connector locally using [Docker Compose](https://docs.docker.com/compose/). The Docker Compose file is based on the [Confluent Platform Docker images](https://docs.confluent.io/platform/current/installation/docker/image-reference.html).
 
 1. Create and configure a [configuration file](#configuration) ensuring you have set at least the basic properties.
+**Note:** You must provide connector properties when starting connector in distributed mode. 
+An example cURL command to start the connector in distributed mode is:
 
+
+```shell
+ curl -X POST -H "Content-Type: application/json" --data '{"name": "ably-channel-sink",
+     "config": {"connector.class":"com.ably.kafka.connect.ChannelSinkConnector", "tasks.max":"3", 
+     "group.id":"ably-connect-cluster",
+     "topics":"topic1,topic2","client.id":"Ably-Kafka-Connector","channel":"#{topic}","message.name": "#{topic}_message",
+     "client.key":"<Put your API key here>" }}' http://localhost:8083/connectors
+```
 2. Start the cluster using:
 
     `docker-compose up -d`
+ for standalone mode or
 
-    **Note**: You can view the logs using `docker-compose logs connector`
+   `docker-compose -f docker-compose-distributed.yml up -d` for distributed mode.
+   
+**Note**: You can view the logs using `docker-compose logs connector`
 
-3. Once the containers have started, you can test the connector by subscribing to your Ably channel using [SSE](https://ably.com/documentation/sse) in a new terminal window. Replace `<channel-name>` with the channel set in your configuration file and `<ably-api-key>` with an API key with the capability to subscribe to the channel.
+**Note 2**: You must start your connectors using [Connect REST interface](https://docs.confluent.io/platform/current/connect/references/restapi.html) when using distributed mode.
+
+
+4. Once the containers have started, you can test the connector by subscribing to your Ably channel using [SSE](https://ably.com/documentation/sse) in a new terminal window. Replace `<channel-name>` with the channel set in your configuration file and `<ably-api-key>` with an API key with the capability to subscribe to the channel.
 
     `curl -s -u "<ably-api-key>" "https://realtime.ably.io/sse?channel=<channel-name>&v=1.1"`
 
     **Note**: SSE is only used as an example. An Ably SDK can also be used to subscribe to the channel.
 
-4. Produce a set of test messages in Kafka using the Kafka CLI tool. Replace `<kafka-topic-name>` with one of the topics set in your configuration file.
+5. Produce a set of test messages in Kafka using the Kafka CLI tool. Replace `<kafka-topic-name>` with one of the topics set in your configuration file.
 
     ```
     docker-compose exec -T kafka kafka-console-producer --topic <kafka-topic-name> --broker-list kafka:9092 <<EOF
@@ -82,7 +98,7 @@ There is a [`docker-compose.yml`](docker-compose.yml) file included in this repo
     EOF
     ```
 
-5. In the terminal window where you subscribed to the Ably channel, you will receive messages similar to the following:
+6. In the terminal window where you subscribed to the Ably channel, you will receive messages similar to the following:
 
     ```
     id: e026fVvywAz6Il@1623496744539-0
