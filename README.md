@@ -154,7 +154,6 @@ The advanced properties that can be configured for the connector are:
 | client.token.params.client.id | The client ID to include with the token. Requires `client.token.params` to be set to `true`. | *String* ||
 | client.token.params.ttl | The requested time to live (TTL) for the token in milliseconds. When omitted, the REST API default of 60 minutes is applied by Ably. Requires `client.token.params` to be set to `true`. | *Boolean* | 0 |
 | client.transport.params | Any additional parameters to be sent in the query string when initiating a realtime connection in the format `key1=value1,key2=value` without URL encoding. | *List* ||
-| client.use.binary.protocol | Set to `false` to force the library to use JSON encoding for REST and realtime operations, instead of msgpack encoding. | *Boolean* | True |
 | client.loglevel | Sets the verbosity of logging. | *Integer* | 0 |
 
 ## Dynamic Channel Configuration
