@@ -72,7 +72,7 @@ public class AblyHelpers {
     public static AppSpec createTestApp() throws AblyException {
         ClientOptions opts = new ClientOptions("a.b:c");
         opts.environment = TEST_ENVIRONMENT;
-        AblyRest ably = new AblyRest(opts);
+        AblyRealtime ably = new AblyRealtime(opts);
 
         AppSpec request = new AppSpec();
         request.keys = new Key[1];

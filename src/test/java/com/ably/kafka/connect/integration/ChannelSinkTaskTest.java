@@ -5,24 +5,30 @@ import com.ably.kafka.connect.ChannelSinkConnector;
 import com.ably.kafka.connect.ChannelSinkConnectorConfig;
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
+import io.ably.lib.realtime.ConnectionState;
+import io.ably.lib.types.AblyException;
 import io.ably.lib.types.Message;
 import org.apache.kafka.connect.converters.ByteArrayConverter;
 import org.apache.kafka.connect.util.clusters.EmbeddedConnectCluster;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import static org.apache.kafka.connect.runtime.ConnectorConfig.CONNECTOR_CLASS_CONFIG;
 import static org.apache.kafka.connect.runtime.ConnectorConfig.KEY_CONVERTER_CLASS_CONFIG;
 import static org.apache.kafka.connect.runtime.ConnectorConfig.TASKS_MAX_CONFIG;
 import static org.apache.kafka.connect.runtime.ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG;
 import static org.apache.kafka.connect.runtime.SinkConnectorConfig.TOPICS_CONFIG;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Integration test for {@link com.ably.kafka.connect.ChannelSinkTask}
@@ -33,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * See settings.put(CONNECTOR_CLASS_CONFIG, SINK_CONNECTOR_CLASS_NAME);
  */
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ChannelSinkTaskTest {
     private static final String CONNECTOR_NAME = "ably-test-connector";
     private static final String SINK_CONNECTOR_CLASS_NAME = ChannelSinkConnector.class.getSimpleName();
@@ -46,29 +53,42 @@ public class ChannelSinkTaskTest {
     private AblyHelpers.AppSpec appSpec;
     private AblyRealtime ablyClient;
 
-    @BeforeEach
-    public void setup() throws Exception {
-        appSpec = AblyHelpers.createTestApp();
+    @BeforeAll
+    public void prepTestEnvironment() throws Exception {
+        assertDoesNotThrow(() -> appSpec = AblyHelpers.createTestApp(), "Failed to create Ably client");
 
         connectCluster = new EmbeddedConnectCluster.Builder().build();
         connectCluster.start();
-        connectCluster.assertions().assertAtLeastNumWorkersAreUp(NUM_WORKERS, "Initial group of workers did not start in time.");
+        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
 
-        ablyClient = AblyHelpers.realtimeClient(appSpec);
+        assertAblyClientIsConnected();
     }
 
-    @AfterEach
-    public void close() {
-        connectCluster.stop();
+    private void assertAblyClientIsConnected() throws AblyException, InterruptedException {
+        ablyClient = AblyHelpers.realtimeClient(appSpec);
+        final CountDownLatch latch = new CountDownLatch(1);
+        ablyClient.connection.on(connectionStateChange -> {
+            if (connectionStateChange.current == ConnectionState.connected) {
+                latch.countDown();
+            } else if (connectionStateChange.current == ConnectionState.failed) {
+                latch.countDown();
+                fail("Connection failed");
+            }
+        });
+        latch.await();
+    }
+
+    @AfterAll
+    public void clearTestEnvironment() {
         ablyClient.close();
         AblyHelpers.deleteTestApp(appSpec);
+        connectCluster.stop();
     }
 
     @Test
     public void testMessagePublish_correctConfigAtLeastATaskIsRunning() throws Exception {
         final String channelName = "test-channel";
 
-        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         Map<String, String> settings = createSettings(channelName, null, null, null);
 
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
@@ -82,7 +102,6 @@ public class ChannelSinkTaskTest {
     public void testMessagePublish_channelExistsWithStaticChannelName() {
         final String channelName = "test-channel";
 
-        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         Map<String, String> settings = createSettings(channelName, null, null, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
@@ -100,8 +119,6 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_ChannelExistsWithTopicPlaceholder() {
-        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
-
         final String topicedChannelName = "#{topic}_channel";
         Map<String, String> settings = createSettings(topicedChannelName, null, null, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
@@ -120,7 +137,6 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_ChannelExistsWithTopicAndKeyPlaceholder() {
-        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         final String keyName = "key1";
         final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
@@ -141,7 +157,6 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_TaskFailedWhenKeyIsNotProvidedButPlaceholderProvided() throws Exception {
-        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
         Map<String, String> settings = createSettings(channelName, null, null, messageName);
@@ -156,7 +171,6 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() {
-        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         final String channelName = "channel1";
         final String topicedMessageName = "#{topic}_message";
         Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
@@ -177,7 +191,6 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_MessageReceivedWithKeyPlaceholderMessageName() {
-        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         final String keyName = "key1";
         final String channelName = "channel1";
         final String topicedMessageName = "#{key}_message";
@@ -199,7 +212,6 @@ public class ChannelSinkTaskTest {
 
     @Test
     public void testMessagePublish_MessageReceivedWithTopicAndKeyPlaceholderMessageName() {
-        connectCluster.kafka().createTopic(DEFAULT_TOPIC);
         final String keyName = "key1";
         final String channelName = "channel1";
         final String topicedMessageName = "#{topic}_#{key}_message";
@@ -220,7 +232,7 @@ public class ChannelSinkTaskTest {
     }
 
     private void assertReceivedExactAmountOfMessages(final List<Message> receivedMessages, int expectedMessageCount) {
-        assertEquals(receivedMessages.size(), expectedMessageCount, "Unexpected message count");
+        assertEquals(expectedMessageCount, receivedMessages.size(), "Unexpected message count");
     }
 
     private Map<String, String> createSettings(@Nonnull String channel, String cipherKey, String channelParams, String messageName) {
