@@ -67,7 +67,6 @@ services:
     command:
       - /bin/connect-distributed
       - /config/docker-compose-worker-distributed.properties
-      - /config/docker-compose-connector.properties
     volumes:
       - ./config:/config
     ports:
