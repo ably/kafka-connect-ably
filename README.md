@@ -148,7 +148,6 @@ The advanced properties that can be configured for the connector are:
 | client.push.full.wait | Sets whether Ably should wait for all the effects of push REST requests before responding. | *Boolean* ||
 | client.queue.messages | Sets whether the default queueing of messages when connection states that anticipate an imminent connection (connecting and disconnected) are suppressed or not. If set to `false`, publish and presence state changes will fail immediately if not in the connected state. | *Boolean* | True |
 | client.realtime.request.timeout | The timeout period before a realtime client library establishing a connection with Ably, or sending a `HEARTBEAT`, `CONNECT`, `ATTACH`, `DETACH` or `CLOSE` `ProtocolMessage` to Ably, will consider that request as failed and trigger a suitable failure condition. | *Long* | 10000 |
-| client.recover | A connection recovery string, specified by a client when initializing the library with the intention of inheriting the state of an earlier connection. | *String* ||
 | client.tls | Sets whether TLS is used for all connection types. | *Boolean* | True |
 | client.token.params | Sets whether the configured token parameters are used. | *Boolean* ||
 | client.token.params.capability | Stringified JSON capability requirements for the token. When omitted, the REST API default to allow all operations is applied by Ably, with the string value `{“*”:[“*”]}`. Requires `client.token.params` to be set to `true`. | *String* ||
