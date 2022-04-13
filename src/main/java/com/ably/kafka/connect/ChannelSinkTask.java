@@ -5,6 +5,7 @@ import com.ably.kafka.connect.client.AblyClientFactory;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.ConnectException;
@@ -23,8 +24,9 @@ public class ChannelSinkTask extends SinkTask {
     private AblyClient ablyClient;
 
     public ChannelSinkTask() {}
-    //for unit tests
-    public ChannelSinkTask(AblyClientFactory factory) {
+
+    @VisibleForTesting
+    ChannelSinkTask(AblyClientFactory factory) {
         this.ablyClientFactory = factory;
     }
 
