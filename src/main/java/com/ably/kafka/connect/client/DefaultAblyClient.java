@@ -57,7 +57,7 @@ public class DefaultAblyClient implements AblyClient {
     }
 
     @Override
-    public void publishFrom(SinkRecord record) throws ConnectException, RetriableException {
+    public void publishFrom(SinkRecord record) throws ConnectException {
         try {
             final Channel channel = channelSinkMapping.getChannel(record, realtime);
             final Message message = messageSinkMapping.getMessage(record);
