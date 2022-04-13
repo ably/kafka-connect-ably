@@ -87,9 +87,4 @@ public class DefaultAblyClient implements AblyClient {
             realtime = null;
         }
     }
-
-    @Override
-    public boolean isConnected() {
-        return realtime.connection.state == ConnectionState.connected;
-    }
 }
