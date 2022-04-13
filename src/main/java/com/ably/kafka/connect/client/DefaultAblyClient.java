@@ -34,24 +34,18 @@ public class DefaultAblyClient implements AblyClient {
 
     @Override
     public void connect() throws ConnectException {
-        final CountDownLatch connectedSignal = new CountDownLatch(1);
         try {
             realtime = new AblyRealtime(connectorConfig.clientOptions);
             realtime.connection.on(connectionStateChange -> {
                 logger.info("Connection state changed to {}", connectionStateChange.current);
                 if (connectionStateChange.current == ConnectionState.failed) {
                     logger.error("Connection failed with error: {}", connectionStateChange.reason);
-                    //We want to unblock the thread, the next check point put should handle the error
-                    connectedSignal.countDown();
                 } else if (connectionStateChange.current == ConnectionState.connected) {
                     logger.info("Ably connection successfully established");
-                    connectedSignal.countDown();
                 }
             });
 
-            connectedSignal.await();
-
-        } catch (AblyException | InterruptedException e) {
+        } catch (AblyException e) {
             logger.error("error initializing ably client", e);
         }
     }
