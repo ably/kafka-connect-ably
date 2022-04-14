@@ -24,6 +24,9 @@ public class DefaultAblyClient implements AblyClient {
     private final ChannelSinkConnectorConfig connectorConfig;
     private AblyRealtime realtime;
 
+    //When this is true, the client should abort all publishing operations and throw an exception
+    private boolean connectionFailed = false;
+
     public DefaultAblyClient(ChannelSinkConnectorConfig connectorConfig, ChannelSinkMapping channelSinkMapping, MessageSinkMapping messageSinkMapping) {
         this.connectorConfig = connectorConfig;
         this.channelSinkMapping = channelSinkMapping;
@@ -35,9 +38,9 @@ public class DefaultAblyClient implements AblyClient {
         try {
             realtime = new AblyRealtime(connectorConfig.clientOptions);
             realtime.connection.on(connectionStateChange -> {
-                logger.info("Connection state changed to {}", connectionStateChange.current);
                 if (connectionStateChange.current == ConnectionState.failed) {
                     logger.error("Connection failed with error: {}", connectionStateChange.reason);
+                    connectionFailed = true;
                 } else if (connectionStateChange.current == ConnectionState.connected) {
                     logger.info("Ably connection successfully established");
                 }
@@ -50,6 +53,10 @@ public class DefaultAblyClient implements AblyClient {
 
     @Override
     public void publishFrom(SinkRecord record) throws ConnectException {
+        if (connectionFailed) {
+            //this exception should cause the calling task to abort
+            throw new ConnectException("Cannot publish to Ably when connection failed");
+        }
         try {
             final Channel channel = channelSinkMapping.getChannel(record, realtime);
             final Message message = messageSinkMapping.getMessage(record);
