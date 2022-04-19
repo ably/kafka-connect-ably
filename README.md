@@ -82,13 +82,13 @@ An example cURL command to start the connector in distributed mode is:
 **Note 2**: You must start your connectors using [Connect REST interface](https://docs.confluent.io/platform/current/connect/references/restapi.html) when using distributed mode.
 
 
-4. Once the containers have started, you can test the connector by subscribing to your Ably channel using [SSE](https://ably.com/documentation/sse) in a new terminal window. Replace `<channel-name>` with the channel set in your configuration file and `<ably-api-key>` with an API key with the capability to subscribe to the channel.
+3. Once the containers have started, you can test the connector by subscribing to your Ably channel using [SSE](https://ably.com/documentation/sse) in a new terminal window. Replace `<channel-name>` with the channel set in your configuration file and `<ably-api-key>` with an API key with the capability to subscribe to the channel.
 
     `curl -s -u "<ably-api-key>" "https://realtime.ably.io/sse?channel=<channel-name>&v=1.1"`
 
     **Note**: SSE is only used as an example. An Ably SDK can also be used to subscribe to the channel.
 
-5. Produce a set of test messages in Kafka using the Kafka CLI tool. Replace `<kafka-topic-name>` with one of the topics set in your configuration file.
+4. Produce a set of test messages in Kafka using the Kafka CLI tool. Replace `<kafka-topic-name>` with one of the topics set in your configuration file.
 
     ```
     docker-compose exec -T kafka kafka-console-producer --topic <kafka-topic-name> --broker-list kafka:9092 <<EOF
@@ -98,7 +98,7 @@ An example cURL command to start the connector in distributed mode is:
     EOF
     ```
 
-6. In the terminal window where you subscribed to the Ably channel, you will receive messages similar to the following:
+5. In the terminal window where you subscribed to the Ably channel, you will receive messages similar to the following:
 
     ```
     id: e026fVvywAz6Il@1623496744539-0
