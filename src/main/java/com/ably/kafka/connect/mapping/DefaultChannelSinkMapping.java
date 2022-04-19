@@ -14,7 +14,7 @@ public class DefaultChannelSinkMapping implements ChannelSinkMapping {
     private final ConfigValueEvaluator configValueEvaluator;
     private final ChannelConfig channelConfig;
 
-    public DefaultChannelSinkMapping(@Nonnull ChannelSinkConnectorConfig config, ConfigValueEvaluator configValueEvaluator, ChannelConfig channelConfig) {
+    public DefaultChannelSinkMapping(ConfigValueEvaluator configValueEvaluator, ChannelConfig channelConfig) {
         this.configValueEvaluator = configValueEvaluator;
         this.channelConfig = channelConfig;
     }

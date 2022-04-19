@@ -23,7 +23,7 @@ public class DefaultAblyClientFactory implements AblyClientFactory {
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(settings);
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
         final ChannelConfig channelConfig = new DefaultChannelConfig(connectorConfig);
-        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator, channelConfig);
+        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(configValueEvaluator, channelConfig);
         final MessageSinkMapping messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
         if (connectorConfig.clientOptions == null) {
             throw new ConfigException("Ably client options were not initialized due to invalid configuration.");

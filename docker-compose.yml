@@ -16,16 +16,19 @@ services:
       kafka_network:
         aliases:
           - kafka
-    # ports:
-    #  - '9092:9092'
+    ports:
+      - 29092:29092
     depends_on:
       - zookeeper
     environment:
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://:9092'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LISTENERS: PLAINTEXT://:9092, EXTERNAL_LISTENER://:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092, EXTERNAL_LISTENER://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT, EXTERNAL_LISTENER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
 
   schema-registry:
     image: confluentinc/cp-schema-registry:5.4.0
