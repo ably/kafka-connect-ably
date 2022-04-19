@@ -6,7 +6,7 @@ _[Ably](https://ably.com) is the platform that powers synchronized digital exper
 
 The Ably Kafka Connector is a sink connector used to publish data from [Apache Kafka](http://kafka.apache.org/) into [Ably](https://ably.com) and is available on [Confluent Hub](https://www.confluent.io/hub/ably/kafka-connect-ably).
 
-The connector will publish data from one or more [Kafka topics](https://docs.confluent.io/platform/current/kafka/introduction.html#main-concepts-and-terminology) into a single [Ably channel](https://ably.com/documentation/core-features/channels).
+The connector will publish data from one or more [Kafka topics](https://docs.confluent.io/platform/current/kafka/introduction.html#main-concepts-and-terminology) into one or more  [Ably channel](https://ably.com/documentation/core-features/channels) s.
 
 The connector is built on top of [Apache Kafka Connect](http://docs.confluent.io/current/connect/) and can be run locally with Docker, or installed into an instance of Confluent Platform.
 
