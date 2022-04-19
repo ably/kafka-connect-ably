@@ -1,5 +1,5 @@
 
-package com.ably.kafka.connect;
+package com.ably.kafka.connect.config;
 
 import com.ably.kafka.connect.validators.MultiConfigValidator;
 import com.ably.kafka.connect.validators.ChannelNameValidator;
@@ -189,7 +189,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
     public final ClientOptions clientOptions;
 
-    static class ConfigException extends Exception {
+    public static class ConfigException extends Exception {
         private static final long serialVersionUID = 6225540388729441285L;
 
         public ConfigException(String message) {

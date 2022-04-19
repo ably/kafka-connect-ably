@@ -1,5 +1,6 @@
-package com.ably.kafka.connect;
+package com.ably.kafka.connect.mapping;
 
+import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.AblyException;

@@ -1,5 +1,9 @@
 package com.ably.kafka.connect;
 
+import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
+import com.ably.kafka.connect.config.ConfigValueEvaluator;
+import com.ably.kafka.connect.mapping.MessageSinkMapping;
+import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
 import com.google.gson.JsonObject;
 import io.ably.lib.types.Message;
 import io.ably.lib.types.MessageExtras;
@@ -34,7 +38,7 @@ class MessageSinkMappingTest {
     @Test
     void testGetMessage_messageNameIsNullWhenNotProvided() {
         //given
-        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
+        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final SinkRecord record = new SinkRecord("not_important", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -47,7 +51,7 @@ class MessageSinkMappingTest {
     @Test
     void testGetMessage_messageNameIsStaticWhenStaticConfigProvided() {
         //given
-        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(configMapWithStaticMessageName),evaluator);
+        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(configMapWithStaticMessageName),evaluator);
         final SinkRecord record = new SinkRecord("not_important", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -61,7 +65,7 @@ class MessageSinkMappingTest {
     void testGetMessage_messageNameIsInterpolatedWhenPatternedConfigProvided() {
         //given
         //"message_#{topic}_#{key}"
-        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(configMapWithPatternedMessageName),evaluator);
+        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(configMapWithPatternedMessageName),evaluator);
         final SinkRecord record = new SinkRecord("niceTopic", 0, Schema.BYTES_SCHEMA, "niceKey".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -75,7 +79,7 @@ class MessageSinkMappingTest {
     @Test
     void testGetMessage_messageDataIsTheSameWithRecordValue() {
         //given
-        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
+        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -89,7 +93,7 @@ class MessageSinkMappingTest {
     @Test
     void testGetMessage_messageIdIsSetBasedOnRecordValues() {
         //given
-        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
+        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -103,7 +107,7 @@ class MessageSinkMappingTest {
     @Test
     void testGetMessage_sentAndReceivedExtrasKeysAreTheSame() {
         //given
-        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
+        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -124,7 +128,7 @@ class MessageSinkMappingTest {
     @Test
     void testGetMessage_recordHeadersAreReceivedCorrectly() {
         //given
-        sinkMapping = new MessageSinkMappingImpl(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
+        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap),evaluator);
         final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("key1", "value1", "key2", "value2");
         for (Map.Entry<String, String> entry : headersMap.entrySet()) {

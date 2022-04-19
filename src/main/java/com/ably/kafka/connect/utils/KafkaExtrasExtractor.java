@@ -1,4 +1,4 @@
-package com.ably.kafka.connect;
+package com.ably.kafka.connect.utils;
 
 import io.ably.lib.util.JsonUtils;
 import org.apache.kafka.connect.header.Header;
@@ -27,7 +27,9 @@ public class KafkaExtrasExtractor {
 
         byte[] key = (byte[]) record.key();
         if (key != null) {
-            extras.add("key", Base64.getEncoder().encodeToString(key));
+            final String keyValue = Base64.getEncoder().encodeToString(key);
+            System.out.println("keyValue: " + keyValue);
+            extras.add("key", keyValue);
         }
 
         if (!record.headers().isEmpty()) {
