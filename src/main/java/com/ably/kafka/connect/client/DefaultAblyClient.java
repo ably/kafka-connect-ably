@@ -16,6 +16,8 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class DefaultAblyClient implements AblyClient {
     private static final Logger logger = LoggerFactory.getLogger(DefaultAblyClient.class);
 
@@ -25,7 +27,7 @@ public class DefaultAblyClient implements AblyClient {
     private AblyRealtime realtime;
 
     //When this is true, the client should abort all publishing operations and throw an exception
-    private boolean connectionFailed = false;
+    private final AtomicBoolean connectionFailed = new AtomicBoolean(false);
 
     public DefaultAblyClient(ChannelSinkConnectorConfig connectorConfig, ChannelSinkMapping channelSinkMapping, MessageSinkMapping messageSinkMapping) {
         this.connectorConfig = connectorConfig;
@@ -40,7 +42,7 @@ public class DefaultAblyClient implements AblyClient {
             realtime.connection.on(connectionStateChange -> {
                 if (connectionStateChange.current == ConnectionState.failed) {
                     logger.error("Connection failed with error: {}", connectionStateChange.reason);
-                    connectionFailed = true;
+                    connectionFailed.set(true);
                 } else if (connectionStateChange.current == ConnectionState.connected) {
                     logger.info("Ably connection successfully established");
                 }
@@ -53,7 +55,7 @@ public class DefaultAblyClient implements AblyClient {
 
     @Override
     public void publishFrom(SinkRecord record) throws ConnectException {
-        if (connectionFailed) {
+        if (connectionFailed.get()) {
             //this exception should cause the calling task to abort
             throw new ConnectException("Cannot publish to Ably when connection failed");
         }
