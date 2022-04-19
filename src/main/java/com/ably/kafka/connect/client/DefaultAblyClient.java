@@ -16,7 +16,7 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DefaultAblyClient implements AblyClient {
     private static final Logger logger = LoggerFactory.getLogger(DefaultAblyClient.class);
@@ -26,6 +26,9 @@ public class DefaultAblyClient implements AblyClient {
     private final ChannelSinkConnectorConfig connectorConfig;
     private AblyRealtime realtime;
 
+    //When this is true, the client should abort all publishing operations and throw an exception
+    private final AtomicBoolean connectionFailed = new AtomicBoolean(false);
+
     public DefaultAblyClient(ChannelSinkConnectorConfig connectorConfig, ChannelSinkMapping channelSinkMapping, MessageSinkMapping messageSinkMapping) {
         this.connectorConfig = connectorConfig;
         this.channelSinkMapping = channelSinkMapping;
@@ -34,30 +37,28 @@ public class DefaultAblyClient implements AblyClient {
 
     @Override
     public void connect() throws ConnectException {
-        final CountDownLatch connectedSignal = new CountDownLatch(1);
         try {
             realtime = new AblyRealtime(connectorConfig.clientOptions);
             realtime.connection.on(connectionStateChange -> {
-                logger.info("Connection state changed to {}", connectionStateChange.current);
                 if (connectionStateChange.current == ConnectionState.failed) {
                     logger.error("Connection failed with error: {}", connectionStateChange.reason);
-                    //We want to unblock the thread, the next check point put should handle the error
-                    connectedSignal.countDown();
+                    connectionFailed.set(true);
                 } else if (connectionStateChange.current == ConnectionState.connected) {
                     logger.info("Ably connection successfully established");
-                    connectedSignal.countDown();
                 }
             });
 
-            connectedSignal.await();
-
-        } catch (AblyException | InterruptedException e) {
+        } catch (AblyException e) {
             logger.error("error initializing ably client", e);
         }
     }
 
     @Override
     public void publishFrom(SinkRecord record) throws ConnectException {
+        if (connectionFailed.get()) {
+            //this exception should cause the calling task to abort
+            throw new ConnectException("Cannot publish to Ably when connection failed");
+        }
         try {
             final Channel channel = channelSinkMapping.getChannel(record, realtime);
             final Message message = messageSinkMapping.getMessage(record);
@@ -94,10 +95,5 @@ public class DefaultAblyClient implements AblyClient {
             realtime.close();
             realtime = null;
         }
-    }
-
-    @Override
-    public boolean isConnected() {
-        return realtime.connection.state == ConnectionState.connected;
     }
 }

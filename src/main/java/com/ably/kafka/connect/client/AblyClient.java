@@ -21,10 +21,5 @@ public interface AblyClient {
      * Stop the ability to publish messages to Ably.
      * */
     void stop();
-    /**
-     * Check if the client is connected to Ably.
-     * @return true if connected, false otherwise
-     * */
-    boolean isConnected();
 }
 

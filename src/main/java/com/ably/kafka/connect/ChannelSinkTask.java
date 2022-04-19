@@ -49,11 +49,6 @@ public class ChannelSinkTask extends SinkTask {
             throw new ConnectException("Ably client is unitialized");
         }
 
-        if (!ablyClient.isConnected()) {
-            logger.error("Ably client is not connected.");
-            throw new ConnectException("Ably client is not connected");
-        }
-
         for (final SinkRecord record : records) {
             ablyClient.publishFrom(record);
         }

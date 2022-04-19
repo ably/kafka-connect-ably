@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 COPY pom.xml .
 COPY src src/
 
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 FROM confluentinc/cp-kafka-connect:6.0.2-1-ubi8
 
