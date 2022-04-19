@@ -1,0 +1,90 @@
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.4.0
+    networks:
+      kafka_distributed_network:
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      zk_id: '1'
+    # ports:
+    #  - '2181:2181'
+
+  kafka:
+    image: confluentinc/cp-enterprise-kafka:5.4.0
+    networks:
+      kafka_distributed_network:
+        aliases:
+          - kafka
+    ports:
+      - 29092:29092
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LISTENERS: PLAINTEXT://:9092, EXTERNAL_LISTENER://:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092, EXTERNAL_LISTENER://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT, EXTERNAL_LISTENER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:5.4.0
+    networks:
+      kafka_distributed_network:
+        aliases:
+          - schema-registry
+    # ports:
+    # - '8081:8081'
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:5.4.0
+    networks:
+      kafka_distributed_network:
+        aliases:
+          - control-center
+    ports:
+      - '19021:9021'
+    depends_on:
+      - zookeeper
+      - kafka
+      - schema-registry
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'kafka:9092'
+      CONTROL_CENTER_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      CONTROL_CENTER_CONNECT_CLUSTER: 'connect:8083'
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_CONFLUENT_CONTROLCENTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+      CONTROL_CENTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+
+  connector:
+    build: .
+    command:
+      - /bin/connect-distributed
+      - /config/docker-compose-worker-distributed.properties
+    volumes:
+      - ./config:/config
+    ports:
+      - 5005:5005
+    environment:
+      PORT: 5005
+      SUSPEND: ${SUSPEND:-n}
+      CONNECT_REST_PORT: 8083
+      CONNECT_REST_ADVERTISED_HOST_NAME: connector
+    networks:
+      kafka_distributed_network:
+        aliases:
+          - connector
+    depends_on:
+      - zookeeper
+      - kafka
+      - schema-registry
+
+
+networks:
+  kafka_distributed_network:
