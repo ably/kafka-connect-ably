@@ -14,7 +14,6 @@
 - Code reorganization and refinement [\#63](https://github.com/ably/kafka-connect-ably/pull/63) ([ikbalkaya](https://github.com/ikbalkaya))
 - Add distributed mode configuration file [\#62](https://github.com/ably/kafka-connect-ably/pull/62) ([ikbalkaya](https://github.com/ikbalkaya))
 - Remove client.use.binary.protocol configuration [\#60](https://github.com/ably/kafka-connect-ably/pull/60) ([ikbalkaya](https://github.com/ikbalkaya))
-- Add .editorconfig for IntelliJ formatting support [\#54](https://github.com/ably/kafka-connect-ably/pull/54) ([ikbalkaya](https://github.com/ikbalkaya))
 - Refactor channel configuration logic [\#50](https://github.com/ably/kafka-connect-ably/pull/50) ([ikbalkaya](https://github.com/ikbalkaya))
 - Integration tests for static and pattern based mapping [\#49](https://github.com/ably/kafka-connect-ably/pull/49) ([ikbalkaya](https://github.com/ikbalkaya))
 - Make message name configurable [\#48](https://github.com/ably/kafka-connect-ably/pull/48) ([ikbalkaya](https://github.com/ikbalkaya))
