@@ -3,7 +3,7 @@
 
 ## [v2.0.0](https://github.com/ably/kafka-connect-ably/tree/v2.0.0) (2022-04-20)
 
-[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.0.0...HEAD)
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v1.0.3...v2.0.0)
 
 **Implemented enhancements:**
 
