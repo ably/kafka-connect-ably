@@ -1,5 +1,27 @@
 # Changelog
 
+
+## [v2.0.0](https://github.com/ably/kafka-connect-ably/tree/v2.0.0) (2022-04-20)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v1.0.3...v2.0.0)
+
+**Implemented enhancements:**
+
+- Remove client.use.binary.protocol configuration  [\#57](https://github.com/ably/kafka-connect-ably/issues/57)
+- Add configuration validators [\#53](https://github.com/ably/kafka-connect-ably/issues/53)
+- Make message name configurable and interpolable [\#46](https://github.com/ably/kafka-connect-ably/issues/46)
+- Code reorganization and refinement [\#63](https://github.com/ably/kafka-connect-ably/pull/63) ([ikbalkaya](https://github.com/ikbalkaya))
+- Add distributed mode configuration file [\#62](https://github.com/ably/kafka-connect-ably/pull/62) ([ikbalkaya](https://github.com/ikbalkaya))
+- Remove client.use.binary.protocol configuration [\#60](https://github.com/ably/kafka-connect-ably/pull/60) ([ikbalkaya](https://github.com/ikbalkaya))
+- Make message name configurable [\#48](https://github.com/ably/kafka-connect-ably/pull/48) ([ikbalkaya](https://github.com/ikbalkaya))
+- Implement pattern based mapping [\#43](https://github.com/ably/kafka-connect-ably/pull/43) ([ikbalkaya](https://github.com/ikbalkaya))
+
+**Fixed bugs:**
+
+- Readme emphasizes n to 1 mapping [\#66](https://github.com/ably/kafka-connect-ably/issues/66)
+- NullPointerException when proxy password is not specified [\#34](https://github.com/ably/kafka-connect-ably/issues/34)
+- NullPointerException on proxy port issue [\#52](https://github.com/ably/kafka-connect-ably/pull/52) ([ikbalkaya](https://github.com/ikbalkaya))
+
 ## [v1.0.3](https://github.com/ably/kafka-connect-ably/tree/v1.0.3) (2021-12-31)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v1.0.2...v1.0.3)

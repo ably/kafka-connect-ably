@@ -114,6 +114,10 @@ An example cURL command to start the connector in distributed mode is:
     data: {"id":"1543960661:0:2","clientId":"kafka-connect-ably-example","connectionId":"SuJTceISnT","timestamp":1623496744538,"encoding":"base64", "channel":"kafka-connect-ably-example","data":"bWVzc2FnZSAz","name":"sink"}
     ```
 
+## Breaking API Changes in Version 2.0.0
+
+Please see our [Upgrade / Migration Guide](UPDATING.md) for notes on changes you need to make to your configuration to update it with changes introduced by version 2.0.0 of the connector.
+
 ## Configuration
 
 Configuration is handled differently depending on how the connector is installed:
