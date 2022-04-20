@@ -2,7 +2,7 @@
 
 ## Version 1.0.3 to 2.0.0
 
-We have made some **breaking changes** in the version 2.0 release of this project. Configurations below are no longer supported.
+We have made some **breaking changes** in the version 2.0.0 release of this project. Configurations below are no longer supported.
 You must remove these from your configuration files when using the new version.
 
 * `recover`
