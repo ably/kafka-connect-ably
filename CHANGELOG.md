@@ -7,19 +7,14 @@
 
 **Implemented enhancements:**
 
-- Optimize integration tests [\#58](https://github.com/ably/kafka-connect-ably/issues/58)
 - Remove client.use.binary.protocol configuration  [\#57](https://github.com/ably/kafka-connect-ably/issues/57)
 - Add configuration validators [\#53](https://github.com/ably/kafka-connect-ably/issues/53)
 - Make message name configurable and interpolable [\#46](https://github.com/ably/kafka-connect-ably/issues/46)
 - Code reorganization and refinement [\#63](https://github.com/ably/kafka-connect-ably/pull/63) ([ikbalkaya](https://github.com/ikbalkaya))
 - Add distributed mode configuration file [\#62](https://github.com/ably/kafka-connect-ably/pull/62) ([ikbalkaya](https://github.com/ikbalkaya))
 - Remove client.use.binary.protocol configuration [\#60](https://github.com/ably/kafka-connect-ably/pull/60) ([ikbalkaya](https://github.com/ikbalkaya))
-- Refactor channel configuration logic [\#50](https://github.com/ably/kafka-connect-ably/pull/50) ([ikbalkaya](https://github.com/ikbalkaya))
-- Integration tests for static and pattern based mapping [\#49](https://github.com/ably/kafka-connect-ably/pull/49) ([ikbalkaya](https://github.com/ikbalkaya))
 - Make message name configurable [\#48](https://github.com/ably/kafka-connect-ably/pull/48) ([ikbalkaya](https://github.com/ikbalkaya))
-- Update language target to 9 to work with IntelliJ [\#47](https://github.com/ably/kafka-connect-ably/pull/47) ([ikbalkaya](https://github.com/ikbalkaya))
 - Implement pattern based mapping [\#43](https://github.com/ably/kafka-connect-ably/pull/43) ([ikbalkaya](https://github.com/ikbalkaya))
-- Refactor message mapping logic [\#42](https://github.com/ably/kafka-connect-ably/pull/42) ([ikbalkaya](https://github.com/ikbalkaya))
 
 **Fixed bugs:**
 
