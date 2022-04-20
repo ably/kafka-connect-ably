@@ -10,4 +10,3 @@ You must remove these from your configuration files when using the new version.
 
 Also;
 * Message name default value is no longer 'sink'. You must set new configuration `message.name` or it is going to be set to null.
-
