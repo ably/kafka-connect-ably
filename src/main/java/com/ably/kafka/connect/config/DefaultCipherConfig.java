@@ -7,7 +7,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
-public class ExampleCipherConfig implements CipherConfig {
+public class DefaultCipherConfig implements CipherConfig {
+    //TODO : Please replace logic in key() if you want to use this as your CipherConfig
     @Override
     public String key(SinkRecord record) {
         try {
