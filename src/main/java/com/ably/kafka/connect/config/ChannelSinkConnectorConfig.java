@@ -173,6 +173,9 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final String CLIENT_CHANNEL_CIPHER_KEY_DOC = "Requests encryption for this channel when not null, " +
         "and specifies encryption-related parameters (such as algorithm, chaining mode, key length and key).";
 
+    public static final String CIPHER_KEY_CLASS = "client.channel.cipher.key.class";
+    private static final String CIPHER_KEY_CLASS_DOC = "Class that generates cipher key";
+
     public static final String CLIENT_CHANNEL_PARAMS = "client.channel.params";
     private static final String CLIENT_CHANNEL_PARAMS_DOC = "Additional channel parameters used to configure the " +
         "behaviour of the channel. This should be specified in the form \"key1=value1,key2=value2,...\".";
@@ -538,6 +541,13 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
             .define(
                 ConfigKeyBuilder.of(CLIENT_CHANNEL_CIPHER_KEY, Type.STRING)
                     .documentation(CLIENT_CHANNEL_CIPHER_KEY_DOC)
+                    .importance(Importance.MEDIUM)
+                    .defaultValue(null)
+                    .build()
+            )
+            .define(
+                ConfigKeyBuilder.of(CIPHER_KEY_CLASS, Type.CLASS)
+                    .documentation(CIPHER_KEY_CLASS_DOC)
                     .importance(Importance.MEDIUM)
                     .defaultValue(null)
                     .build()
