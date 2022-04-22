@@ -34,17 +34,7 @@ public class DefaultChannelConfig implements ChannelConfig {
 
     public ChannelOptions getOptions(SinkRecord record) throws ChannelSinkConnectorConfig.ConfigException {
         ChannelOptions channelOptions;
-         String cipherKey = sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY);
-
-        final Object cipherConfigInstance = Utils.newInstance(sinkConnectorConfig.getClass(CIPHER_KEY_CLASS));
-        if (cipherConfigInstance instanceof CipherConfig) {
-            final CipherConfig cipherconfig = (CipherConfig) cipherConfigInstance;
-            cipherKey = cipherconfig.key(record);
-        }else {
-            //ignore for now
-           // throw new ChannelSinkConnectorConfig.ConfigException(String.format("invalid cipher key class %s", CIPHER_KEY_CLASS));
-        }
-
+        final String cipherKey = getCipherKey(record);
 
         if (cipherKey != null) {
             logger.info("Using cipher key {}", cipherKey);
@@ -61,6 +51,21 @@ public class DefaultChannelConfig implements ChannelConfig {
         channelOptions.modes = new ChannelMode[]{ChannelMode.publish};
         channelOptions.params = getParams(sinkConnectorConfig.getList(CLIENT_CHANNEL_PARAMS));
         return channelOptions;
+    }
+
+    private String getCipherKey(SinkRecord record) throws ChannelSinkConnectorConfig.ConfigException {
+        final String cipherKey = sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY);
+        //Prioritize the cipher key from the configuration class if it exists
+        if (sinkConnectorConfig.getClass(CIPHER_KEY_CLASS) != null) {
+            final Object cipherConfigInstance = Utils.newInstance(sinkConnectorConfig.getClass(CIPHER_KEY_CLASS));
+            if (cipherConfigInstance instanceof CipherConfig) {
+                final CipherConfig cipherconfig = (CipherConfig) cipherConfigInstance;
+                return cipherconfig.key(record);
+            } else {
+                throw new ChannelSinkConnectorConfig.ConfigException(String.format("invalid cipher key class %s", CIPHER_KEY_CLASS));
+            }
+        }
+        return cipherKey;
     }
 
     private Map<String, String> getParams(final List<String> params) throws ChannelSinkConnectorConfig.ConfigException {
