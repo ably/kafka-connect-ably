@@ -1,6 +1,5 @@
 package com.ably.kafka.connect.config;
 
-import com.ably.kafka.connect.ChannelSinkTask;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.ChannelMode;
 import io.ably.lib.types.ChannelOptions;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CHANNEL_CONFIG;
-import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CIPHER_KEY_CLASS;
+import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CIPHER_KEY_GENERATOR_CLASS;
 import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CLIENT_CHANNEL_CIPHER_KEY;
 import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CLIENT_CHANNEL_PARAMS;
 
@@ -56,13 +55,13 @@ public class DefaultChannelConfig implements ChannelConfig {
     private String getCipherKey(SinkRecord record) throws ChannelSinkConnectorConfig.ConfigException {
         final String cipherKey = sinkConnectorConfig.getString(CLIENT_CHANNEL_CIPHER_KEY);
         //Prioritize the cipher key from the configuration class if it exists
-        if (sinkConnectorConfig.getClass(CIPHER_KEY_CLASS) != null) {
-            final Object cipherConfigInstance = Utils.newInstance(sinkConnectorConfig.getClass(CIPHER_KEY_CLASS));
+        if (sinkConnectorConfig.getClass(CIPHER_KEY_GENERATOR_CLASS) != null) {
+            final Object cipherConfigInstance = Utils.newInstance(sinkConnectorConfig.getClass(CIPHER_KEY_GENERATOR_CLASS));
             if (cipherConfigInstance instanceof CipherConfig) {
                 final CipherConfig cipherconfig = (CipherConfig) cipherConfigInstance;
                 return cipherconfig.key(record);
             } else {
-                throw new ChannelSinkConnectorConfig.ConfigException(String.format("invalid cipher key class %s", CIPHER_KEY_CLASS));
+                throw new ChannelSinkConnectorConfig.ConfigException(String.format("invalid cipher key class %s", CIPHER_KEY_GENERATOR_CLASS));
             }
         }
         return cipherKey;
