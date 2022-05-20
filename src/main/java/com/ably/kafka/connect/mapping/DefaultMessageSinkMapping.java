@@ -11,10 +11,7 @@ import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.sink.SinkRecord;
 
-
 import javax.annotation.Nonnull;
-
-import java.nio.charset.StandardCharsets;
 
 import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.MESSAGE_CONFIG;
 
@@ -29,8 +26,7 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
 
     @Override
     public Message getMessage(SinkRecord record) {
-        final String messageName = configValueEvaluator.evaluate(record, sinkConnectorConfig.getString(MESSAGE_CONFIG));
-        final Message message = new Message(messageName, messageDataFromRecord(record));
+        final Message message = messageFromRecord(record);
         message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
 
         JsonUtils.JsonUtilsObject kafkaExtras = KafkaExtrasExtractor.createKafkaExtras(record);
@@ -40,18 +36,22 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
         return message;
     }
 
-    private Object messageDataFromRecord(SinkRecord record) {
+    private Message messageFromRecord(SinkRecord record) {
+        final String messageName = configValueEvaluator.evaluate(record, sinkConnectorConfig.getString(MESSAGE_CONFIG));
+
         if (record.valueSchema() == null) {
-            return record.value();
+            return new Message(messageName, record.value());
         }
+
         final Schema valueSchema = record.valueSchema();
         switch (valueSchema.type()) {
-            //we need to consider other types too
             case STRUCT:
                 final String jsonString = StructUtils.toJsonString((Struct) record.value());
-                return jsonString.getBytes(StandardCharsets.UTF_8);
+                final Message message = new Message(messageName, jsonString);
+                message.encoding = "json";
+                return message;
         }
-        return record.value();
+        return new Message(messageName, record.value());
     }
 
 
