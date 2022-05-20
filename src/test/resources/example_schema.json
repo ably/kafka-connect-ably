@@ -1,0 +1,23 @@
+{
+  "fields": [
+    {
+      "name": "cardId",
+      "type": "string"
+    },
+    {
+      "name": "limit",
+      "type": "int"
+    },
+    {
+      "name": "pocketId",
+      "type": "string"
+    },
+    {
+      "name": "cvv",
+      "type": "string"
+    }
+  ],
+  "name": "Card",
+  "namespace": "com.test.card.v1",
+  "type": "record"
+}
