@@ -217,5 +217,35 @@
         <version>${kafka.version}</version>
         <scope>compile</scope>
       </dependency>
+      <dependency>
+        <groupId>io.confluent</groupId>
+        <artifactId>kafka-schema-registry</artifactId>
+        <version>3.3.1</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.confluent</groupId>
+        <artifactId>kafka-avro-serializer</artifactId>
+        <version>3.3.1</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/org.apache.avro/avro -->
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro</artifactId>
+        <version>1.11.0</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/io.confluent/kafka-connect-avro-converter -->
+      <dependency>
+        <groupId>io.confluent</groupId>
+        <artifactId>kafka-connect-avro-converter</artifactId>
+        <version>5.4.2</version>
+        <scope>test</scope>
+      </dependency>
+
+
     </dependencies>
 </project>
