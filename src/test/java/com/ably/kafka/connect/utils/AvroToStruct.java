@@ -1,5 +1,6 @@
 package com.ably.kafka.connect.utils;
 
+import com.google.gson.Gson;
 import io.confluent.connect.avro.AvroConverter;
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
@@ -13,10 +14,13 @@ import org.apache.avro.generic.IndexedRecord;
 import org.apache.avro.reflect.ReflectData;
 import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.data.Struct;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -44,6 +48,26 @@ public class AvroToStruct {
         return (Struct) schemaAndValue.value();
     }
 
+    Struct getComplexStruct(final Garage garage) throws RestClientException, IOException {
+        Properties defaultConfig = new Properties();
+        defaultConfig.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "bogus");
+
+        final SchemaRegistryClient schemaRegistry = new MockSchemaRegistryClient();
+        final Schema schema = ReflectData.get().getSchema(Garage.class);
+        schemaRegistry.register("complex-schema", schema);
+
+        final KafkaAvroSerializer avroSerializer = new KafkaAvroSerializer(schemaRegistry, new HashMap(defaultConfig));
+        final AvroConverter converter = new AvroConverter(schemaRegistry);
+        converter.configure(Collections.singletonMap("schema.registry.url", "bogus"), false);
+
+        final IndexedRecord cardRecord = createComplexRecord(garage, schema);
+
+        final byte[] bytes = avroSerializer.serialize("DEFAULT_TOPIC", cardRecord);
+
+        final SchemaAndValue schemaAndValue = converter.toConnectData("DEFAULT_TOPIC", bytes);
+        return (Struct) schemaAndValue.value();
+    }
+
     private IndexedRecord createCardRecord(Card card, Schema schema) throws IOException {
         GenericRecord avroRecord = new GenericData.Record(schema);
 
@@ -52,6 +76,11 @@ public class AvroToStruct {
         avroRecord.put("pocketId", card.pocketId);
         avroRecord.put("cvv", card.cvv);
         return avroRecord;
+    }
+
+    private IndexedRecord createComplexRecord(final Garage garage, Schema schema) throws IOException {
+        final String json = new Gson().toJson(garage);
+        return new JsonAvroConverter().convertToGenericDataRecord(json.getBytes(StandardCharsets.UTF_8), schema);
     }
 
     static class Card {
@@ -78,6 +107,37 @@ public class AvroToStruct {
         @Override
         public int hashCode() {
             return Objects.hash(cardId, limit, pocketId, cvv);
+        }
+    }
+
+    static class Garage {
+        final List<Car> cars;
+
+        Garage(List<Car> cars) {
+            this.cars = cars;
+        }
+    }
+
+    static class Car {
+        final Engine engine;
+        final List<Part> parts;
+
+        Car(Engine engine, List<Part> parts) {
+            this.engine = engine;
+            this.parts = parts;
+        }
+    }
+
+    static class Engine {
+    }
+
+    static class Part {
+        final String name;
+        final int price;
+
+        Part(String name, int price) {
+            this.name = name;
+            this.price = price;
         }
     }
 }

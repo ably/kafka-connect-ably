@@ -228,7 +228,13 @@
         <version>7.1.1</version>
         <scope>test</scope>
       </dependency>
-
+      <!-- https://mvnrepository.com/artifact/tech.allegro.schema.json2avro/converter -->
+      <dependency>
+        <groupId>tech.allegro.schema.json2avro</groupId>
+        <artifactId>converter</artifactId>
+        <version>0.2.14</version>
+        <scope>test</scope>
+      </dependency>
 
       <!-- https://mvnrepository.com/artifact/io.confluent/kafka-connect-avro-converter -->
       <dependency>
