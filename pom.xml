@@ -54,7 +54,12 @@
         <system>github</system>
         <url>https://github.com/ably/kafka-connect-ably/issues</url>
     </issueManagement>
-
+    <repositories>
+      <repository>
+        <id>confluent</id>
+        <url>http://packages.confluent.io/maven/</url>
+      </repository>
+    </repositories>
     <build>
         <plugins>
             <plugin>
@@ -220,32 +225,25 @@
       <dependency>
         <groupId>io.confluent</groupId>
         <artifactId>kafka-schema-registry</artifactId>
-        <version>3.3.1</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>io.confluent</groupId>
-        <artifactId>kafka-avro-serializer</artifactId>
-        <version>3.3.1</version>
+        <version>7.1.1</version>
         <scope>test</scope>
       </dependency>
 
-      <!-- https://mvnrepository.com/artifact/org.apache.avro/avro -->
-      <dependency>
-        <groupId>org.apache.avro</groupId>
-        <artifactId>avro</artifactId>
-        <version>1.11.0</version>
-        <scope>test</scope>
-      </dependency>
 
       <!-- https://mvnrepository.com/artifact/io.confluent/kafka-connect-avro-converter -->
       <dependency>
         <groupId>io.confluent</groupId>
         <artifactId>kafka-connect-avro-converter</artifactId>
-        <version>5.4.2</version>
+        <version>7.1.1</version>
         <scope>test</scope>
       </dependency>
-
+      <!-- https://mvnrepository.com/artifact/org.codehaus.jackson/jackson-mapper-asl -->
+      <dependency>
+        <groupId>org.codehaus.jackson</groupId>
+        <artifactId>jackson-mapper-asl</artifactId>
+        <version>1.9.13</version>
+        <scope>test</scope>
+      </dependency>
 
     </dependencies>
 </project>
