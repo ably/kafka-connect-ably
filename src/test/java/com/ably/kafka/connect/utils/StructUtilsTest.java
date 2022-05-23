@@ -15,10 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class StructUtilsTest {
     private AvroToStruct avroToStruct;
 
-    public StructUtilsTest() throws RestClientException, IOException {
-
-    }
-
     @BeforeEach
     public void setup() {
         avroToStruct = new AvroToStruct();
