@@ -112,10 +112,11 @@ public class AvroToStruct {
     }
 
     static class Garage {
-        Garage(List<Car> cars, Map<String, Part> partMap, GarageType type) {
+        Garage(List<Car> cars, Map<String, Part> partMap, GarageType type, boolean isOpen) {
             this.cars = cars;
             this.partMap = partMap;
             this.type = type;
+            this.isOpen = isOpen;
         }
 
         enum GarageType {
@@ -124,21 +125,19 @@ public class AvroToStruct {
         final List<Car> cars;
         final Map<String,Part> partMap;
         final GarageType type;
+        final boolean isOpen;
 
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof Garage)) return false;
             Garage garage = (Garage) o;
-            final boolean carsEqual = Objects.equals(cars, garage.cars);
-            final boolean partsEqual = Objects.equals(partMap, garage.partMap);
-            final boolean typesEqual = type == garage.type;
-            return carsEqual && partsEqual && typesEqual;
+            return isOpen == garage.isOpen && Objects.equals(cars, garage.cars) && Objects.equals(partMap, garage.partMap) && type == garage.type;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(cars, partMap, type);
+            return Objects.hash(cars, partMap, type, isOpen);
         }
     }
 

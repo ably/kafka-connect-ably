@@ -62,6 +62,6 @@ public class StructUtilsTest {
 
         final Map<String, AvroToStruct.Part> partMap = Map.of("wheel", part, "door", part2, "seat", part3);
 
-        return new AvroToStruct.Garage(List.of(car1, car2), partMap, AvroToStruct.Garage.GarageType.CAR);
+        return new AvroToStruct.Garage(List.of(car1, car2), partMap, AvroToStruct.Garage.GarageType.CAR, false);
     }
 }
