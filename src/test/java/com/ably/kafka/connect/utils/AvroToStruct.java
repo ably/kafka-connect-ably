@@ -116,6 +116,19 @@ public class AvroToStruct {
         Garage(List<Car> cars) {
             this.cars = cars;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Garage)) return false;
+            Garage garage = (Garage) o;
+            return Objects.equals(cars, garage.cars);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(cars);
+        }
     }
 
     static class Car {
@@ -126,9 +139,27 @@ public class AvroToStruct {
             this.engine = engine;
             this.parts = parts;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Car)) return false;
+            Car car = (Car) o;
+            return Objects.equals(engine, car.engine) && Objects.equals(parts, car.parts);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(engine, parts);
+        }
     }
 
     static class Engine {
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Engine) return true;
+            return false;
+        }
     }
 
     static class Part {
@@ -138,6 +169,19 @@ public class AvroToStruct {
         Part(String name, int price) {
             this.name = name;
             this.price = price;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Part)) return false;
+            Part part = (Part) o;
+            return price == part.price && Objects.equals(name, part.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, price);
         }
     }
 }
