@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -112,9 +113,11 @@ public class AvroToStruct {
 
     static class Garage {
         final List<Car> cars;
+        final Map<String,Part> partMap; //to check complexity of map
 
-        Garage(List<Car> cars) {
+        Garage(List<Car> cars, Map<String, Part> partMap) {
             this.cars = cars;
+            this.partMap = partMap;
         }
 
         @Override
@@ -122,12 +125,13 @@ public class AvroToStruct {
             if (this == o) return true;
             if (!(o instanceof Garage)) return false;
             Garage garage = (Garage) o;
-            return Objects.equals(cars, garage.cars);
+
+            return Objects.equals(cars, garage.cars) && Objects.equals(partMap, garage.partMap);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(cars);
+            return Objects.hash(cars, partMap);
         }
     }
 
