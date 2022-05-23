@@ -112,26 +112,33 @@ public class AvroToStruct {
     }
 
     static class Garage {
-        final List<Car> cars;
-        final Map<String,Part> partMap; //to check complexity of map
-
-        Garage(List<Car> cars, Map<String, Part> partMap) {
+        Garage(List<Car> cars, Map<String, Part> partMap, GarageType type) {
             this.cars = cars;
             this.partMap = partMap;
+            this.type = type;
         }
+
+        enum GarageType {
+            CAR, TRUCK
+        }
+        final List<Car> cars;
+        final Map<String,Part> partMap;
+        final GarageType type;
 
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof Garage)) return false;
             Garage garage = (Garage) o;
-
-            return Objects.equals(cars, garage.cars) && Objects.equals(partMap, garage.partMap);
+            final boolean carsEqual = Objects.equals(cars, garage.cars);
+            final boolean partsEqual = Objects.equals(partMap, garage.partMap);
+            final boolean typesEqual = type == garage.type;
+            return carsEqual && partsEqual && typesEqual;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(cars, partMap);
+            return Objects.hash(cars, partMap, type);
         }
     }
 

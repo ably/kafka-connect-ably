@@ -2,7 +2,6 @@ package com.ably.kafka.connect.utils;
 
 import com.google.gson.Gson;
 import org.apache.kafka.connect.data.Field;
-import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
 
 import java.util.ArrayList;
@@ -33,22 +32,18 @@ public class StructUtils {
                     final Map<String, Object> jsonMap = mapFrom(struct.getMap(field.name()));
                     dataMap.put(field.name(), jsonMap);
                 default:
-                    dataMap.put(field.name(), struct.get(field));
+                    System.out.println("Field: " + field.name() + " value: " + struct.get(field));
+                    dataMap.put(field.name(), eval(struct.get(field)));
             }
         }
         return dataMap;
     }
 
+
     private static Map<String, Object> mapFrom(Map<Object, Object> map) {
         final Map<String, Object> jsonMap = new LinkedHashMap<>(map.size());
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
-            if (entry.getValue() instanceof Struct) {
-                jsonMap.put(entry.getKey().toString(), structMap((Struct) entry.getValue()));
-            } else if (entry.getValue() instanceof List) {
-                jsonMap.put(entry.getKey().toString(), jsonArrayFrom((List<Object>) entry.getValue()));
-            } else if (entry.getValue() instanceof Map) {
-                jsonMap.put(entry.getKey().toString(), mapFrom((Map<Object, Object>) entry.getValue()));
-            }
+            jsonMap.put(entry.getKey().toString(),eval(entry.getValue()));
         }
         return jsonMap;
     }
@@ -56,14 +51,19 @@ public class StructUtils {
     private static List<Object> jsonArrayFrom(List<Object> fieldArray) {
         final List<Object> fieldJsonArray = new ArrayList<>(fieldArray.size());
         for (Object fieldArrayItem : fieldArray) {
-            if (fieldArrayItem instanceof Struct) {
-                fieldJsonArray.add(structMap((Struct) fieldArrayItem));
-            } else if (fieldArrayItem instanceof Map) {
-                fieldJsonArray.add(mapFrom((Map<Object, Object>) fieldArrayItem));
-            } else {
-                fieldJsonArray.add(fieldArrayItem);
-            }
+            fieldJsonArray.add(eval(fieldArrayItem));
         }
         return fieldJsonArray;
+    }
+
+    private static Object eval(final Object value) {
+        if (value instanceof Struct) {
+            return structMap((Struct) value);
+        } else if (value instanceof List) {
+            return jsonArrayFrom((List<Object>) value);
+        } else if (value instanceof Map) {
+            return mapFrom((Map<Object, Object>) value);
+        }
+        return value;
     }
 }
