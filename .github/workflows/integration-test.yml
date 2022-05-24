@@ -25,6 +25,12 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+      - name: Emit Information about Maven Environment
+        run: |
+          java --version
+          javac --version
+          mvn --version
+          mvn help:effective-settings
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots verify
       - name: Build docs
