@@ -32,7 +32,6 @@ public class StructUtils {
                     final Map<String, Object> jsonMap = mapFrom(struct.getMap(field.name()));
                     dataMap.put(field.name(), jsonMap);
                 default:
-                    System.out.println("Field: " + field.name() + " value: " + struct.get(field));
                     dataMap.put(field.name(), eval(struct.get(field)));
             }
         }
