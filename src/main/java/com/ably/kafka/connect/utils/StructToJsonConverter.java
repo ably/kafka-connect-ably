@@ -19,7 +19,7 @@ public class StructToJsonConverter {
      * @param struct the Struct to convert.
      * @return the JSON string.
      * */
-    public static String toJsonString(final Struct struct, Gson gson) {
+    public static String toJsonString(final Struct struct, final Gson gson) {
         final Map<String, Object> structJsonMap = structJsonMap(struct);
         return gson.toJson(structJsonMap);
     }
