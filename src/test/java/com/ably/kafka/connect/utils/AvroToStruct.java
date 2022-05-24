@@ -1,6 +1,7 @@
 package com.ably.kafka.connect.utils;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.confluent.connect.avro.AvroConverter;
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
@@ -54,7 +55,8 @@ public class AvroToStruct {
         defaultConfig.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "bogus");
 
         final SchemaRegistryClient schemaRegistry = new MockSchemaRegistryClient();
-        final Schema schema = ReflectData.get().getSchema(Garage.class);
+
+        final Schema schema = ReflectData.AllowNull.get().getSchema(Garage.class);
         schemaRegistry.register("complex-schema", schema);
 
         final KafkaAvroSerializer avroSerializer = new KafkaAvroSerializer(schemaRegistry, new HashMap(defaultConfig));
@@ -80,7 +82,8 @@ public class AvroToStruct {
     }
 
     private IndexedRecord createComplexRecord(final Garage garage, Schema schema) throws IOException {
-        final String json = new Gson().toJson(garage);
+        final Gson gson = new GsonBuilder().serializeNulls().create();
+        final String json = gson.toJson(garage);
         return new JsonAvroConverter().convertToGenericDataRecord(json.getBytes(StandardCharsets.UTF_8), schema);
     }
 
@@ -112,7 +115,8 @@ public class AvroToStruct {
     }
 
     static class Garage {
-        Garage(List<Car> cars, Map<String, Part> partMap, GarageType type, boolean isOpen) {
+        Garage(String name, List<Car> cars, Map<String, Part> partMap, GarageType type, boolean isOpen) {
+            this.name = name;
             this.cars = cars;
             this.partMap = partMap;
             this.type = type;
@@ -122,6 +126,7 @@ public class AvroToStruct {
         enum GarageType {
             CAR, TRUCK
         }
+        final String name;
         final List<Car> cars;
         final Map<String,Part> partMap;
         final GarageType type;
@@ -132,12 +137,12 @@ public class AvroToStruct {
             if (this == o) return true;
             if (!(o instanceof Garage)) return false;
             Garage garage = (Garage) o;
-            return isOpen == garage.isOpen && Objects.equals(cars, garage.cars) && Objects.equals(partMap, garage.partMap) && type == garage.type;
+            return isOpen == garage.isOpen && Objects.equals(name, garage.name) && Objects.equals(cars, garage.cars) && Objects.equals(partMap, garage.partMap) && type == garage.type;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(cars, partMap, type, isOpen);
+            return Objects.hash(name, cars, partMap, type, isOpen);
         }
     }
 

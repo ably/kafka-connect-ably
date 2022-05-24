@@ -37,7 +37,7 @@ public class StructUtilsTest {
     @Test
     void testComplexStructToJson() throws IOException, RestClientException {
         //given
-        final AvroToStruct.Garage garage = exampleGarage();
+        final AvroToStruct.Garage garage = exampleGarage("My garage");
         Struct struct = avroToStruct.getComplexStruct(garage);
 
         //when
@@ -48,7 +48,21 @@ public class StructUtilsTest {
         assertEquals(garage, receivedGarage);
     }
 
-    private AvroToStruct.Garage exampleGarage() {
+    @Test
+    void testComplexStructToJsonWithNullValue() throws IOException, RestClientException {
+        //given
+        final AvroToStruct.Garage garage = exampleGarage(null);
+        Struct struct = avroToStruct.getComplexStruct(garage);
+
+        //when
+        final String jsonString = StructUtils.toJsonString(struct);
+
+        //then
+        final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
+        assertEquals(garage, receivedGarage);
+    }
+
+    private AvroToStruct.Garage exampleGarage(String name) {
         final AvroToStruct.Part part = new AvroToStruct.Part("wheel", 100);
         final AvroToStruct.Part part2 = new AvroToStruct.Part("door", 200);
         final AvroToStruct.Part part3 = new AvroToStruct.Part("seat", 300);
@@ -58,6 +72,6 @@ public class StructUtilsTest {
 
         final Map<String, AvroToStruct.Part> partMap = Map.of("wheel", part, "door", part2, "seat", part3);
 
-        return new AvroToStruct.Garage(List.of(car1, car2), partMap, AvroToStruct.Garage.GarageType.CAR, false);
+        return new AvroToStruct.Garage(name,List.of(car1, car2), partMap, AvroToStruct.Garage.GarageType.CAR, false);
     }
 }
