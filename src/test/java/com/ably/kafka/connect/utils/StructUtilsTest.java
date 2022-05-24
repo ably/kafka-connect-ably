@@ -49,9 +49,24 @@ public class StructUtilsTest {
     }
 
     @Test
-    void testComplexStructToJsonWithNullValue() throws IOException, RestClientException {
+    void testComplexStructToJsonWithNullStringValue() throws IOException, RestClientException {
         //given
         final AvroToStruct.Garage garage = exampleGarage(null);
+        Struct struct = avroToStruct.getComplexStruct(garage);
+
+        //when
+        final String jsonString = StructUtils.toJsonString(struct);
+
+        //then
+        final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
+        assertEquals(garage, receivedGarage);
+    }
+
+    @Test
+    void testComplexStructToJsonWithNullMapValue() throws IOException, RestClientException {
+        //given
+        final AvroToStruct.Garage garage = exampleGarage("Something");
+        garage.partMap = null;
         Struct struct = avroToStruct.getComplexStruct(garage);
 
         //when

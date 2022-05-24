@@ -128,7 +128,7 @@ public class AvroToStruct {
         }
         final String name;
         final List<Car> cars;
-        final Map<String,Part> partMap;
+        Map<String,Part> partMap;
         final GarageType type;
         final boolean isOpen;
 

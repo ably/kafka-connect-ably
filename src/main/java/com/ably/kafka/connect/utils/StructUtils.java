@@ -41,6 +41,9 @@ public class StructUtils {
 
 
     private static Map<String, Object> mapFrom(Map<Object, Object> map) {
+        if (map == null) {
+            return null;
+        }
         final Map<String, Object> jsonMap = new LinkedHashMap<>(map.size());
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
             jsonMap.put(entry.getKey().toString(),eval(entry.getValue()));
