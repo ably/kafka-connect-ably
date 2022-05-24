@@ -35,7 +35,7 @@ public class StructToJsonConverter {
     private static Map<String, Object> structJsonMap(final Struct struct) {
         final Map<String, Object> structMap = new LinkedHashMap<>(struct.schema().fields().size());
 
-        for (Field field : struct.schema().fields()) {
+        for (final Field field : struct.schema().fields()) {
             switch (field.schema().type()) {
                 case STRUCT:
                     final Struct fieldStruct = struct.getStruct(field.name());
