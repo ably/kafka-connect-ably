@@ -32,7 +32,7 @@ public class StructUtils {
                     final Map<String, Object> jsonMap = mapFrom(struct.getMap(field.name()));
                     dataMap.put(field.name(), jsonMap);
                 default:
-                    dataMap.put(field.name(), eval(struct.get(field)));
+                    dataMap.put(field.name(), jsonValue(struct.get(field)));
             }
         }
         return dataMap;
@@ -45,7 +45,7 @@ public class StructUtils {
         }
         final Map<String, Object> jsonMap = new LinkedHashMap<>(map.size());
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
-            jsonMap.put(entry.getKey().toString(),eval(entry.getValue()));
+            jsonMap.put(entry.getKey().toString(), jsonValue(entry.getValue()));
         }
         return jsonMap;
     }
@@ -56,12 +56,12 @@ public class StructUtils {
         }
         final List<Object> fieldJsonArray = new ArrayList<>(fieldArray.size());
         for (Object fieldArrayItem : fieldArray) {
-            fieldJsonArray.add(eval(fieldArrayItem));
+            fieldJsonArray.add(jsonValue(fieldArrayItem));
         }
         return fieldJsonArray;
     }
 
-    private static Object eval(final Object value) {
+    private static Object jsonValue(final Object value) {
         if (value instanceof Struct) {
             return structMap((Struct) value);
         } else if (value instanceof List) {
