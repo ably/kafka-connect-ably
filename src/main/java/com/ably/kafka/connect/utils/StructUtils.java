@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 public class StructUtils {
-    public static String toJsonString(final Struct struct) {
-        return new Gson().toJson(structMap(struct));
+    public static String toJsonString(final Struct struct, Gson gson) {
+        return gson.toJson(structMap(struct));
     }
 
     private static Map<String, Object> structMap(final Struct struct) {

@@ -1,6 +1,7 @@
 package com.ably.kafka.connect.utils;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import org.apache.kafka.connect.data.Struct;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StructUtilsTest {
     private AvroToStruct avroToStruct;
+    private static final Gson gson = new GsonBuilder().serializeNulls().create();
 
     @BeforeEach
     public void setup() {
@@ -27,7 +29,7 @@ public class StructUtilsTest {
         Struct struct = avroToStruct.getSimpleStruct(card);
 
         //when
-        final String jsonString = StructUtils.toJsonString(struct);
+        final String jsonString = StructUtils.toJsonString(struct, gson);
 
         //then
         final AvroToStruct.Card receivedCard = new Gson().fromJson(jsonString, AvroToStruct.Card.class);
@@ -41,7 +43,7 @@ public class StructUtilsTest {
         Struct struct = avroToStruct.getComplexStruct(garage);
 
         //when
-        final String jsonString = StructUtils.toJsonString(struct);
+        final String jsonString = StructUtils.toJsonString(struct, gson);
 
         //then
         final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
@@ -55,7 +57,7 @@ public class StructUtilsTest {
         Struct struct = avroToStruct.getComplexStruct(garage);
 
         //when
-        final String jsonString = StructUtils.toJsonString(struct);
+        final String jsonString = StructUtils.toJsonString(struct,gson );
 
         //then
         final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
@@ -70,7 +72,7 @@ public class StructUtilsTest {
         Struct struct = avroToStruct.getComplexStruct(garage);
 
         //when
-        final String jsonString = StructUtils.toJsonString(struct);
+        final String jsonString = StructUtils.toJsonString(struct, gson);
 
         //then
         final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
@@ -85,7 +87,7 @@ public class StructUtilsTest {
         Struct struct = avroToStruct.getComplexStruct(garage);
 
         //when
-        final String jsonString = StructUtils.toJsonString(struct);
+        final String jsonString = StructUtils.toJsonString(struct,gson );
 
         //then
         final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);

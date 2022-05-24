@@ -4,6 +4,8 @@ import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import com.ably.kafka.connect.utils.KafkaExtrasExtractor;
 import com.ably.kafka.connect.utils.StructUtils;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.ably.lib.types.Message;
 import io.ably.lib.types.MessageExtras;
 import io.ably.lib.util.JsonUtils;
@@ -18,6 +20,8 @@ import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.MESSAGE_C
 public class DefaultMessageSinkMapping implements MessageSinkMapping {
     private final ChannelSinkConnectorConfig sinkConnectorConfig;
     private final ConfigValueEvaluator configValueEvaluator;
+
+    private static final Gson gson = new GsonBuilder().serializeNulls().create();
 
     public DefaultMessageSinkMapping(@Nonnull ChannelSinkConnectorConfig config, @Nonnull ConfigValueEvaluator configValueEvaluator) {
         this.sinkConnectorConfig = config;
@@ -46,7 +50,7 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
         final Schema valueSchema = record.valueSchema();
         switch (valueSchema.type()) {
             case STRUCT:
-                final String jsonString = StructUtils.toJsonString((Struct) record.value());
+                final String jsonString = StructUtils.toJsonString((Struct) record.value(), gson);
                 final Message message = new Message(messageName, jsonString);
                 message.encoding = "json";
                 return message;
