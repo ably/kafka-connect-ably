@@ -18,6 +18,7 @@ import org.apache.kafka.connect.data.Struct;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,29 +27,37 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class AvroToStruct {
 
-    Struct getSimpleStruct(final Card card) throws RestClientException, IOException {
+    Struct getSimpleStruct(final Object simpleObject) throws RestClientException, IOException {
         Properties defaultConfig = new Properties();
         defaultConfig.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "bogus");
 
         final SchemaRegistryClient schemaRegistry = new MockSchemaRegistryClient();
-        final Schema schema = ReflectData.get().getSchema(Card.class);
+        Schema schema = null;
+        if (simpleObject instanceof Computer) {
+            schema = ReflectData.get().getSchema(Computer.class);
+        } else if (simpleObject instanceof Card) {
+            schema = ReflectData.get().getSchema(Card.class);
+        }
         schemaRegistry.register("simple-schema", schema);
 
         final KafkaAvroSerializer avroSerializer = new KafkaAvroSerializer(schemaRegistry, new HashMap(defaultConfig));
         final AvroConverter converter = new AvroConverter(schemaRegistry);
         converter.configure(Collections.singletonMap("schema.registry.url", "bogus"), false);
+        IndexedRecord record = null;
+        if (simpleObject instanceof Card) {
+            record = createCardRecord((Card) simpleObject, schema);
+        } else if (simpleObject instanceof Computer) {
+            record = createComputerRecord((Computer) simpleObject, schema);
+        }
 
-        final IndexedRecord cardRecord = createCardRecord(card, schema);
-
-        final byte[] bytes = avroSerializer.serialize("DEFAULT_TOPIC", cardRecord);
+        final byte[] bytes = avroSerializer.serialize("DEFAULT_TOPIC", record);
 
         final SchemaAndValue schemaAndValue = converter.toConnectData("DEFAULT_TOPIC", bytes);
         return (Struct) schemaAndValue.value();
     }
+
 
     Struct getComplexStruct(final Garage garage) throws RestClientException, IOException {
         Properties defaultConfig = new Properties();
@@ -78,6 +87,14 @@ public class AvroToStruct {
         avroRecord.put("limit", card.limit);
         avroRecord.put("pocketId", card.pocketId);
         avroRecord.put("cvv", card.cvv);
+        return avroRecord;
+    }
+
+    private IndexedRecord createComputerRecord(Computer computer, Schema schema) {
+        GenericRecord avroRecord = new GenericData.Record(schema);
+
+        avroRecord.put("name", computer.name);
+        avroRecord.put("memory", computer.memory);
         return avroRecord;
     }
 
@@ -126,9 +143,10 @@ public class AvroToStruct {
         enum GarageType {
             CAR, TRUCK
         }
+
         final String name;
         List<Car> cars;
-        Map<String,Part> partMap;
+        Map<String, Part> partMap;
         final GarageType type;
         final boolean isOpen;
 
@@ -197,6 +215,30 @@ public class AvroToStruct {
         @Override
         public int hashCode() {
             return Objects.hash(name, price);
+        }
+    }
+
+    static class Computer {
+        final String name;
+        final ByteBuffer memory;
+
+
+        Computer(String name, ByteBuffer memory) {
+            this.name = name;
+            this.memory = memory;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Computer)) return false;
+            Computer computer = (Computer) o;
+            return Objects.equals(name, computer.name) && Objects.equals(memory, computer.memory);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, memory);
         }
     }
 }
