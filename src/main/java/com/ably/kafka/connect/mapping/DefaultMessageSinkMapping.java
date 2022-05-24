@@ -3,7 +3,7 @@ package com.ably.kafka.connect.mapping;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import com.ably.kafka.connect.utils.KafkaExtrasExtractor;
-import com.ably.kafka.connect.utils.StructUtils;
+import com.ably.kafka.connect.utils.StructToJsonConverter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.ably.lib.types.Message;
@@ -50,7 +50,7 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
         final Schema valueSchema = record.valueSchema();
         switch (valueSchema.type()) {
             case STRUCT:
-                final String jsonString = StructUtils.toJsonString((Struct) record.value(), gson);
+                final String jsonString = StructToJsonConverter.toJsonString((Struct) record.value(), gson);
                 final Message message = new Message(messageName, jsonString);
                 message.encoding = "json";
                 return message;
