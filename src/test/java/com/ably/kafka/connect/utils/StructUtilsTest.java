@@ -77,6 +77,21 @@ public class StructUtilsTest {
         assertEquals(garage, receivedGarage);
     }
 
+    @Test
+    void testComplexStructToJsonWithNullArrayValue() throws IOException, RestClientException {
+        //given
+        final AvroToStruct.Garage garage = exampleGarage("My garage without cars");
+        garage.cars = null;
+        Struct struct = avroToStruct.getComplexStruct(garage);
+
+        //when
+        final String jsonString = StructUtils.toJsonString(struct);
+
+        //then
+        final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
+        assertEquals(garage, receivedGarage);
+    }
+
     private AvroToStruct.Garage exampleGarage(String name) {
         final AvroToStruct.Part part = new AvroToStruct.Part("wheel", 100);
         final AvroToStruct.Part part2 = new AvroToStruct.Part("door", 200);

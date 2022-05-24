@@ -52,6 +52,9 @@ public class StructUtils {
     }
 
     private static List<Object> jsonArrayFrom(List<Object> fieldArray) {
+        if (fieldArray == null) {
+            return null;
+        }
         final List<Object> fieldJsonArray = new ArrayList<>(fieldArray.size());
         for (Object fieldArrayItem : fieldArray) {
             fieldJsonArray.add(eval(fieldArrayItem));
