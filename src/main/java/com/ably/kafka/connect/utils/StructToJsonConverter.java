@@ -20,7 +20,7 @@ public class StructToJsonConverter {
      *
      * @param struct the Struct to convert.
      * @return the JSON string.
-     *
+     * <p>
      * thrwos a ConnectException if the Struct contains a BYTES field.
      */
     public static String toJsonString(final Struct struct, final Gson gson) {
@@ -54,10 +54,34 @@ public class StructToJsonConverter {
                     final Map<String, Object> jsonMap = jsonMapFromStructMap(struct.getMap(field.name()));
                     structMap.put(field.name(), jsonMap);
                     break;
+                case INT8:
+                    structMap.put(field.name(), struct.getInt8(field.name()));
+                    break;
+                case INT16:
+                    structMap.put(field.name(), struct.getInt16(field.name()));
+                    break;
+                case INT32:
+                    structMap.put(field.name(), struct.getInt32(field.name()));
+                    break;
+                case INT64:
+                    structMap.put(field.name(), struct.getInt64(field.name()));
+                    break;
+                case FLOAT32:
+                    structMap.put(field.name(), struct.getFloat32(field.name()));
+                    break;
+                case FLOAT64:
+                    structMap.put(field.name(), struct.getFloat64(field.name()));
+                    break;
+                case BOOLEAN:
+                    structMap.put(field.name(), struct.getBoolean(field.name()));
+                    break;
+                case STRING:
+                    structMap.put(field.name(), struct.getString(field.name()));
+                    break;
                 case BYTES:
                     throw new ConnectException("Bytes are currently not supported for conversion to JSON.");
                 default:
-                    structMap.put(field.name(), jsonValue(struct.get(field)));
+                    throw new ConnectException("Unexpected and unsupported type encountered." + field.schema().type());
             }
         }
         return structMap;
@@ -118,7 +142,7 @@ public class StructToJsonConverter {
             return jsonArrayFromStructArray((List<Object>) originalValue);
         } else if (originalValue instanceof Map) {
             return jsonMapFromStructMap((Map<Object, Object>) originalValue);
-        }else if (originalValue instanceof byte[]) {
+        } else if (originalValue instanceof byte[]) {
             throw new ConnectException("Bytes are currently not supported for conversion to JSON.");
         }
         return originalValue;
