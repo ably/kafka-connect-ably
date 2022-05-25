@@ -117,6 +117,27 @@ public class StructToJsonConverterTest {
 
     }
 
+    //add tests with using a class containing general primitives
+    @Test
+    void testPrimitives() throws IOException, RestClientException {
+        //given
+        final AvroToStruct.Primitives primitivies = new AvroToStruct.Primitives(4343434L,
+            4343,
+            (short) 22,
+            (byte) 100,
+            4.3f,
+            4.343443,
+            false);
+        final Struct struct = avroToStruct.getStruct(primitivies);
+
+        //when
+        final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
+
+        //then
+        final AvroToStruct.Primitives receivedPrimitives = new Gson().fromJson(jsonString, AvroToStruct.Primitives.class);
+        assertEquals(receivedPrimitives, primitivies);
+    }
+
     private AvroToStruct.Garage exampleGarage(String name) {
         final AvroToStruct.Part part = new AvroToStruct.Part("wheel", 100);
         final AvroToStruct.Part part2 = new AvroToStruct.Part("door", 200);

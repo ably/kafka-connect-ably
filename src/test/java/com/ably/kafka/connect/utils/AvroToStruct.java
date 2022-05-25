@@ -57,6 +57,8 @@ public class AvroToStruct {
             return createComputerRecord((Computer) object, schema);
         } else if (object instanceof Garage) {
             return createGarageRecord((Garage) object, schema);
+        }else if (object instanceof Primitives) {
+            return createPrimitveRecord((Primitives) object, schema);
         }
         return null;
     }
@@ -69,6 +71,8 @@ public class AvroToStruct {
             return ReflectData.AllowNull.get().getSchema(Card.class);
         } else if (object instanceof Garage) {
             return ReflectData.AllowNull.get().getSchema(Garage.class);
+        }else if (object instanceof Primitives) {
+            return ReflectData.AllowNull.get().getSchema(Primitives.class);
         }
         return null;
     }
