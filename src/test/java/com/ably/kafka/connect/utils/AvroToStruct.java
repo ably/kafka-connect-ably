@@ -248,15 +248,4 @@ public class AvroToStruct {
             return Objects.hash(name, memory);
         }
     }
-
-    static class ComputerDeserializer implements JsonDeserializer<Computer>{
-
-        @Override
-        public Computer deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-            final String name = jsonElement.getAsJsonObject().get("name").getAsString();
-            final String base64Memory = jsonElement.getAsJsonObject().get("memory").getAsString();
-            final byte[] memory = Base64.getDecoder().decode(base64Memory);
-            return new Computer(name, ByteBuffer.wrap(memory));
-        }
-    }
 }
