@@ -28,6 +28,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
+/*
+This is a helper class that contains some conversions between avro and struct and some fake test data classes.
+* */
+
 public class AvroToStruct {
 
     Struct getStruct(final Object object) throws RestClientException, IOException {
