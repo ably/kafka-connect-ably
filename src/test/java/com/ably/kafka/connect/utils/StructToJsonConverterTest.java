@@ -14,6 +14,13 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Tests for {@link StructToJsonConverter}.
+
+ * Unit tests in this class includes tests for the conversion of Connect structs to JSON.
+ * Structs  are created using the {@link AvroToStruct} class with different level of complexity of Avro schema.
+ */
+
 public class StructToJsonConverterTest {
     private AvroToStruct avroToStruct;
     private static final Gson gson = new GsonBuilder().serializeNulls().create();
@@ -23,6 +30,7 @@ public class StructToJsonConverterTest {
         avroToStruct = new AvroToStruct();
     }
 
+    //Tests a struct with a simple flat Avro record with some primitive fields
     @Test
     void testSimpleStructToJson() throws IOException, RestClientException {
         //given
@@ -38,7 +46,7 @@ public class StructToJsonConverterTest {
     }
 
     @Test
-    void testComplexStructToJson() throws IOException, RestClientException {
+    void testComplexStructToJsonWithAllFieldsComplete() throws IOException, RestClientException {
         //given
         final AvroToStruct.Garage garage = exampleGarage("My garage");
         Struct struct = avroToStruct.getComplexStruct(garage);
