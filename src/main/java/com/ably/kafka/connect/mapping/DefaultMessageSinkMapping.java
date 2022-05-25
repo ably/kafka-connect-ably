@@ -48,12 +48,11 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
         }
 
         final Schema valueSchema = record.valueSchema();
-        switch (valueSchema.type()) {
-            case STRUCT:
-                final String jsonString = StructToJsonConverter.toJsonString((Struct) record.value(), gson);
-                final Message message = new Message(messageName, jsonString);
-                message.encoding = "json";
-                return message;
+        if (valueSchema.type() == Schema.Type.STRUCT) {
+            final String jsonString = StructToJsonConverter.toJsonString((Struct) record.value(), gson);
+            final Message message = new Message(messageName, jsonString);
+            message.encoding = "json";
+            return message;
         }
         return new Message(messageName, record.value());
     }
