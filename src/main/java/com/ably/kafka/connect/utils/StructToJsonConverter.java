@@ -5,6 +5,7 @@ import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Struct;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,13 +13,14 @@ import java.util.Map;
 /**
  * This class is used to convert a Struct to a JSON string with eliminating the schema information.
  * This class uses the Gson library tow convet the Struct to a JSON string.
- * */
+ */
 public class StructToJsonConverter {
     /**
      * Convert a Struct to a JSON string eliminating the schema information.
+     *
      * @param struct the Struct to convert.
      * @return the JSON string.
-     * */
+     */
     public static String toJsonString(final Struct struct, final Gson gson) {
         final Map<String, Object> structJsonMap = structJsonMap(struct);
         return gson.toJson(structJsonMap);
@@ -49,6 +51,11 @@ public class StructToJsonConverter {
                 case MAP:
                     final Map<String, Object> jsonMap = jsonMapFromStructMap(struct.getMap(field.name()));
                     structMap.put(field.name(), jsonMap);
+                    break;
+                case BYTES:
+                    final byte[] bytes = struct.getBytes(field.name());
+                    structMap.put(field.name(), Base64.getEncoder().encodeToString(bytes));
+                    break;
                 default:
                     structMap.put(field.name(), jsonValue(struct.get(field)));
             }

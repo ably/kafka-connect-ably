@@ -2,22 +2,13 @@ package com.ably.kafka.connect.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import org.apache.kafka.connect.data.Struct;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +58,7 @@ public class StructToJsonConverterTest {
         Struct struct = avroToStruct.getComplexStruct(garage);
 
         //when
-        final String jsonString = StructToJsonConverter.toJsonString(struct,gson );
+        final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
 
         //then
         final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
@@ -97,7 +88,7 @@ public class StructToJsonConverterTest {
         Struct struct = avroToStruct.getComplexStruct(garage);
 
         //when
-        final String jsonString = StructToJsonConverter.toJsonString(struct,gson );
+        final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
 
         //then
         final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
@@ -107,15 +98,14 @@ public class StructToJsonConverterTest {
     @Test
     void testSimpleStructWithByteArray() throws IOException, RestClientException {
         //given
-
         final AvroToStruct.Computer computer = new AvroToStruct.Computer("My good computer", ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
         Struct struct = avroToStruct.getSimpleStruct(computer);
 
         //when
         final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
-
+        final Gson gson = new GsonBuilder().registerTypeAdapter(AvroToStruct.Computer.class, new AvroToStruct.ComputerDeserializer()).create();
         //then
-        final AvroToStruct.Computer receivedComputer = new Gson().fromJson(jsonString, AvroToStruct.Computer.class);
+        final AvroToStruct.Computer receivedComputer = gson.fromJson(jsonString, AvroToStruct.Computer.class);
         assertEquals(receivedComputer, computer);
     }
 
@@ -129,6 +119,6 @@ public class StructToJsonConverterTest {
 
         final Map<String, AvroToStruct.Part> partMap = Map.of("wheel", part, "door", part2, "seat", part3);
 
-        return new AvroToStruct.Garage(name,List.of(car1, car2), partMap, AvroToStruct.Garage.GarageType.CAR, false);
+        return new AvroToStruct.Garage(name, List.of(car1, car2), partMap, AvroToStruct.Garage.GarageType.CAR, false);
     }
 }
