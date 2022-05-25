@@ -37,7 +37,7 @@ public class StructToJsonConverterTest {
     void testSimpleStructToJson() throws IOException, RestClientException {
         //given
         final AvroToStruct.Card card = new AvroToStruct.Card("cardId", 10000, "pocketId", "123");
-        Struct struct = avroToStruct.getSimpleStruct(card);
+        Struct struct = avroToStruct.getStruct(card);
 
         //when
         final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
@@ -51,7 +51,7 @@ public class StructToJsonConverterTest {
     void testComplexStructToJsonWithAllFieldsComplete() throws IOException, RestClientException {
         //given
         final AvroToStruct.Garage garage = exampleGarage("My garage");
-        Struct struct = avroToStruct.getComplexStruct(garage);
+        Struct struct = avroToStruct.getStruct(garage);
 
         //when
         final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
@@ -65,7 +65,7 @@ public class StructToJsonConverterTest {
     void testComplexStructToJsonWithNullStringValue() throws IOException, RestClientException {
         //given
         final AvroToStruct.Garage garage = exampleGarage(null);
-        Struct struct = avroToStruct.getComplexStruct(garage);
+        Struct struct = avroToStruct.getStruct(garage);
 
         //when
         final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
@@ -80,7 +80,7 @@ public class StructToJsonConverterTest {
         //given
         final AvroToStruct.Garage garage = exampleGarage("Something");
         garage.partMap = null;
-        Struct struct = avroToStruct.getComplexStruct(garage);
+        Struct struct = avroToStruct.getStruct(garage);
 
         //when
         final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
@@ -95,7 +95,7 @@ public class StructToJsonConverterTest {
         //given
         final AvroToStruct.Garage garage = exampleGarage("My garage without cars");
         garage.cars = null;
-        Struct struct = avroToStruct.getComplexStruct(garage);
+        Struct struct = avroToStruct.getStruct(garage);
 
         //when
         final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
@@ -109,7 +109,7 @@ public class StructToJsonConverterTest {
     void testSimpleStructWithByteArrayThrowsException() throws IOException, RestClientException {
         //given
         final AvroToStruct.Computer computer = new AvroToStruct.Computer("My good computer", ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
-        final Struct struct = avroToStruct.getSimpleStruct(computer);
+        final Struct struct = avroToStruct.getStruct(computer);
 
         final Throwable exception = assertThrows(ConnectException.class, () -> StructToJsonConverter.toJsonString(struct, gson),
             "StructToJsonConverter.toJsonString(struct, gson) is expected to throw ConnectException");

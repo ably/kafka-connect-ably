@@ -15,6 +15,7 @@ import org.apache.avro.generic.IndexedRecord;
 import org.apache.avro.reflect.ReflectData;
 import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.data.Struct;
+import org.jetbrains.annotations.Nullable;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import java.io.IOException;
@@ -29,28 +30,18 @@ import java.util.Properties;
 
 public class AvroToStruct {
 
-    Struct getSimpleStruct(final Object simpleObject) throws RestClientException, IOException {
+    Struct getStruct(final Object object) throws RestClientException, IOException {
         Properties defaultConfig = new Properties();
         defaultConfig.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "bogus");
 
         final SchemaRegistryClient schemaRegistry = new MockSchemaRegistryClient();
-        Schema schema = null;
-        if (simpleObject instanceof Computer) {
-            schema = ReflectData.get().getSchema(Computer.class);
-        } else if (simpleObject instanceof Card) {
-            schema = ReflectData.get().getSchema(Card.class);
-        }
+        Schema schema = getSchema(object);
         schemaRegistry.register("simple-schema", schema);
 
         final KafkaAvroSerializer avroSerializer = new KafkaAvroSerializer(schemaRegistry, new HashMap(defaultConfig));
         final AvroConverter converter = new AvroConverter(schemaRegistry);
         converter.configure(Collections.singletonMap("schema.registry.url", "bogus"), false);
-        IndexedRecord record = null;
-        if (simpleObject instanceof Card) {
-            record = createCardRecord((Card) simpleObject, schema);
-        } else if (simpleObject instanceof Computer) {
-            record = createComputerRecord((Computer) simpleObject, schema);
-        }
+        IndexedRecord record = getIndexedRecord(object, schema);
 
         final byte[] bytes = avroSerializer.serialize("DEFAULT_TOPIC", record);
 
@@ -58,36 +49,40 @@ public class AvroToStruct {
         return (Struct) schemaAndValue.value();
     }
 
+    @Nullable
+    private IndexedRecord getIndexedRecord(Object object, Schema schema) throws IOException {
+        if (object instanceof Card) {
+            return createCardRecord((Card) object, schema);
+        } else if (object instanceof Computer) {
+            return createComputerRecord((Computer) object, schema);
+        } else if (object instanceof Garage) {
+            return createGarageRecord((Garage) object, schema);
+        }
+        return null;
+    }
 
-    Struct getComplexStruct(final Garage garage) throws RestClientException, IOException {
-        Properties defaultConfig = new Properties();
-        defaultConfig.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "bogus");
-
-        final SchemaRegistryClient schemaRegistry = new MockSchemaRegistryClient();
-
-        final Schema schema = ReflectData.AllowNull.get().getSchema(Garage.class);
-        schemaRegistry.register("complex-schema", schema);
-
-        final KafkaAvroSerializer avroSerializer = new KafkaAvroSerializer(schemaRegistry, new HashMap(defaultConfig));
-        final AvroConverter converter = new AvroConverter(schemaRegistry);
-        converter.configure(Collections.singletonMap("schema.registry.url", "bogus"), false);
-
-        final IndexedRecord cardRecord = createComplexRecord(garage, schema);
-
-        final byte[] bytes = avroSerializer.serialize("DEFAULT_TOPIC", cardRecord);
-
-        final SchemaAndValue schemaAndValue = converter.toConnectData("DEFAULT_TOPIC", bytes);
-        return (Struct) schemaAndValue.value();
+    @Nullable
+    private Schema getSchema(Object object) {
+        if (object instanceof Computer) {
+            return ReflectData.AllowNull.get().getSchema(Computer.class);
+        } else if (object instanceof Card) {
+            return ReflectData.AllowNull.get().getSchema(Card.class);
+        } else if (object instanceof Garage) {
+            return ReflectData.AllowNull.get().getSchema(Garage.class);
+        }
+        return null;
     }
 
     private IndexedRecord createCardRecord(Card card, Schema schema) throws IOException {
-        GenericRecord avroRecord = new GenericData.Record(schema);
+        final Gson gson = new GsonBuilder().serializeNulls().create();
+        final String json = gson.toJson(card);
+        return new JsonAvroConverter().convertToGenericDataRecord(json.getBytes(StandardCharsets.UTF_8), schema);
+    }
 
-        avroRecord.put("cardId", card.cardId);
-        avroRecord.put("limit", card.limit);
-        avroRecord.put("pocketId", card.pocketId);
-        avroRecord.put("cvv", card.cvv);
-        return avroRecord;
+    private IndexedRecord createPrimitveRecord(Primitives primitives, Schema schema) throws IOException {
+        final Gson gson = new GsonBuilder().serializeNulls().create();
+        final String json = gson.toJson(primitives);
+        return new JsonAvroConverter().convertToGenericDataRecord(json.getBytes(StandardCharsets.UTF_8), schema);
     }
 
     private IndexedRecord createComputerRecord(Computer computer, Schema schema) {
@@ -98,7 +93,7 @@ public class AvroToStruct {
         return avroRecord;
     }
 
-    private IndexedRecord createComplexRecord(final Garage garage, Schema schema) throws IOException {
+    private IndexedRecord createGarageRecord(final Garage garage, Schema schema) throws IOException {
         final Gson gson = new GsonBuilder().serializeNulls().create();
         final String json = gson.toJson(garage);
         return new JsonAvroConverter().convertToGenericDataRecord(json.getBytes(StandardCharsets.UTF_8), schema);
@@ -239,6 +234,26 @@ public class AvroToStruct {
         @Override
         public int hashCode() {
             return Objects.hash(name, memory);
+        }
+    }
+
+    static class Primitives {
+        final long longValue;
+        final int intValue;
+        final short shortValue;
+        final byte byteValue;
+        final float floatValue;
+        final double doubleValue;
+        final boolean booleanValue;
+
+        Primitives(long longValue, int intValue, short shortValue, byte byteValue, float floatValue, double doubleValue, boolean booleanValue) {
+            this.longValue = longValue;
+            this.intValue = intValue;
+            this.shortValue = shortValue;
+            this.byteValue = byteValue;
+            this.floatValue = floatValue;
+            this.doubleValue = doubleValue;
+            this.booleanValue = booleanValue;
         }
     }
 }
