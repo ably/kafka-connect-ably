@@ -18,10 +18,10 @@ import javax.annotation.Nonnull;
 import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.MESSAGE_CONFIG;
 
 public class DefaultMessageSinkMapping implements MessageSinkMapping {
+    private static final Gson gson = new GsonBuilder().serializeNulls().create();
+
     private final ChannelSinkConnectorConfig sinkConnectorConfig;
     private final ConfigValueEvaluator configValueEvaluator;
-
-    private static final Gson gson = new GsonBuilder().serializeNulls().create();
 
     public DefaultMessageSinkMapping(@Nonnull ChannelSinkConnectorConfig config, @Nonnull ConfigValueEvaluator configValueEvaluator) {
         this.sinkConnectorConfig = config;
@@ -56,6 +56,4 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
         }
         return new Message(messageName, record.value());
     }
-
-
 }
