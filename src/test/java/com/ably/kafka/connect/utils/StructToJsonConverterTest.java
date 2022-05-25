@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import org.apache.kafka.connect.data.Struct;
+import org.apache.kafka.connect.errors.ConnectException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for {@link StructToJsonConverter}.
@@ -104,17 +106,15 @@ public class StructToJsonConverterTest {
     }
 
     @Test
-    void testSimpleStructWithByteArray() throws IOException, RestClientException {
+    void testSimpleStructWithByteArrayThrowsException() throws IOException, RestClientException {
         //given
         final AvroToStruct.Computer computer = new AvroToStruct.Computer("My good computer", ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
-        Struct struct = avroToStruct.getSimpleStruct(computer);
+        final Struct struct = avroToStruct.getSimpleStruct(computer);
 
-        //when
-        final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
-        final Gson gson = new GsonBuilder().registerTypeAdapter(AvroToStruct.Computer.class, new AvroToStruct.ComputerDeserializer()).create();
-        //then
-        final AvroToStruct.Computer receivedComputer = gson.fromJson(jsonString, AvroToStruct.Computer.class);
-        assertEquals(receivedComputer, computer);
+        final Throwable exception = assertThrows(ConnectException.class, () -> StructToJsonConverter.toJsonString(struct, gson),
+            "StructToJsonConverter.toJsonString(struct, gson) is expected to throw ConnectException");
+        assertEquals(exception.getMessage(), "Bytes are currently not supported for conversion to JSON.");
+
     }
 
     private AvroToStruct.Garage exampleGarage(String name) {

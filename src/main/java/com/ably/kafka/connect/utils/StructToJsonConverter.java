@@ -3,6 +3,7 @@ package com.ably.kafka.connect.utils;
 import com.google.gson.Gson;
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Struct;
+import org.apache.kafka.connect.errors.ConnectException;
 
 import java.util.ArrayList;
 import java.util.Base64;
@@ -53,9 +54,7 @@ public class StructToJsonConverter {
                     structMap.put(field.name(), jsonMap);
                     break;
                 case BYTES:
-                    final byte[] bytes = struct.getBytes(field.name());
-                    structMap.put(field.name(), Base64.getEncoder().encodeToString(bytes));
-                    break;
+                    throw new ConnectException("Bytes are currently not supported for conversion to JSON.");
                 default:
                     structMap.put(field.name(), jsonValue(struct.get(field)));
             }
@@ -119,7 +118,7 @@ public class StructToJsonConverter {
         } else if (originalValue instanceof Map) {
             return jsonMapFromStructMap((Map<Object, Object>) originalValue);
         }else if (originalValue instanceof byte[]) {
-            return Base64.getEncoder().encodeToString((byte[]) originalValue);
+            throw new ConnectException("Bytes are currently not supported for conversion to JSON.");
         }
         return originalValue;
     }
