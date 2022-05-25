@@ -55,7 +55,6 @@ public class StructToJsonConverter {
                 case BYTES:
                     throw new ConnectException("Bytes are currently not supported for conversion to JSON.");
                 default:
-                    System.out.println(field.schema().type());
                     structMap.put(field.name(), jsonValue(struct.get(field)));
             }
         }
