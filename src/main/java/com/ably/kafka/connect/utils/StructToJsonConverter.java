@@ -20,6 +20,8 @@ public class StructToJsonConverter {
      *
      * @param struct the Struct to convert.
      * @return the JSON string.
+     *
+     * thrwos a ConnectException if the Struct contains a BYTES field.
      */
     public static String toJsonString(final Struct struct, final Gson gson) {
         final Map<String, Object> structJsonMap = structJsonMap(struct);
