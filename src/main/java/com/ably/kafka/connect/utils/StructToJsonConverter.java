@@ -118,6 +118,8 @@ public class StructToJsonConverter {
             return jsonArrayFromStructArray((List<Object>) originalValue);
         } else if (originalValue instanceof Map) {
             return jsonMapFromStructMap((Map<Object, Object>) originalValue);
+        }else if (originalValue instanceof byte[]) {
+            return Base64.getEncoder().encodeToString((byte[]) originalValue);
         }
         return originalValue;
     }
