@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Tests for {@link StructToJsonConverter}.
  *
  * Unit tests in this class includes tests for the conversion of Connect structs to JSON.
- * Structs  are created using the {@link AvroToStruct} class with different level of complexity of Avro schema.
+ * Structs are created using the {@link AvroToStruct} class with different level of complexity of Avro schema.
  */
 public class StructToJsonConverterTest {
     private AvroToStruct avroToStruct;
@@ -31,95 +31,94 @@ public class StructToJsonConverterTest {
         avroToStruct = new AvroToStruct();
     }
 
-    //Tests a struct with a simple flat Avro record with some primitive fields
+    // Tests a struct with a simple flat Avro record with some primitive fields
     @Test
     void testSimpleStructToJson() throws IOException, RestClientException {
-        //given
+        // given
         final AvroToStruct.Card card = new AvroToStruct.Card("cardId", 10000, "pocketId", "123");
         Struct struct = avroToStruct.getStruct(card);
 
-        //when
+        // when
         final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
 
-        //then
+        // then
         final AvroToStruct.Card receivedCard = new Gson().fromJson(jsonString, AvroToStruct.Card.class);
         assertEquals(receivedCard, card);
     }
 
     @Test
     void testComplexStructToJsonWithAllFieldsComplete() throws IOException, RestClientException {
-        //given
+        // given
         final AvroToStruct.Garage garage = exampleGarage("My garage");
         Struct struct = avroToStruct.getStruct(garage);
 
-        //when
+        // when
         final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
 
-        //then
+        // then
         final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
         assertEquals(garage, receivedGarage);
     }
 
     @Test
     void testComplexStructToJsonWithNullStringValue() throws IOException, RestClientException {
-        //given
+        // given
         final AvroToStruct.Garage garage = exampleGarage(null);
         Struct struct = avroToStruct.getStruct(garage);
 
-        //when
+        // when
         final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
 
-        //then
+        // then
         final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
         assertEquals(garage, receivedGarage);
     }
 
     @Test
     void testComplexStructToJsonWithNullMapValue() throws IOException, RestClientException {
-        //given
+        // given
         final AvroToStruct.Garage garage = exampleGarage("Something");
         garage.partMap = null;
         Struct struct = avroToStruct.getStruct(garage);
 
-        //when
+        // when
         final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
 
-        //then
+        // then
         final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
         assertEquals(garage, receivedGarage);
     }
 
     @Test
     void testComplexStructToJsonWithNullArrayValue() throws IOException, RestClientException {
-        //given
+        // given
         final AvroToStruct.Garage garage = exampleGarage("My garage without cars");
         garage.cars = null;
         Struct struct = avroToStruct.getStruct(garage);
 
-        //when
+        // when
         final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
 
-        //then
+        // then
         final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
         assertEquals(garage, receivedGarage);
     }
 
     @Test
     void testSimpleStructWithByteArrayThrowsException() throws IOException, RestClientException {
-        //given
+        // given
         final AvroToStruct.Computer computer = new AvroToStruct.Computer("My good computer", ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
         final Struct struct = avroToStruct.getStruct(computer);
 
         final Throwable exception = assertThrows(ConnectException.class, () -> StructToJsonConverter.toJsonString(struct, gson),
             "StructToJsonConverter.toJsonString(struct, gson) is expected to throw ConnectException");
         assertEquals(exception.getMessage(), "Bytes are currently not supported for conversion to JSON.");
-
     }
 
-    //add tests with using a class containing general primitives
+    // add tests with using a class containing general primitives
     @Test
     void testPrimitives() throws IOException, RestClientException {
-        //given
+        // given
         final AvroToStruct.Primitives primitivies = new AvroToStruct.Primitives(4343434L,
             4343,
             (short) 22,
@@ -129,10 +128,10 @@ public class StructToJsonConverterTest {
             false);
         final Struct struct = avroToStruct.getStruct(primitivies);
 
-        //when
+        // when
         final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
 
-        //then
+        // then
         final AvroToStruct.Primitives receivedPrimitives = new Gson().fromJson(jsonString, AvroToStruct.Primitives.class);
         assertEquals(receivedPrimitives, primitivies);
     }

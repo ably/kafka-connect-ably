@@ -12,7 +12,7 @@ import java.util.Map;
 
 /**
  * This class is used to convert a Struct to a JSON string with eliminating the schema information.
- * This class uses the Gson library tow convet the Struct to a JSON string.
+ * This class uses the Gson library to convert the Struct to a JSON string.
  */
 public class StructToJsonConverter {
     /**
@@ -21,7 +21,7 @@ public class StructToJsonConverter {
      * @param struct the Struct to convert.
      * @return the JSON string.
      * <p>
-     * thrwos a ConnectException if the Struct contains a BYTES field.
+     * throws a ConnectException if the Struct contains a BYTES field.
      */
     public static String toJsonString(final Struct struct, final Gson gson) {
         final Map<String, Object> structJsonMap = structJsonMap(struct);
@@ -90,7 +90,7 @@ public class StructToJsonConverter {
     /**
      * Convert a map from a map from struct (Struct.getMap()) to a
      * LinkedHashMap by eliminating schematic information and evaluating the value of each key.
-     * Like [structJsonMap] this function  will build a map that reflects the shape of data in the
+     * Like [structJsonMap] this function will build a map that reflects the shape of data in the
      * original map without schema information.
      *
      * @param map Original map that is retrieved from Struct.getMap()
@@ -127,8 +127,8 @@ public class StructToJsonConverter {
 
     /**
      * Get a Json serializable value from a value based on the type of original value.
-     * Depending on the typo of the original value, this function can return a map from a struct,
-     * a list from  a list of values, a map from a struct map or the value itself.
+     * Depending on the type of the original value, this function can return a map from a struct,
+     * a list from a list of values, a map from a struct map or the value itself.
      *
      * @param originalValue Original value
      * @return JSON serializable object
