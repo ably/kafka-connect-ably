@@ -114,7 +114,6 @@ public class StructToJsonConverter {
      * @param fieldArray Original list of struct array
      * @return List of JSOn serializable objects
      */
-
     private static List<Object> jsonArrayFromStructArray(List<Object> fieldArray) {
         if (fieldArray == null) {
             return null;
@@ -134,7 +133,6 @@ public class StructToJsonConverter {
      * @param originalValue Original value
      * @return JSON serializable object
      */
-
     private static Object jsonValue(final Object originalValue) {
         if (originalValue instanceof Struct) {
             return structJsonMap((Struct) originalValue);

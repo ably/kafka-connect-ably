@@ -18,11 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for {@link StructToJsonConverter}.
-
+ *
  * Unit tests in this class includes tests for the conversion of Connect structs to JSON.
  * Structs  are created using the {@link AvroToStruct} class with different level of complexity of Avro schema.
  */
-
 public class StructToJsonConverterTest {
     private AvroToStruct avroToStruct;
     private static final Gson gson = new GsonBuilder().serializeNulls().create();
