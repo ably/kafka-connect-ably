@@ -263,5 +263,18 @@ public class AvroToStruct {
             this.doubleValue = doubleValue;
             this.booleanValue = booleanValue;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Primitives)) return false;
+            Primitives that = (Primitives) o;
+            return longValue == that.longValue && intValue == that.intValue && shortValue == that.shortValue && byteValue == that.byteValue && Float.compare(that.floatValue, floatValue) == 0 && Double.compare(that.doubleValue, doubleValue) == 0 && booleanValue == that.booleanValue;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(longValue, intValue, shortValue, byteValue, floatValue, doubleValue, booleanValue);
+        }
     }
 }
