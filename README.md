@@ -113,9 +113,10 @@ An example cURL command to start the connector in distributed mode is:
     event: message
     data: {"id":"1543960661:0:2","clientId":"kafka-connect-ably-example","connectionId":"SuJTceISnT","timestamp":1623496744538,"encoding":"base64", "channel":"kafka-connect-ably-example","data":"bWVzc2FnZSAz","name":"sink"}
     ```
-#### How to publish Avro messages
-Ably Kafka connector supports publishing Avro messages by converting your Avro messages to JSON by eliminating schema information.
-To test this on Docker, you can use the following command providing your own schema and data1:
+#### Publishing Avro messages
+
+Ably Kafka connector supports AvroConverter by converting your schematic Avro messages to JSON by eliminating schema information.
+To test this on Docker, you can use the following command providing your own schema and data:
 
 ```shell
  docker-compose exec -T schema-registry kafka-avro-console-producer \
