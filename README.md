@@ -149,6 +149,28 @@ You should receive following JSON messages where you subscribed:
 {"count":3}
 ```
 
+You will also receive an Avro-formatted key base64 encoded in the extras. For example:
+
+```json
+{
+	"clientId": "Ably-Kafka-Connector",
+	"connectionId": "VSuDXysgaz",
+	"data": {
+		"count": 1
+	},
+	"extras": {
+		"jsonObject": {
+			"kafka": {
+				"key": "AAAAAKEIa2V5MQ=="
+			}
+		}
+	},
+	"id": "-868034334:0:351",
+	"name": "topic1_message",
+	"timestamp": 1653923422360
+}
+```
+
 ## Breaking API Changes in Version 2.0.0
 
 Please see our [Upgrade / Migration Guide](UPDATING.md) for notes on changes you need to make to your configuration to update it with changes introduced by version 2.0.0 of the connector.
