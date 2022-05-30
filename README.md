@@ -117,7 +117,7 @@ An example cURL command to start the connector in distributed mode is:
 #### Publishing messages with schema
 
 Ably Kafka connector supports messages with schema by converting schematic messages to JSON. Produced JSON is then passed as data to Ably message. JSON is produced by mapping schema field names to their values.
-For example if you use `AvroConverter` and register an Avro schema to your schema registry, you can use the following command providing your own schema and data:
+For example if you use [Kafka Connect Avro Converter](https://www.confluent.io/hub/confluentinc/kafka-connect-avro-converter) and register an Avro schema to your [schema registry](https://docs.confluent.io/platform/current/schema-registry/connect.html), you can use the following command providing your own schema and data:
 
 ```shell
  docker-compose exec -T schema-registry kafka-avro-console-producer \
