@@ -217,8 +217,6 @@ class MessageSinkMappingTest {
         final Throwable exception = assertThrows(ConnectException.class, () -> sinkMapping.getMessage(record),
             "sinkMapping.getMessage(record) is supposed tho throw an exception for non-struct schemas");
         assertEquals(exception.getMessage(), String.format("Unsupported value schema type: %s", mapSchema.type()));
-
-
     }
 
 
