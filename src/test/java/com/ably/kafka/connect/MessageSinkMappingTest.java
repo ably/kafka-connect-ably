@@ -205,7 +205,7 @@ class MessageSinkMappingTest {
     }
 
     @Test
-    void testThatExceptionIsThrownForNonStructSchemas() throws RestClientException, IOException {
+    void testThatExceptionIsThrownForNonStructSchemas() {
         //given
         final Schema mapSchema = SchemaBuilder.type(Schema.Type.MAP).build();
         final Map<String, String> map = Map.of("key1", "value1", "key2", "value2");
