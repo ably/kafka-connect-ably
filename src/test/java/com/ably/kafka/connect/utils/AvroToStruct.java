@@ -33,7 +33,7 @@ import java.util.Properties;
  */
 public class AvroToStruct {
 
-    Struct getStruct(final Object object) throws RestClientException, IOException {
+    public Struct getStruct(final Object object) throws RestClientException, IOException {
         Properties defaultConfig = new Properties();
         defaultConfig.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "bogus");
 
@@ -50,6 +50,25 @@ public class AvroToStruct {
 
         final SchemaAndValue schemaAndValue = converter.toConnectData("DEFAULT_TOPIC", bytes);
         return (Struct) schemaAndValue.value();
+    }
+
+    public org.apache.kafka.connect.data.Schema getConnectSchema(final Object object) throws RestClientException, IOException {
+        Properties defaultConfig = new Properties();
+        defaultConfig.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "bogus");
+
+        final SchemaRegistryClient schemaRegistry = new MockSchemaRegistryClient();
+        Schema schema = getSchema(object);
+        schemaRegistry.register("simple-schema", schema);
+
+        final KafkaAvroSerializer avroSerializer = new KafkaAvroSerializer(schemaRegistry, new HashMap(defaultConfig));
+        final AvroConverter converter = new AvroConverter(schemaRegistry);
+        converter.configure(Collections.singletonMap("schema.registry.url", "bogus"), false);
+        IndexedRecord record = getIndexedRecord(object, schema);
+
+        final byte[] bytes = avroSerializer.serialize("DEFAULT_TOPIC", record);
+
+        final SchemaAndValue schemaAndValue = converter.toConnectData("DEFAULT_TOPIC", bytes);
+        return ((Struct) schemaAndValue.value()).schema();
     }
 
     @Nullable
@@ -133,8 +152,8 @@ public class AvroToStruct {
         }
     }
 
-    static class Garage {
-        Garage(String name, List<Car> cars, Map<String, Part> partMap, GarageType type, boolean isOpen) {
+    public static class Garage {
+        public Garage(String name, List<Car> cars, Map<String, Part> partMap, GarageType type, boolean isOpen) {
             this.name = name;
             this.cars = cars;
             this.partMap = partMap;
@@ -142,7 +161,7 @@ public class AvroToStruct {
             this.isOpen = isOpen;
         }
 
-        enum GarageType {
+        public enum GarageType {
             CAR, TRUCK
         }
 
@@ -166,11 +185,11 @@ public class AvroToStruct {
         }
     }
 
-    static class Car {
+    public static class Car {
         final Engine engine;
         final List<Part> parts;
 
-        Car(Engine engine, List<Part> parts) {
+        public Car(Engine engine, List<Part> parts) {
             this.engine = engine;
             this.parts = parts;
         }
@@ -189,7 +208,7 @@ public class AvroToStruct {
         }
     }
 
-    static class Engine {
+    public static class Engine {
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof Engine) return true;
@@ -197,11 +216,11 @@ public class AvroToStruct {
         }
     }
 
-    static class Part {
+    public static class Part {
         final String name;
         final int price;
 
-        Part(String name, int price) {
+        public Part(String name, int price) {
             this.name = name;
             this.price = price;
         }
