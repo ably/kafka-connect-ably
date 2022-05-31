@@ -147,11 +147,9 @@ You should receive following Ably message where you subscribed. You will also re
 		"count": 1
 	},
 	"extras": {
-		"jsonObject": {
-			"kafka": {
-				"key": "AAAAAKEIa2V5MQ=="
-			}
-		}
+    "kafka": {
+      "key": "AAAAAKEIa2V5MQ=="
+    }
 	},
 	"id": "-868034334:0:351",
 	"name": "topic1_message",
