@@ -134,26 +134,10 @@ If you're running the Ably Kafka Connector locally using Docker Compose as outli
    --property value.schema='{"type":"record","name":"myrecord","fields":[{"name":"count","type":"int"}]}' \
    --property schema.registry.url=http://schema-registry:8081 <<EOF
 "key1":{"count":1}
-"key2":{"count":2}
-"key3":{"count":3}
 EOF
 ```
 
-You should receive following JSON messages where you subscribed:
-
-```json
-{"count":1}
-```
-
-```json
-{"count":2}
-```
-
-```json
-{"count":3}
-```
-
-You will also receive an Avro-formatted key base64 encoded in the extras. For example:
+You should receive following Ably message where you subscribed. You will also receive an Avro-formatted key base64 encoded in the extras. 
 
 ```json
 {
