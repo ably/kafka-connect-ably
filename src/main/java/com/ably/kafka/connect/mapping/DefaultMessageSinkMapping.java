@@ -11,6 +11,7 @@ import io.ably.lib.types.MessageExtras;
 import io.ably.lib.util.JsonUtils;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
+import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 
 import javax.annotation.Nonnull;
@@ -54,6 +55,6 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
             message.encoding = "json";
             return message;
         }
-        return new Message(messageName, record.value());
+        throw new ConnectException("Unsupported value schema type: " + valueSchema.type());
     }
 }

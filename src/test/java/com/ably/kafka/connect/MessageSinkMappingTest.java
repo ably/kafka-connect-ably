@@ -5,6 +5,7 @@ import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
 import com.ably.kafka.connect.utils.AvroToStruct;
+import com.ably.kafka.connect.utils.StructToJsonConverter;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.ably.lib.types.Message;
@@ -15,6 +16,7 @@ import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientExcept
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
+import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MessageSinkMappingTest {
@@ -200,6 +203,24 @@ class MessageSinkMappingTest {
         final AvroToStruct.Garage receivedGarage = new GsonBuilder().serializeNulls().create().fromJson(messageJson, AvroToStruct.Garage.class);
         assertEquals(garage, receivedGarage);
     }
+
+    @Test
+    void testThatExceptionIsThrownForNonStructSchemas() throws RestClientException, IOException {
+        //given
+        final Schema mapSchema = SchemaBuilder.type(Schema.Type.MAP).build();
+        final Map<String, String> map = Map.of("key1", "value1", "key2", "value2");
+
+        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
+        final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), mapSchema, map, 0);
+
+
+        final Throwable exception = assertThrows(ConnectException.class, () -> sinkMapping.getMessage(record),
+            "sinkMapping.getMessage(record) is supposed tho throw an exception for non-struct schemas");
+        assertEquals(exception.getMessage(), String.format("Unsupported value schema type: %s", mapSchema.type()));
+
+
+    }
+
 
     private AvroToStruct.Garage exampleGarage(String name) {
         final AvroToStruct.Part part = new AvroToStruct.Part("wheel", 100);
