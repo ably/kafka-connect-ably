@@ -116,7 +116,7 @@ An example cURL command to start the connector in distributed mode is:
 
 #### Publishing messages with schema
 
-The Ably Kafka Connector supports messages which contain schema information by converting them to JSON before publishing them to Ably.
+The Ably Kafka Connector supports messages which contain schema information by converting them to JSON before publishing them to Ably. To check how to use schema registry and supported converters, see [Using Kafka Connect with Schema Registry](https://docs.confluent.io/platform/current/schema-registry/connect.html). 
 For example, if messages on the Kafka topic are serialized using Avro with schemas registered at https://<your-schema-registry-host>, then set the following configuration so that those messages are converted from Avro to JSON:
 ```
 value.converter=io.confluent.connect.avro.AvroConverter
