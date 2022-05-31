@@ -49,11 +49,14 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
         }
 
         final Schema valueSchema = record.valueSchema();
+
         if (valueSchema.type() == Schema.Type.STRUCT) {
             final String jsonString = StructToJsonConverter.toJsonString((Struct) record.value(), gson);
             final Message message = new Message(messageName, jsonString);
             message.encoding = "json";
             return message;
+        } else if (valueSchema.type() == Schema.Type.BYTES) {
+            return new Message(messageName, record.value());
         }
         throw new ConnectException("Unsupported value schema type: " + valueSchema.type());
     }
