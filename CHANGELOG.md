@@ -1,5 +1,11 @@
 # Changelog
 
+## [v2.0.1](https://github.com/ably/kafka-connect-ably/tree/v2.0.1) (2022-06-01)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.0.0...v2.0.1)
+
+This release increases the capability of this connector to process data types received from Kafka Connect,
+with support for JSONifying schematic data [\#71](https://github.com/ably/kafka-connect-ably/issues/71), implemented in [\#73](https://github.com/ably/kafka-connect-ably/pull/73) ([ikbalkaya](https://github.com/ikbalkaya)).
 
 ## [v2.0.0](https://github.com/ably/kafka-connect-ably/tree/v2.0.0) (2022-04-20)
 
