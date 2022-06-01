@@ -114,6 +114,49 @@ An example cURL command to start the connector in distributed mode is:
     data: {"id":"1543960661:0:2","clientId":"kafka-connect-ably-example","connectionId":"SuJTceISnT","timestamp":1623496744538,"encoding":"base64", "channel":"kafka-connect-ably-example","data":"bWVzc2FnZSAz","name":"sink"}
     ```
 
+#### Publishing messages with schema
+
+The Ably Kafka Connector supports messages which contain schema information by converting them to JSON before publishing them to Ably. To check how to use schema registry and supported converters, see [Using Kafka Connect with Schema Registry](https://docs.confluent.io/platform/current/schema-registry/connect.html). 
+For example, if messages on the Kafka topic are serialized using Avro with schemas registered at https://<your-schema-registry-host>, then set the following configuration so that those messages are converted from Avro to JSON:
+```
+value.converter=io.confluent.connect.avro.AvroConverter
+value.converter.schema.registry.url=https://<your-schema-registry-host>
+```
+
+If you're running the Ably Kafka Connector locally using Docker Compose as outlined above, then you can use the [`kafka-avro-console-producer` CLI](https://docs.confluent.io/platform/current/tutorials/examples/clients/docs/kafka-commands.html#produce-avro-records) to test producing Avro serialized messages by running the following:
+```shell
+ docker-compose exec -T schema-registry kafka-avro-console-producer \
+   --topic topic1 \
+   --broker-list kafka:9092 \
+   --property key.schema='{"type":"string"}' \
+   --property parse.key=true \
+   --property key.separator=":" \
+   --property value.schema='{"type":"record","name":"myrecord","fields":[{"name":"count","type":"int"}]}' \
+   --property schema.registry.url=http://schema-registry:8081 <<EOF
+"key1":{"count":1}
+EOF
+```
+
+You should receive following Ably message where you subscribed. You will also receive an Avro-formatted key base64 encoded in the extras. 
+
+```json
+{
+	"clientId": "Ably-Kafka-Connector",
+	"connectionId": "VSuDXysgaz",
+	"data": {
+		"count": 1
+	},
+	"extras": {
+    "kafka": {
+      "key": "AAAAAKEIa2V5MQ=="
+    }
+	},
+	"id": "-868034334:0:351",
+	"name": "topic1_message",
+	"timestamp": 1653923422360
+}
+```
+
 ## Breaking API Changes in Version 2.0.0
 
 Please see our [Upgrade / Migration Guide](UPDATING.md) for notes on changes you need to make to your configuration to update it with changes introduced by version 2.0.0 of the connector.
