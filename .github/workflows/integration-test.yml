@@ -33,7 +33,7 @@ jobs:
           args: "sphinx-build -b html -C -D project=kafka-connect-ably target/docs target/components/packages"
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: eu-west-2
           role-to-assume: arn:aws:iam::${{ secrets.ABLY_AWS_ACCOUNT_ID_SDK}}:role/ably-sdk-builds-kafka-connect-ably
