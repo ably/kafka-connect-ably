@@ -38,6 +38,9 @@ jobs:
           aws-region: eu-west-2
           role-to-assume: arn:aws:iam::${{ secrets.ABLY_AWS_ACCOUNT_ID_SDK}}:role/ably-sdk-builds-kafka-connect-ably
           role-session-name: "${{ github.run_id }}-${{ github.run_number }}"
+          permissions:
+            id-token: write
+            contents: read
 
       - name: Upload ZIP archive
         uses: ably/sdk-upload-action@v1
