@@ -1,5 +1,15 @@
 # Changelog
 
+## [v2.0.2](https://github.com/ably/kafka-connect-ably/tree/v2.0.2)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.0.1...v2.0.2)
+
+This release increases ably-java dependency version to fix a potential vulnerability issue in dependency used by ably-java.
+
+**Merged pull requests:**
+
+- Update ably-java version to 1.2.16 [\#83](https://github.com/ably/kafka-connect-ably/pull/83) ([ikbalkaya](https://github.com/ikbalkaya))
+
 ## [v2.0.1](https://github.com/ably/kafka-connect-ably/tree/v2.0.1) (2022-06-01)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.0.0...v2.0.1)
