@@ -37,6 +37,10 @@ public class StructToJsonConverter {
      * @return Map that represents shape of data in the Struct without schema information
      */
     private static Map<String, Object> structJsonMap(final Struct struct) {
+        if (struct == null) {
+            return null;
+        }
+
         final Map<String, Object> structMap = new LinkedHashMap<>(struct.schema().fields().size());
 
         for (final Field field : struct.schema().fields()) {
