@@ -1,5 +1,20 @@
 # Changelog
 
+# Changelog
+
+## [v2.0.3](https://github.com/ably/kafka-connect-ably/tree/v2.0.3)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.0.2...v2.0.3)
+
+**Fixed bugs:**
+
+- Support for nullable structs' conversion  [\#86](https://github.com/ably/kafka-connect-ably/issues/86)
+
+**Merged pull requests:**
+
+- Fix NullPointerException issue when null struct value is provided to Json converter [\#87](https://github.com/ably/kafka-connect-ably/pull/87) ([ikbalkaya](https://github.com/ikbalkaya))
+
+
 ## [v2.0.2](https://github.com/ably/kafka-connect-ably/tree/v2.0.2)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.0.1...v2.0.2)
