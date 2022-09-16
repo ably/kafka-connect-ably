@@ -49,7 +49,7 @@ public class StructToJsonConverterTest {
     @Test
     void testComplexStructToJsonWithAllFieldsComplete() throws IOException, RestClientException {
         // given
-        final AvroToStruct.Garage garage = exampleGarage("My garage");
+        final AvroToStruct.Garage garage = exampleGarage("My garage", new AvroToStruct.Engine());
         Struct struct = avroToStruct.getStruct(garage);
 
         // when
@@ -63,7 +63,7 @@ public class StructToJsonConverterTest {
     @Test
     void testComplexStructToJsonWithNullStringValue() throws IOException, RestClientException {
         // given
-        final AvroToStruct.Garage garage = exampleGarage(null);
+        final AvroToStruct.Garage garage = exampleGarage(null, new AvroToStruct.Engine());
         Struct struct = avroToStruct.getStruct(garage);
 
         // when
@@ -77,7 +77,23 @@ public class StructToJsonConverterTest {
     @Test
     void testComplexStructToJsonWithNullMapValue() throws IOException, RestClientException {
         // given
-        final AvroToStruct.Garage garage = exampleGarage("Something");
+        final AvroToStruct.Garage garage = exampleGarage("Something", new AvroToStruct.Engine());
+        garage.partMap = null;
+        Struct struct = avroToStruct.getStruct(garage);
+
+        // when
+        final String jsonString = StructToJsonConverter.toJsonString(struct, gson);
+
+        // then
+        final AvroToStruct.Garage receivedGarage = new Gson().fromJson(jsonString, AvroToStruct.Garage.class);
+        assertEquals(garage, receivedGarage);
+    }
+
+    @Test
+    void testComplexStructToJsonWithNullStructValue() throws IOException, RestClientException {
+        // given
+        //pass engine as null to test null struct value
+        final AvroToStruct.Garage garage = exampleGarage("Something", null);
         garage.partMap = null;
         Struct struct = avroToStruct.getStruct(garage);
 
@@ -92,7 +108,7 @@ public class StructToJsonConverterTest {
     @Test
     void testComplexStructToJsonWithNullArrayValue() throws IOException, RestClientException {
         // given
-        final AvroToStruct.Garage garage = exampleGarage("My garage without cars");
+        final AvroToStruct.Garage garage = exampleGarage("My garage without cars", new AvroToStruct.Engine());
         garage.cars = null;
         Struct struct = avroToStruct.getStruct(garage);
 
@@ -136,13 +152,13 @@ public class StructToJsonConverterTest {
         assertEquals(receivedPrimitives, primitivies);
     }
 
-    private AvroToStruct.Garage exampleGarage(String name) {
+    private AvroToStruct.Garage exampleGarage(String name, AvroToStruct.Engine engine) {
         final AvroToStruct.Part part = new AvroToStruct.Part("wheel", 100);
         final AvroToStruct.Part part2 = new AvroToStruct.Part("door", 200);
         final AvroToStruct.Part part3 = new AvroToStruct.Part("seat", 300);
 
-        final AvroToStruct.Car car1 = new AvroToStruct.Car(new AvroToStruct.Engine(), List.of(part, part2, part3));
-        final AvroToStruct.Car car2 = new AvroToStruct.Car(new AvroToStruct.Engine(), List.of(part, part2, part3));
+        final AvroToStruct.Car car1 = new AvroToStruct.Car(engine, List.of(part, part2, part3));
+        final AvroToStruct.Car car2 = new AvroToStruct.Car(engine, List.of(part, part2, part3));
 
         final Map<String, AvroToStruct.Part> partMap = Map.of("wheel", part, "door", part2, "seat", part3);
 
