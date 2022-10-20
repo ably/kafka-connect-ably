@@ -6,6 +6,10 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import java.nio.charset.StandardCharsets;
 
 public class ConfigValueEvaluator {
+    /*
+    Result class wrapping the evaluated value and whether it should be skipped or not
+    This has been created to wrap the result of the evaluation of a config value when skippability is involved.
+     * */
     public static class Result{
         boolean skip;
         String value;
@@ -33,7 +37,8 @@ public class ConfigValueEvaluator {
      *
      * @param record    The SinkRecord to map
      * @param pattern   The pattern to map
-     * @param skippable
+     * @param skippable Whether the pattern is skippable or not, if so, and the pattern has #{key} in it, and the key is not
+     *                  set, the result will be marked as skipped. instead of throwing an exception.
      * @return Evaluated config value given the record and pattern
      */
     public Result evaluate(SinkRecord record, String pattern, boolean skippable) throws IllegalArgumentException{
