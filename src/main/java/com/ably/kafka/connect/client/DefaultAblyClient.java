@@ -75,7 +75,7 @@ public class DefaultAblyClient implements AblyClient {
             final ConfigValueEvaluator.Result messageResult = configValueEvaluator.evaluate(record, messageConfig, true);
             final ConfigValueEvaluator.Result channelResult = configValueEvaluator.evaluate(record, channelConfig, true);
 
-            if (messageResult.isSkip() || channelResult.isSkip()) {
+            if (messageResult.shouldSkip() || channelResult.shouldSkip()) {
                 logger.warn("Skipping record as record key is not available in a record where the config for either" +
                     " 'message.name' or 'channel' is configured to use #{key} as placeholders {}", record);
                 return;

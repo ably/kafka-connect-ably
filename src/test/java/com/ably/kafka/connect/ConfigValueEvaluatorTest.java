@@ -118,7 +118,7 @@ class ConfigValueEvaluatorTest {
         ConfigValueEvaluator.Result result = configValueEvaluator.evaluate(sinkRecord, "#{key}_hello", true);
 
         //then
-        assertTrue(result.isSkip());
+        assertTrue(result.shouldSkip());
         assertNull(result.getValue());
     }
 
@@ -132,7 +132,7 @@ class ConfigValueEvaluatorTest {
         ConfigValueEvaluator.Result result = configValueEvaluator.evaluate(sinkRecord, "#{key}_hello_#{topic}", true);
 
         //then
-        assertTrue(result.isSkip());
+        assertTrue(result.shouldSkip());
         assertNull(result.getValue());
     }
 

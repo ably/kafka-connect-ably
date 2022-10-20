@@ -18,7 +18,7 @@ public class ConfigValueEvaluator {
             return value;
         }
 
-        public boolean isSkip() {
+        public boolean shouldSkip() {
             return skip;
         }
     }
