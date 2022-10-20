@@ -209,6 +209,121 @@ public class ChannelSinkTaskTest {
 
         connectCluster.deleteConnector(CONNECTOR_NAME);
     }
+    @Test
+    public void testMessagePublish_MessageSkippedWithKeyPlaceholderMessageNameWhenNoKeyProvided() {
+        //given
+        final String keyName = "key1";
+        final String channelName = "channel1";
+        final String topicedMessageName = "#{key}_message";
+        Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
+        settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
+        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+
+        Channel channel = ablyClient.channels.get(channelName);
+        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
+
+         //when
+        //half skip half publish
+        for (int i = 0; i < 10; i++) {
+            if (i % 2 == 0) {
+                connectCluster.kafka().produce(DEFAULT_TOPIC, keyName, "bar");
+            } else {
+                connectCluster.kafka().produce(DEFAULT_TOPIC, null, "bar");
+            }
+        }
+
+        //then
+        messageWaiter.waitFor(10, TIMEOUT);
+        final List<Message> receivedMessages = messageWaiter.receivedMessages;
+        assertReceivedExactAmountOfMessages(receivedMessages, 5);
+        assertEquals(receivedMessages.get(0).name, "key1_message", "Unexpected message name");
+
+        connectCluster.deleteConnector(CONNECTOR_NAME);
+    }
+
+    @Test
+    public void testMessagePublish_MessageSkippedWithKeyPlaceholderMessageWhenKeyProvidedForAllMessages() {
+        //given
+        final String keyName = "key1";
+        final String channelName = "channel1";
+        final String topicedMessageName = "#{key}_message";
+        Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
+        settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
+        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+
+        Channel channel = ablyClient.channels.get(channelName);
+        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
+
+        //when
+        //all publish
+        for (int i = 0; i < 10; i++) {
+            connectCluster.kafka().produce(DEFAULT_TOPIC, keyName, "bar");
+        }
+
+        //then
+        messageWaiter.waitFor(10, TIMEOUT);
+        final List<Message> receivedMessages = messageWaiter.receivedMessages;
+        assertReceivedExactAmountOfMessages(receivedMessages, 10);
+        assertEquals(receivedMessages.get(0).name, "key1_message", "Unexpected message name");
+
+        connectCluster.deleteConnector(CONNECTOR_NAME);
+    }
+
+    @Test
+    public void testMessagePublish_MessageSkippedWithKeyPlaceholderChannelNameWhenNoKeyProvided() {
+        //given
+        final String keyName = "key1";
+        final String channelName = "channel1_#{key}";
+        final String messageName = "my_message";
+        Map<String, String> settings = createSettings(channelName, null, null, messageName);
+        settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
+        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+
+        Channel channel = ablyClient.channels.get("channel1_key1");
+        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
+
+        //when
+        //half skip half publish
+        for (int i = 0; i < 10; i++) {
+            if (i % 2 == 0) {
+                connectCluster.kafka().produce(DEFAULT_TOPIC, keyName, "bar");
+            } else {
+                connectCluster.kafka().produce(DEFAULT_TOPIC, null, "bar");
+            }
+        }
+
+        //then
+        messageWaiter.waitFor(10, TIMEOUT);
+        final List<Message> receivedMessages = messageWaiter.receivedMessages;
+        assertReceivedExactAmountOfMessages(receivedMessages, 5);
+        connectCluster.deleteConnector(CONNECTOR_NAME);
+    }
+
+    @Test
+    public void testMessagePublish_MessageSkippedWithKeyPlaceholderChannelWhenKeyProvidedForAllMessages() {
+        //given
+        final String keyName = "key1";
+        final String channelName = "channel_#{key}";
+        final String topicedMessageName = "myMessage";
+        Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
+        settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
+        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+
+        Channel channel = ablyClient.channels.get("channel_key1");
+        AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
+
+        //when
+        //all publish
+        for (int i = 0; i < 10; i++) {
+            connectCluster.kafka().produce(DEFAULT_TOPIC, keyName, "bar");
+        }
+
+        //then
+        messageWaiter.waitFor(10, TIMEOUT);
+        final List<Message> receivedMessages = messageWaiter.receivedMessages;
+        assertReceivedExactAmountOfMessages(receivedMessages, 10);
+        connectCluster.deleteConnector(CONNECTOR_NAME);
+    }
 
     @Test
     public void testMessagePublish_MessageReceivedWithTopicAndKeyPlaceholderMessageName() {
