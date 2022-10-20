@@ -97,4 +97,43 @@ class ConfigValueEvaluatorTest {
         assertNull(result.getValue());
     }
 
+    @Test
+    void testEvaluateKeyIsEvaluatedNormallyWhenSkippableRecordIsProvided() {
+        //given
+        SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null,"greatKey".getBytes(), null, null, 0);
+
+        //when
+        ConfigValueEvaluator.Result result = configValueEvaluator.evaluate(sinkRecord, "#{key}_hello", true);
+
+        //then
+        assertEquals("greatKey_hello", result.getValue());
+    }
+
+    @Test
+    void testEvaluateSkipResultIsReturnedWhenRecordWithoutKeyWasProvided() {
+        //given
+        SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null,null, null, null, 0);
+
+        //when
+        ConfigValueEvaluator.Result result = configValueEvaluator.evaluate(sinkRecord, "#{key}_hello", true);
+
+        //then
+        assertTrue(result.isSkip());
+        assertNull(result.getValue());
+    }
+
+    //make sure that #{topic} won't impact the behaviour
+    @Test
+    void testEvaluateSkipResultfIsReturnedWhenKeyIsNullAndRecordIsInPattern() {
+        //given
+        SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null,null, null, null, 0);
+
+        //when
+        ConfigValueEvaluator.Result result = configValueEvaluator.evaluate(sinkRecord, "#{key}_hello_#{topic}", true);
+
+        //then
+        assertTrue(result.isSkip());
+        assertNull(result.getValue());
+    }
+
 }
