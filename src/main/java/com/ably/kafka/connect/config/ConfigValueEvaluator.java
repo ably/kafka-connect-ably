@@ -6,7 +6,22 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import java.nio.charset.StandardCharsets;
 
 public class ConfigValueEvaluator {
+    public static class Result{
+        boolean skip;
+        String value;
+        public Result(boolean skip, String value) {
+            this.skip = skip;
+            this.value = value;
+        }
 
+        public String getValue() {
+            return value;
+        }
+
+        public boolean isSkip() {
+            return skip;
+        }
+    }
     public static final String KEY_TOKEN = "#{key}";
     public static final String TOPIC_TOKEN = "#{topic}";
 
@@ -20,9 +35,9 @@ public class ConfigValueEvaluator {
      * @param pattern The pattern to map
      * @return Evaluated config value given the record and pattern
      */
-    public String evaluate(SinkRecord record, String pattern) throws IllegalArgumentException{
+    public Result evaluate(SinkRecord record, String pattern) throws IllegalArgumentException{
         if (pattern == null) {
-            return null;
+            return new Result(false,null);
         }
         final byte[] key = (byte[]) record.key();
         String keyString = null;
@@ -36,9 +51,9 @@ public class ConfigValueEvaluator {
         }
 
         if (keyString != null) {
-            return pattern.replace(KEY_TOKEN, keyString).replace(TOPIC_TOKEN, record.topic());
+            return new Result(false,pattern.replace(KEY_TOKEN, keyString).replace(TOPIC_TOKEN, record.topic()));
         } else {
-            return pattern.replace(TOPIC_TOKEN, record.topic());
+            return new Result(false, pattern.replace(TOPIC_TOKEN, record.topic()));
         }
     }
 }

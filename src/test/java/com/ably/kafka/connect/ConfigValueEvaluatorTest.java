@@ -15,10 +15,10 @@ class ConfigValueEvaluatorTest {
         SinkRecord sinkRecord = new SinkRecord("topic", 0, null, "key".getBytes(), null, null, 0);
 
        //when
-        String result = configValueEvaluator.evaluate(sinkRecord, "containsnopattern");
+        ConfigValueEvaluator.Result result = configValueEvaluator.evaluate(sinkRecord, "containsnopattern");
 
         //then
-        assertEquals("containsnopattern", result);
+        assertEquals("containsnopattern", result.getValue());
     }
 
     @Test
@@ -27,10 +27,10 @@ class ConfigValueEvaluatorTest {
         SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null, null, null, null, 0);
 
         //when
-        String result = configValueEvaluator.evaluate(sinkRecord, "#{topic}_hello");
+        ConfigValueEvaluator.Result result = configValueEvaluator.evaluate(sinkRecord, "#{topic}_hello");
 
         //then
-        assertEquals("greatTopic_hello", result);
+        assertEquals("greatTopic_hello", result.getValue());
     }
 
     @Test
@@ -39,10 +39,10 @@ class ConfigValueEvaluatorTest {
         SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null,"greatKey".getBytes(), null, null, 0);
 
         //when
-        String result = configValueEvaluator.evaluate(sinkRecord, "#{key}_hello");
+        ConfigValueEvaluator.Result result = configValueEvaluator.evaluate(sinkRecord, "#{key}_hello");
 
         //then
-        assertEquals("greatKey_hello", result);
+        assertEquals("greatKey_hello", result.getValue());
     }
 
     @Test
@@ -51,10 +51,10 @@ class ConfigValueEvaluatorTest {
         SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null, "greatKey".getBytes(), null, null, 0);
 
         //when
-        String result = configValueEvaluator.evaluate(sinkRecord, "key=#{key},topic=#{topic}");
+        ConfigValueEvaluator.Result result = configValueEvaluator.evaluate(sinkRecord, "key=#{key},topic=#{topic}");
 
         //then
-        assertEquals("key=greatKey,topic=greatTopic", result);
+        assertEquals("key=greatKey,topic=greatTopic", result.getValue());
     }
 
     @Test
@@ -91,10 +91,10 @@ class ConfigValueEvaluatorTest {
         SinkRecord sinkRecord = new SinkRecord("topic", 0, null, "key".getBytes(), null, null, 0);
 
         //when
-        String result = configValueEvaluator.evaluate(sinkRecord, null);
+        ConfigValueEvaluator.Result result = configValueEvaluator.evaluate(sinkRecord, null);
 
         //then
-        assertNull(result);
+        assertNull(result.getValue());
     }
 
 }
