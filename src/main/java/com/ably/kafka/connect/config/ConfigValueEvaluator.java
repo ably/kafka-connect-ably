@@ -31,11 +31,12 @@ public class ConfigValueEvaluator {
      * #{key} will be replaced with {@code record.key()} if {@code record.key()} is UTF-8 encoded.
      * #{topic} will be replaced with {@code record.topic()}
      *
-     * @param record  The SinkRecord to map
-     * @param pattern The pattern to map
+     * @param record    The SinkRecord to map
+     * @param pattern   The pattern to map
+     * @param skippable
      * @return Evaluated config value given the record and pattern
      */
-    public Result evaluate(SinkRecord record, String pattern) throws IllegalArgumentException{
+    public Result evaluate(SinkRecord record, String pattern, boolean skippable) throws IllegalArgumentException{
         if (pattern == null) {
             return new Result(false,null);
         }
@@ -47,6 +48,9 @@ public class ConfigValueEvaluator {
             keyString = new String(key, StandardCharsets.UTF_8);
         }
         if (keyString == null && pattern.contains(KEY_TOKEN)) {
+            if (skippable){
+                return new Result(true, null);
+            }
             throw new IllegalArgumentException("Key is null or not a string type but pattern contains #{key}");
         }
 
