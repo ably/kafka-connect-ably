@@ -72,8 +72,8 @@ public class DefaultAblyClient implements AblyClient {
         final String channelConfig = connectorConfig.getString(CHANNEL_CONFIG);
         final boolean skipOnKeyAbsence = connectorConfig.getBoolean(SKIP_ON_KEY_ABSENCE);
         if (skipOnKeyAbsence){
-            final ConfigValueEvaluator.Result messageResult = configValueEvaluator.evaluate(record, messageConfig, false);
-            final ConfigValueEvaluator.Result channelResult = configValueEvaluator.evaluate(record, channelConfig, false);
+            final ConfigValueEvaluator.Result messageResult = configValueEvaluator.evaluate(record, messageConfig, true);
+            final ConfigValueEvaluator.Result channelResult = configValueEvaluator.evaluate(record, channelConfig, true);
 
             if (!messageResult.isSkip() || !channelResult.isSkip()) {
                 logger.warn("Skipping record as record key is not available in a record where the config for either" +
