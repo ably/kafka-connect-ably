@@ -1,25 +1,23 @@
 package com.ably.kafka.connect.transform;
 
-import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import com.ably.kafka.connect.utils.ByteArrayUtils;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.ConnectRecord;
 import org.apache.kafka.connect.transforms.Transformation;
+import org.apache.kafka.connect.transforms.util.NonEmptyListValidator;
+import org.apache.kafka.connect.transforms.util.SimpleConfig;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import static com.ably.kafka.connect.config.ConfigValueEvaluator.KEY_TOKEN;
 
 public class RecordKeyCheck<R extends ConnectRecord<R>> implements Transformation<R> {
-    private final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
-    private final String channelConfig;
-    private final String messageNameConfig;
-
-    public RecordKeyCheck(String channelConfig, String messageNameConfig) {
-        this.channelConfig = channelConfig;
-        this.messageNameConfig = messageNameConfig;
-    }
+    private final static String KEY_TOKEN = "#{key}";
+    private final static String CHANNEL_CONFIG = "channel.name";
+    private final static String MESSAGE_CONFIG = "message.name";
+    public static final ConfigDef CONFIG_DEF;
+    private String channelConfig;
+    private String messageNameConfig;
 
     @Override
     public R apply(R record) {
@@ -52,5 +50,24 @@ public class RecordKeyCheck<R extends ConnectRecord<R>> implements Transformatio
     //not relevant for this transform
     @Override
     public void configure(Map<String, ?> map) {
+        SimpleConfig config = new SimpleConfig(CONFIG_DEF, map);
+        this.channelConfig = config.getString(CHANNEL_CONFIG);
+        this.messageNameConfig = config.getString(MESSAGE_CONFIG);
+    }
+
+    static {
+        CONFIG_DEF = new ConfigDef().
+            define(CHANNEL_CONFIG,
+                ConfigDef.Type.STRING,
+                ConfigDef.NO_DEFAULT_VALUE,
+                null,
+                ConfigDef.Importance.HIGH,
+                "The channel name to publish to")
+            .define(MESSAGE_CONFIG,
+                ConfigDef.Type.STRING,
+                ConfigDef.NO_DEFAULT_VALUE,
+                new NonEmptyListValidator(),
+                ConfigDef.Importance.LOW,
+                "The message name to publish");
     }
 }
