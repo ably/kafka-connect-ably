@@ -43,7 +43,7 @@ public class ConfigValueEvaluator {
      */
     public Result evaluate(SinkRecord record, String pattern, boolean skippable) throws IllegalArgumentException{
         if (pattern == null) {
-            return new Result(false,null);
+            return new Result(false, null);
         }
         final byte[] key = (byte[]) record.key();
         String keyString = null;
@@ -53,14 +53,14 @@ public class ConfigValueEvaluator {
             keyString = new String(key, StandardCharsets.UTF_8);
         }
         if (keyString == null && pattern.contains(KEY_TOKEN)) {
-            if (skippable){
+            if (skippable) {
                 return new Result(true, null);
             }
             throw new IllegalArgumentException("Key is null or not a string type but pattern contains #{key}");
         }
 
         if (keyString != null) {
-            return new Result(false,pattern.replace(KEY_TOKEN, keyString).replace(TOPIC_TOKEN, record.topic()));
+            return new Result(false, pattern.replace(KEY_TOKEN, keyString).replace(TOPIC_TOKEN, record.topic()));
         } else {
             return new Result(false, pattern.replace(TOPIC_TOKEN, record.topic()));
         }

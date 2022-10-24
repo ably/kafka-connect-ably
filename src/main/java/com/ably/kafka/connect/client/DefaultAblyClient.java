@@ -67,7 +67,7 @@ public class DefaultAblyClient implements AblyClient {
             //this exception should cause the calling task to abort
             throw new ConnectException("Cannot publish to Ably when connection failed");
         }
-        //check both channel and message config for skipping the record
+        // check both channel and message config for skipping the record
         final String messageConfig = connectorConfig.getString(MESSAGE_CONFIG);
         final String channelConfig = connectorConfig.getString(CHANNEL_CONFIG);
         final boolean skipOnKeyAbsence = connectorConfig.getBoolean(SKIP_ON_KEY_ABSENCE);
