@@ -26,6 +26,7 @@ public class ConfigValueEvaluator {
             return skip;
         }
     }
+
     public static final String KEY_TOKEN = "#{key}";
     public static final String TOPIC_TOKEN = "#{topic}";
 
