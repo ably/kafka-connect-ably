@@ -67,20 +67,8 @@ public class DefaultAblyClient implements AblyClient {
             //this exception should cause the calling task to abort
             throw new ConnectException("Cannot publish to Ably when connection failed");
         }
-        // check both channel and message config for skipping the record
-        final String messageConfig = connectorConfig.getString(MESSAGE_CONFIG);
-        final String channelConfig = connectorConfig.getString(CHANNEL_CONFIG);
-        final boolean skipOnKeyAbsence = connectorConfig.getBoolean(SKIP_ON_KEY_ABSENCE);
-        if (skipOnKeyAbsence) {
-            final ConfigValueEvaluator.Result messageResult = configValueEvaluator.evaluate(record, messageConfig, true);
-            final ConfigValueEvaluator.Result channelResult = configValueEvaluator.evaluate(record, channelConfig, true);
 
-            if (messageResult.shouldSkip() || channelResult.shouldSkip()) {
-                logger.warn("Skipping record as record key is not available in a record where the config for either" +
-                    " 'message.name' or 'channel' is configured to use #{key} as placeholders {}", record);
-                return;
-            }
-        }
+        if (shouldSkip(record)) return;
 
         try {
             final Channel channel = channelSinkMapping.getChannel(record, realtime);
@@ -102,6 +90,24 @@ public class DefaultAblyClient implements AblyClient {
             logger.error(e.getMessage(), e);
             throw new ConnectException("Configuration error", e);
         }
+    }
+
+    private boolean shouldSkip(SinkRecord record) {
+        final boolean skipOnKeyAbsence = connectorConfig.getBoolean(SKIP_ON_KEY_ABSENCE);
+
+        if (skipOnKeyAbsence) {
+            final String messageConfig = connectorConfig.getString(MESSAGE_CONFIG);
+            final String channelConfig = connectorConfig.getString(CHANNEL_CONFIG);
+            final ConfigValueEvaluator.Result messageResult = configValueEvaluator.evaluate(record, messageConfig, true);
+            final ConfigValueEvaluator.Result channelResult = configValueEvaluator.evaluate(record, channelConfig, true);
+
+            if (messageResult.shouldSkip() || channelResult.shouldSkip()) {
+                logger.warn("Skipping record as record key is not available in a record where the config for either" +
+                    " 'message.name' or 'channel' is configured to use #{key} as placeholders {}", record);
+                return true;
+            }
+        }
+        return false;
     }
 
     private void handleAblyException(AblyException e) {
