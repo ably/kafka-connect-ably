@@ -71,7 +71,7 @@ public class DefaultAblyClient implements AblyClient {
         final String messageConfig = connectorConfig.getString(MESSAGE_CONFIG);
         final String channelConfig = connectorConfig.getString(CHANNEL_CONFIG);
         final boolean skipOnKeyAbsence = connectorConfig.getBoolean(SKIP_ON_KEY_ABSENCE);
-        if (skipOnKeyAbsence){
+        if (skipOnKeyAbsence) {
             final ConfigValueEvaluator.Result messageResult = configValueEvaluator.evaluate(record, messageConfig, true);
             final ConfigValueEvaluator.Result channelResult = configValueEvaluator.evaluate(record, channelConfig, true);
 
