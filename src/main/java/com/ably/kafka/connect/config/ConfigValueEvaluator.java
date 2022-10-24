@@ -36,8 +36,8 @@ public class ConfigValueEvaluator {
      * #{key} will be replaced with {@code record.key()} if {@code record.key()} is UTF-8 encoded.
      * #{topic} will be replaced with {@code record.topic()}
      *
-     * @param record    The SinkRecord to map
-     * @param pattern   The pattern to map
+     * @param record The SinkRecord to map
+     * @param pattern The pattern to map
      * @param skippable Whether the pattern is skippable or not, if so, and the pattern has #{key} in it, and the key is not
      *                  set, the result will be marked as skipped. instead of throwing an exception.
      * @return Evaluated config value given the record and pattern
