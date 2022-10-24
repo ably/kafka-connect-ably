@@ -10,7 +10,7 @@ public class ConfigValueEvaluator {
     Result class wrapping the evaluated value and whether it should be skipped or not
     This has been created to wrap the result of the evaluation of a config value when skippability is involved.
      * */
-    public static class Result{
+    public static class Result {
         boolean skip;
         String value;
         public Result(boolean skip, String value) {
