@@ -36,10 +36,9 @@ public class RecordKeyCheck<R extends ConnectRecord<R>> implements Transformatio
         return record;
     }
 
-    //not relevant for this transform
     @Override
     public ConfigDef config() {
-        return null;
+        return CONFIG_DEF;
     }
 
     //not relevant for this transform
