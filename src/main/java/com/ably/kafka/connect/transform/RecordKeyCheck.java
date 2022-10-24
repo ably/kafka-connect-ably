@@ -41,12 +41,9 @@ public class RecordKeyCheck<R extends ConnectRecord<R>> implements Transformatio
         return CONFIG_DEF;
     }
 
-    //not relevant for this transform
     @Override
-    public void close() {
-    }
+    public void close() {}
 
-    //not relevant for this transform
     @Override
     public void configure(Map<String, ?> map) {
         SimpleConfig config = new SimpleConfig(CONFIG_DEF, map);
