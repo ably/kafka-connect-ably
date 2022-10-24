@@ -11,8 +11,8 @@ public class ConfigValueEvaluator {
     This has been created to wrap the result of the evaluation of a config value when skippability is involved.
      * */
     public static class Result {
-        boolean skip;
-        String value;
+        private final boolean skip;
+        private final String value;
         public Result(boolean skip, String value) {
             this.skip = skip;
             this.value = value;
