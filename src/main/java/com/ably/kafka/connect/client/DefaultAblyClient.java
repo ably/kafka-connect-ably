@@ -77,6 +77,7 @@ public class DefaultAblyClient implements AblyClient {
             channel.publish(message, new CompletionListener() {
                 @Override
                 public void onSuccess() {
+                    logger.info("Published message to channel {} with id {}", channel.name, message.id);
                 }
 
                 @Override

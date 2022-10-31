@@ -1,10 +1,8 @@
 package com.ably.kafka.connect.transform;
 
-import com.ably.kafka.connect.utils.ByteArrayUtils;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.ConnectRecord;
 import org.apache.kafka.connect.transforms.Transformation;
-import org.apache.kafka.connect.transforms.util.NonEmptyListValidator;
 import org.apache.kafka.connect.transforms.util.SimpleConfig;
 
 import java.nio.charset.StandardCharsets;
@@ -30,6 +28,7 @@ public class RecordKeyCheck<R extends ConnectRecord<R>> implements Transformatio
             keyString = new String(key, StandardCharsets.UTF_8);
         }
         if (keyString == null && (channelConfig.contains(KEY_TOKEN) || messageNameConfig.contains(KEY_TOKEN))) {
+            System.out.println("Key is null or not a string type but pattern contains #{key}");
             throw new IllegalArgumentException("Key is null or not a string type but pattern contains #{key}");
             //This SMT shouldn't be set if skippable is true - so we can throw an exception here
         }
@@ -55,14 +54,12 @@ public class RecordKeyCheck<R extends ConnectRecord<R>> implements Transformatio
         CONFIG_DEF = new ConfigDef().
             define(CHANNEL_CONFIG,
                 ConfigDef.Type.STRING,
-                ConfigDef.NO_DEFAULT_VALUE,
                 null,
                 ConfigDef.Importance.HIGH,
                 "The channel name to publish to")
             .define(MESSAGE_CONFIG,
                 ConfigDef.Type.STRING,
-                ConfigDef.NO_DEFAULT_VALUE,
-                new NonEmptyListValidator(),
+                null,
                 ConfigDef.Importance.LOW,
                 "The message name to publish");
     }
