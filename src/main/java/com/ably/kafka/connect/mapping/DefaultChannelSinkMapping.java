@@ -22,7 +22,7 @@ public class DefaultChannelSinkMapping implements ChannelSinkMapping {
     @Override
     public Channel getChannel(@Nonnull SinkRecord sinkRecord, @Nonnull AblyRealtime ablyRealtime) throws AblyException,
             ChannelSinkConnectorConfig.ConfigException {
-        final String channelName = configValueEvaluator.evaluate(sinkRecord, channelConfig.getName());
+        final String channelName = configValueEvaluator.evaluate(sinkRecord, channelConfig.getName(), false).getValue();
         return ablyRealtime.channels.get(channelName, channelConfig.getOptions());
     }
 }

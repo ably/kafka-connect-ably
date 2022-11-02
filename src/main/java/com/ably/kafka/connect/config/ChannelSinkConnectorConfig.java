@@ -30,7 +30,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
     public static final String CHANNEL_CONFIG = "channel";
     private static final String CHANNEL_CONFIG_DOC = "The ably channel name to use for publishing.";
-
     public static final String MESSAGE_CONFIG = "message.name";
     private static final String MESSAGE_CONFIG_DOC = "Ably message name to use for publishing.";
 
@@ -176,6 +175,10 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     public static final String CLIENT_CHANNEL_PARAMS = "client.channel.params";
     private static final String CLIENT_CHANNEL_PARAMS_DOC = "Additional channel parameters used to configure the " +
         "behaviour of the channel. This should be specified in the form \"key1=value1,key2=value2,...\".";
+
+    public static final String SKIP_ON_KEY_ABSENCE = "skipOnKeyAbsence";
+    private static final String SKIP_ON_KEY_ABSENCE_DOC = "If true, it skips the record if the key has been provided as" +
+        " part of interpolable configuration value, but key is not available on the time of record creation. Default value is false.";
 
     // The name of the extra agent identifier to add to the Ably-Agent header to
     // identify this client as using the Ably Kafka Connector.
@@ -547,6 +550,12 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .documentation(CLIENT_CHANNEL_PARAMS_DOC)
                     .importance(Importance.MEDIUM)
                     .defaultValue("")
+                    .build()
+            ) .define(
+                ConfigKeyBuilder.of(SKIP_ON_KEY_ABSENCE, Type.BOOLEAN)
+                    .documentation(SKIP_ON_KEY_ABSENCE_DOC)
+                    .importance(Importance.MEDIUM)
+                    .defaultValue(false)
                     .build()
             );
     }

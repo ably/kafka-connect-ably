@@ -42,7 +42,7 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
     }
 
     private Message messageFromRecord(SinkRecord record) {
-        final String messageName = configValueEvaluator.evaluate(record, sinkConnectorConfig.getString(MESSAGE_CONFIG));
+        final String messageName = configValueEvaluator.evaluate(record, sinkConnectorConfig.getString(MESSAGE_CONFIG), false).getValue();
 
         if (record.valueSchema() == null) {
             return new Message(messageName, record.value());

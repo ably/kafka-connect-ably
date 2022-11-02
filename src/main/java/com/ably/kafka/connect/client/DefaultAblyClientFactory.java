@@ -30,7 +30,7 @@ public class DefaultAblyClientFactory implements AblyClientFactory {
         }
 
         connectorConfig.clientOptions.logHandler = new ClientOptionsLogHandler(logger);
-        return new DefaultAblyClient(connectorConfig, channelSinkMapping, messageSinkMapping);
+        return new DefaultAblyClient(connectorConfig, channelSinkMapping, messageSinkMapping, configValueEvaluator);
 
     }
 }
