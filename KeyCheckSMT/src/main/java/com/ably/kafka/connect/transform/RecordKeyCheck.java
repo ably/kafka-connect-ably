@@ -27,7 +27,7 @@ public class RecordKeyCheck<R extends ConnectRecord<R>> implements Transformatio
         }
 
         if (keyString == null && (channelConfig.contains(KEY_TOKEN) || messageNameConfig.contains(KEY_TOKEN))) {
-            System.out.println("Key is null or not a string type but pattern contains #{key}");
+            System.out.println(this.getClass().getSimpleName()+": Key is null or not a string type but pattern contains #{key}");
             throw new IllegalArgumentException("Key is null or not a string type but pattern contains #{key}");
             //This SMT shouldn't be set if skippable is true - so we can throw an exception here
         }
