@@ -247,6 +247,7 @@ transforms.RecordKeyCheck.message.name = #{key}_message
 There is a separate [Dockerfile_WithSMT](https://github.com/ably/kafka-connect-ably/blob/prepare_connector_for_dlq_processing/Dockerfile_WithSMT) provided in this project which contains the custom SMT installation along with connector. If you want to build your own Docker image, you can copy the content of this to `Dockerfile` provided in this project. You can alternatively build your JAR from the [source code](https://github.com/ably/kafka-connect-ably/tree/prepare_connector_for_dlq_processing/KeyCheckSMT) and add it to your  classpath.
 Please use this SMT only if you use `#{key}` in your configuration values for channel name or message name. If you do not use `#{key}` in your configuration values, you must not use this SMT.
 
+Setting up dead letter queue for failed messages is out of scope of this document. We recommend you read [this blog post](https://www.confluent.io/en-gb/blog/kafka-connect-deep-dive-error-handling-dead-letter-queues/) to learn how to set up dead letter queue for failed messages.
 ## Contributing
 
 For guidance on how to contribute to this project, see [CONTRIBUTING.md](CONTRIBUTING.md).
