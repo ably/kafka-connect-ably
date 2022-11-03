@@ -9,7 +9,10 @@ import org.apache.kafka.connect.transforms.util.SimpleConfig;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-
+/*
+ * This transformation is used to check the validitiy of the key of the record and is strictly to use with the Ably sink connector.
+ * This transformation is to be used only when one of the configurations given contains #{key} in them.
+ **/
 public class RecordKeyCheck<R extends ConnectRecord<R>> implements Transformation<R> {
     private final static String KEY_TOKEN = "#{key}";
     private final static String CHANNEL_CONFIG = "channel.name";

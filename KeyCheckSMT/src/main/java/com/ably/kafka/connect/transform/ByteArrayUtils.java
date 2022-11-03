@@ -5,7 +5,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
- class ByteArrayUtils {
+
+class ByteArrayUtils {
     public static boolean isUTF8Encoded(@Nonnull byte[] value) {
         CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
         ByteBuffer buf = ByteBuffer.wrap(value);
@@ -14,7 +15,6 @@ import java.nio.charset.StandardCharsets;
         } catch (CharacterCodingException e) {
             return false;
         }
-
         return true;
     }
 }
