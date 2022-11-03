@@ -241,6 +241,9 @@ transforms.RecordKeyCheck.type = com.ably.kafka.connect.transform.RecordKeyCheck
 transforms.RecordKeyCheck.channel.name = #{topic}_#{key}
 transforms.RecordKeyCheck.message.name = #{key}_message
 ```
+
+`transforms.RecordKeyCheck.channel.name` must be exactly the same configuration as `channel` configuration in your connector. `transforms.RecordKeyCheck.message.name` is optional But when provided it must be set as exactly the same as `message.name` in your connector.
+
 [Dockerfile](https://github.com/ably/kafka-connect-ably/blob/main/Dockerfile) provided in this project contains the custom SMT. If you want to build your own Docker image, you can use the Dockerfile provided in this project. You can alternatively build your JAR from the [source code](https://github.com/ably/kafka-connect-ably/tree/prepare_connector_for_dlq_processing/KeyCheckSMT) and add it to your  classpath.
 Please use this SMT only if you use `#{key}` in your configuration values for channel name or message name. If you do not use `#{key}` in your configuration values, you must not use this SMT.
 
