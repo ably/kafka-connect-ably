@@ -48,20 +48,23 @@ public class RecordKeyCheck<R extends ConnectRecord<R>> implements Transformatio
     @Override
     public void configure(Map<String, ?> map) {
         final SimpleConfig config = new SimpleConfig(CONFIG_DEF, map);
-        if (config.getString(CHANNEL_CONFIG)  == null) {
-            throw new ConfigException("You must provide channel.name for this SMT");
-        }
-        //it's useless if the channel name doesn't contain the key token
-        if (!config.getString(CHANNEL_CONFIG).contains(KEY_TOKEN)) {
-            throw new ConfigException("Channel name must contain #{key} token");
-        }
-
-        if (config.getString(MESSAGE_CONFIG)  != null && !config.getString(MESSAGE_CONFIG).contains(KEY_TOKEN)) {
-            throw new ConfigException("Message name must contain #{key} token");
-        }
 
         this.channelConfig = config.getString(CHANNEL_CONFIG);
         this.messageNameConfig = config.getString(MESSAGE_CONFIG);
+
+        if (this.channelConfig == null && this.messageNameConfig == null) {
+            throw new ConfigException("You must provide at least a configuration for this SMT");
+        }
+
+        //it's useless if the channel name doesn't contain the key token
+        if (this.channelConfig  != null && !this.channelConfig.contains(KEY_TOKEN)) {
+            throw new ConfigException("Channel name must contain #{key} token");
+        }
+        //Also for message name
+        if (this.messageNameConfig != null && !messageNameConfig.contains(KEY_TOKEN)) {
+            throw new ConfigException("Message name must contain #{key} token");
+        }
+
     }
 
     static {
