@@ -35,6 +35,19 @@ class RecordKeyCheckTest {
             recordKeyCheck.configure(Collections.singletonMap("message.name", "invalid")));
     }
 
+    @Test
+    public void valid_message_and_invalid_channel_name_config_throws_exception() {
+        assertThrows(ConfigException.class, () ->
+            recordKeyCheck.configure(Map.of("channel.name", "invalid_#{topic}", "message.name", "valid_#{key}")));
+    }
+
+    @Test
+    public void invalid_message_and_valid_channel_name_config_throws_exception() {
+        assertThrows(ConfigException.class, () ->
+            recordKeyCheck.configure(Map.of("channel.name", "invalid_#{key}", "message.name", "invalid_#{topic}")));
+    }
+
+
     //non-config tests
 
     @Test
