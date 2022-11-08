@@ -6,7 +6,6 @@ import org.apache.kafka.connect.connector.ConnectRecord;
 import org.apache.kafka.connect.transforms.Transformation;
 import org.apache.kafka.connect.transforms.util.SimpleConfig;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /*
