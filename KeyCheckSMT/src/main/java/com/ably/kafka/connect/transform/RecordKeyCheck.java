@@ -23,12 +23,7 @@ public class RecordKeyCheck<R extends ConnectRecord<R>> implements Transformatio
 
     @Override
     public R apply(R record) {
-        final byte[] key = (byte[]) record.key();
-        String keyString = null;
-        if (key != null && ByteArrayUtils.isUTF8Encoded(key)) {
-            keyString = new String(key, StandardCharsets.UTF_8);
-        }
-
+        final String keyString = ByteArrayUtils.utf8String((byte[]) record.key());
         if (keyString == null && (channelConfig.contains(KEY_TOKEN) || messageNameConfig.contains(KEY_TOKEN))) {
             System.out.println(this.getClass().getSimpleName()+": Key is null or not a string type but pattern contains #{key}");
             throw new IllegalArgumentException("Key is null or not a string type but pattern contains #{key}");
