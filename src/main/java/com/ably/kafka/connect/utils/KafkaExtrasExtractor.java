@@ -28,7 +28,6 @@ public class KafkaExtrasExtractor {
         byte[] key = (byte[]) record.key();
         if (key != null) {
             final String keyValue = Base64.getEncoder().encodeToString(key);
-            System.out.println("keyValue: " + keyValue);
             extras.add("key", keyValue);
         }
 

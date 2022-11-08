@@ -43,8 +43,6 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public void put(Collection<SinkRecord> records) {
-        logger.info("Received {} records", records.size());
-
         if (ablyClient == null) {
             throw new ConnectException("Ably client is unitialized");
         }
