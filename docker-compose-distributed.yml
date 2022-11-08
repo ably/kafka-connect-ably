@@ -1,7 +1,7 @@
 version: '3'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.4.0
+    image: confluentinc/cp-zookeeper:5.4.10-1-ubi8
     networks:
       kafka_distributed_network:
     environment:
@@ -11,7 +11,9 @@ services:
     #  - '2181:2181'
 
   kafka:
-    image: confluentinc/cp-enterprise-kafka:5.4.0
+    image: confluentinc/cp-server:5.4.10-1-ubi8
+    hostname: kafka
+    container_name: kafka
     networks:
       kafka_distributed_network:
         aliases:
@@ -20,6 +22,10 @@ services:
       - 29092:29092
     depends_on:
       - zookeeper
+    volumes:
+      - ./scripts/security/keypair:/tmp/conf
+      - ./scripts/helper:/tmp/helper
+      - ./scripts/security:/etc/kafka/secrets
     environment:
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -31,7 +37,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:5.4.0
+    image: confluentinc/cp-schema-registry:5.4.10-1-ubi8
     networks:
       kafka_distributed_network:
         aliases:
@@ -43,7 +49,7 @@ services:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center:5.4.0
+    image: confluentinc/cp-enterprise-control-center:5.4.10-1-ubi8
     networks:
       kafka_distributed_network:
         aliases:
