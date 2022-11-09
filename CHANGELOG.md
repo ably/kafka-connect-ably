@@ -1,6 +1,14 @@
 # Changelog
 
-# Changelog
+## [v2.1.0](https://github.com/ably/kafka-connect-ably/tree/v2.1.0)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.0.3...v2.1.0)
+
+**Implemented enhancements:**
+
+- Provide ability for users to channel failed messages into a dead letter queue  [\#90](https://github.com/ably/kafka-connect-ably/issues/90)
+- Provide ability to skip a record when a key is absent and channel is configured with a key [\#85](https://github.com/ably/kafka-connect-ably/issues/85)
+- Update docker-compose to include latest version of images [\#81](https://github.com/ably/kafka-connect-ably/issues/81)
 
 ## [v2.0.3](https://github.com/ably/kafka-connect-ably/tree/v2.0.3)
 
