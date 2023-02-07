@@ -1,0 +1,52 @@
+{
+  "type": "record",
+  "name": "CustomerEvent",
+  "namespace": "com.ably.example.customers",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "onboardedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "time-millis"
+      }
+    },
+    {
+      "name": "referralCode",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "firstName",
+      "type": "string"
+    },
+    {
+      "name": "middleName",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    {
+      "name": "lastName",
+      "type": "string"
+    },
+    {
+      "name": "amount",
+      "type": {
+        "type": "bytes",
+        "logicalType": "decimal",
+        "precision": 4,
+        "scale": 2
+      }
+    }
+  ]
+}

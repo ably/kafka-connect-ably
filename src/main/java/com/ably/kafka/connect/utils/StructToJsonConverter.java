@@ -2,6 +2,7 @@ package com.ably.kafka.connect.utils;
 
 import com.google.gson.Gson;
 import org.apache.kafka.connect.data.Field;
+import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.ConnectException;
 
@@ -44,7 +45,11 @@ public class StructToJsonConverter {
         final Map<String, Object> structMap = new LinkedHashMap<>(struct.schema().fields().size());
 
         for (final Field field : struct.schema().fields()) {
-            switch (field.schema().type()) {
+           /*  getType(x) will not always succeed, we must try - and use logical types for the types that logical types
+           are applicable.
+            */
+            final Schema.Type schemaType = field.schema().type();
+            switch (schemaType) {
                 case STRUCT:
                     final Struct fieldStruct = struct.getStruct(field.name());
                     structMap.put(field.name(), structJsonMap(fieldStruct));
@@ -59,16 +64,12 @@ public class StructToJsonConverter {
                     structMap.put(field.name(), jsonMap);
                     break;
                 case INT8:
-                    structMap.put(field.name(), struct.getInt8(field.name()));
-                    break;
                 case INT16:
-                    structMap.put(field.name(), struct.getInt16(field.name()));
-                    break;
                 case INT32:
-                    structMap.put(field.name(), struct.getInt32(field.name()));
-                    break;
                 case INT64:
-                    structMap.put(field.name(), struct.getInt64(field.name()));
+                case STRING:
+                    final Object value = LogicalTypeConversions.tryGetLogicalValue(schemaType, struct.get(field.name()));
+                    structMap.put(field.name(), value);
                     break;
                 case FLOAT32:
                     structMap.put(field.name(), struct.getFloat32(field.name()));
@@ -79,13 +80,15 @@ public class StructToJsonConverter {
                 case BOOLEAN:
                     structMap.put(field.name(), struct.getBoolean(field.name()));
                     break;
-                case STRING:
-                    structMap.put(field.name(), struct.getString(field.name()));
-                    break;
                 case BYTES:
-                    throw new ConnectException("Bytes are currently not supported for conversion to JSON.");
+                    final Object logicalValue = LogicalTypeConversions.tryGetLogicalValue(schemaType, struct.get(field.name()));
+                    if (logicalValue instanceof byte[]) {
+                        throw new ConnectException("Bytes are currently not supported for conversion to JSON.");
+                    }
+
+                    structMap.put(field.name(), logicalValue);
                 default:
-                    throw new ConnectException("Unexpected and unsupported type encountered." + field.schema().type());
+                    throw new ConnectException("Unexpected and unsupported type encountered." + schemaType);
             }
         }
         return structMap;
@@ -104,6 +107,7 @@ public class StructToJsonConverter {
         if (map == null) {
             return null;
         }
+        //check primitive types inside complex types.
         final Map<String, Object> jsonMap = new LinkedHashMap<>(map.size());
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
             jsonMap.put(entry.getKey().toString(), jsonValue(entry.getValue()));

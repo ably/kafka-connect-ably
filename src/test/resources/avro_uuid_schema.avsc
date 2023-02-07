@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "CustomerEvent",
+  "namespace": "com.ably.example.customers",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    }
+  ]
+}

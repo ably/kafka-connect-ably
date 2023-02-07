@@ -251,6 +251,12 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/io.confluent/kafka-connect-avro-data -->
+    <dependency>
+      <groupId>io.confluent</groupId>
+      <artifactId>kafka-connect-avro-data</artifactId>
+      <version>5.5.1</version>
+    </dependency>
   </dependencies>
 
 </project>
