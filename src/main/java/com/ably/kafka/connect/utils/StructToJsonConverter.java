@@ -87,6 +87,7 @@ public class StructToJsonConverter {
                     }
 
                     structMap.put(field.name(), logicalValue);
+                    break;
                 default:
                     throw new ConnectException("Unexpected and unsupported type encountered." + schemaType);
             }

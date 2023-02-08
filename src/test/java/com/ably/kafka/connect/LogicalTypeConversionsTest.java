@@ -68,6 +68,22 @@ public class LogicalTypeConversionsTest {
         //then
         assertEquals(expected, output);
     }
+    @Test
+    public void testSimpleDecimalLogicalType() throws IOException, RestClientException {
+        //given
+        final String decimalSchemaPath = "/avro_decimal_schema.avsc";
+        final String decimalDataPath = "/avro_data_with_decimal.json";
+        final Struct struct = structFromAvro(topic, decimalSchemaPath, decimalDataPath);
+
+        //we are expecting the same json
+        final JsonElement expected = JsonParser.parseString(readText(decimalDataPath));
+
+        //when
+        final String jsonOutput = StructToJsonConverter.toJsonString(struct, gson);
+        final JsonElement output = JsonParser.parseString(jsonOutput);
+        //then
+        assertEquals(expected, output);
+    }
 
     private String readText(String path) throws IOException {
         final URL url = LogicalTypeConversionsTest.class.getResource(path);
