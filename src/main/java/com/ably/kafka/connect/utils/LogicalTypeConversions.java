@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 public class LogicalTypeConversions{
@@ -23,7 +24,12 @@ public class LogicalTypeConversions{
             case INT8:
             case INT16:
             case INT32:
-                 if (value instanceof LocalDate) {
+                if (value instanceof Date) {
+                    //This type doesn't seem to have conversion on schema-registry from confluent
+                    final Date date = (Date) value;
+                    LocalDate localDate = date.toInstant().atZone(ZoneOffset.UTC).toLocalDate();
+                    return (int)localDate.toEpochDay();
+                } else if (value instanceof LocalDate) {
                      // date ->  This applies to integers and is represented as LocalDate of Java
                      final LocalDate date = (LocalDate) value;
                      return (int)date.toEpochDay();

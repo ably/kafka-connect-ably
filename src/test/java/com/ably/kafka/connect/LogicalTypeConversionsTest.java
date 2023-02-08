@@ -84,6 +84,21 @@ public class LogicalTypeConversionsTest {
         //then
         assertEquals(expected, output);
     }
+    @Test
+    public void testDate() throws IOException, RestClientException {
+        //given
+        final String dateSchemaPath = "/avro_date_schema.avsc";
+        final String dateDataPath = "/avro_data_with_date.json";
+        final Struct struct = structFromAvro(topic, dateSchemaPath, dateDataPath);
+
+        final JsonElement expected = JsonParser.parseString(readText(dateDataPath));
+
+        //when
+        final String jsonOutput = StructToJsonConverter.toJsonString(struct, gson);
+        final JsonElement output = JsonParser.parseString(jsonOutput);
+        //then
+        assertEquals(expected, output);
+    }
 
     private String readText(String path) throws IOException {
         final URL url = LogicalTypeConversionsTest.class.getResource(path);
