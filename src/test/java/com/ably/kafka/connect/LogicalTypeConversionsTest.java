@@ -2,6 +2,9 @@ package com.ably.kafka.connect;
 
 import com.ably.kafka.connect.utils.StructToJsonConverter;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import io.confluent.connect.avro.AvroConverter;
 import io.confluent.kafka.schemaregistry.avro.AvroSchema;
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
@@ -26,7 +29,9 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LogicalTypeConversionsTest {
-    final String schemaSubject = "topic-value";
+    private final static String schemaSubject = "topic-value";
+    private final static String topic ="topic";
+    private static final Gson gson = new GsonBuilder().serializeNulls().create();
 
     private SchemaRegistryClient schemaRegistry;
     private AvroConverter converter;
@@ -48,21 +53,29 @@ public class LogicalTypeConversionsTest {
     }
 
     @Test
-    public void readFiles() throws IOException, RestClientException {
-        final String topic = "topic";
+    public void testUUIDLogicalType() throws IOException, RestClientException {
+        //given
+        final String uuidSchemaPath = "/avro_uuid_schema.avsc";
+        final String uuidDataPath = "/avro_data_with_uuid.json";
+        final Struct struct = structFromAvro(topic, uuidSchemaPath, uuidDataPath);
 
-        final Struct struct = structFromAvro(topic,"/avro_uuid_schema.avsc","/avro_data_with_uuid.json");
-        final String json = StructToJsonConverter.toJsonString(struct, new Gson());
-        assertEquals(null, json);
+        //we are expecting the same json
+        final JsonElement expected = JsonParser.parseString(readText(uuidDataPath));
 
+        //when
+        final String jsonOutput = StructToJsonConverter.toJsonString(struct, gson);
+        final JsonElement output = JsonParser.parseString(jsonOutput);
+        //then
+        assertEquals(expected, output);
     }
 
+    private String readText(String path) throws IOException {
+        final URL url = LogicalTypeConversionsTest.class.getResource(path);
+        return IOUtils.toString(url, StandardCharsets.UTF_8);
+    }
     private Struct structFromAvro(String topic, String schemaPath, String contentPath) throws IOException, RestClientException {
-        final URL schemaUrl = LogicalTypeConversionsTest.class.getResource(schemaPath);
-        final URL valueUrl = LogicalTypeConversionsTest.class.getResource(contentPath);
-
-        final String schemaContent = IOUtils.toString(schemaUrl, StandardCharsets.UTF_8);
-        final String valueContent = IOUtils.toString(valueUrl, StandardCharsets.UTF_8);
+        final String schemaContent = readText(schemaPath);
+        final String valueContent = readText(contentPath);
 
         final Schema.Parser parser = new Schema.Parser();
         final Schema schema = parser.parse(schemaContent);
