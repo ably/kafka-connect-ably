@@ -6,6 +6,7 @@ import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.ConnectException;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -82,7 +83,7 @@ public class StructToJsonConverter {
                     break;
                 case BYTES:
                     final Object logicalValue = LogicalTypeConversions.tryGetLogicalValue(schemaType, struct.get(field.name()));
-                    if (logicalValue instanceof byte[]) {
+                    if (!(logicalValue instanceof BigDecimal)) {
                         throw new ConnectException("Bytes are currently not supported for conversion to JSON.");
                     }
 
