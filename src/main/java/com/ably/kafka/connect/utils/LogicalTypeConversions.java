@@ -40,10 +40,15 @@ public class LogicalTypeConversions{
                  }
             case INT64:
                  if (value instanceof Instant) {
-                     //timestamp-millis and timestamp-micros
+                     //timestamp-millis
                     final Instant time = (Instant) value;
                     return time.toEpochMilli();
-                } else if (value instanceof LocalDateTime) {
+                } else if (value instanceof Date) {
+                     //timestamp-millis and timestamp-micros are received as Date also
+                     final Date date = (Date) value;
+                     return date.toInstant().toEpochMilli();
+
+                 } else if (value instanceof LocalDateTime) {
                      //local-timestamp-millis and local-timestamp-micros
                      final LocalDateTime localDateTime = (LocalDateTime) value;
                      final Instant instant = localDateTime.toInstant(ZoneOffset.UTC);

@@ -132,6 +132,38 @@ public class LogicalTypeConversionsTest {
         assertEquals(expected, output);
     }
 
+    @Test
+    public void testTimestampMillis() throws IOException, RestClientException {
+        //given
+        final String timeMillisSchema = "/avro_timestamp_millis_schema.avsc";
+        final String timeMillisDataPath = "/avro_data_with_timestamp_millis.json";
+        final Struct struct = structFromAvro(topic, timeMillisSchema, timeMillisDataPath);
+
+        final JsonElement expected = JsonParser.parseString(readText(timeMillisDataPath));
+
+        //when
+        final String jsonOutput = StructToJsonConverter.toJsonString(struct, gson);
+        final JsonElement output = JsonParser.parseString(jsonOutput);
+        //then
+        assertEquals(expected, output);
+    }
+
+    @Test
+    public void testTimestampMicros() throws IOException, RestClientException {
+        //given
+        final String timeMicrosSchema = "/avro_timestamp_micros_schema.avsc";
+        final String timeMicrosDataPath = "/avro_data_with_timestamp_micros.json";
+        final Struct struct = structFromAvro(topic, timeMicrosSchema, timeMicrosDataPath);
+
+        final JsonElement expected = JsonParser.parseString(readText(timeMicrosDataPath));
+
+        //when
+        final String jsonOutput = StructToJsonConverter.toJsonString(struct, gson);
+        final JsonElement output = JsonParser.parseString(jsonOutput);
+        //then
+        assertEquals(expected, output);
+    }
+
     private String readText(String path) throws IOException {
         final URL url = LogicalTypeConversionsTest.class.getResource(path);
         return IOUtils.toString(url, StandardCharsets.UTF_8);
