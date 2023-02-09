@@ -8,7 +8,7 @@ COPY src src/
 COPY ./KeyCheckSMT/pom.xml ./KeyCheckSMT/pom.xml
 COPY ./KeyCheckSMT/src ./KeyCheckSMT/src
 
-RUN mvn clean package -DskipTests
+RUN mvn clean package
 # Also build SMT from here
 RUN  mvn -f ./KeyCheckSMT/pom.xml clean package
 
