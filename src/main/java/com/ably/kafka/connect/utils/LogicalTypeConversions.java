@@ -47,7 +47,6 @@ public class LogicalTypeConversions{
                      //timestamp-millis and timestamp-micros are received as Date also
                      final Date date = (Date) value;
                      return date.toInstant().toEpochMilli();
-
                  } else if (value instanceof LocalDateTime) {
                      //local-timestamp-millis and local-timestamp-micros
                      final LocalDateTime localDateTime = (LocalDateTime) value;

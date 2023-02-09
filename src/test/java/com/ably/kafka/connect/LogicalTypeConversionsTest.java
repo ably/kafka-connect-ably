@@ -196,6 +196,22 @@ public class LogicalTypeConversionsTest {
         assertEquals(expected, output);
     }
 
+    @Test
+    public void testDuration() throws IOException, RestClientException {
+        //given
+        final String durationSchema = "/avro_duration_schema.avsc";
+        final String durationDataPath = "/avro_data_with_duration.json";
+        final Struct struct = structFromAvro(topic, durationSchema, durationDataPath);
+
+        final JsonElement expected = JsonParser.parseString(readText(durationDataPath));
+
+        //when
+        final String jsonOutput = StructToJsonConverter.toJsonString(struct, gson);
+        final JsonElement output = JsonParser.parseString(jsonOutput);
+        //then
+        assertEquals(expected, output);
+    }
+
     private String readText(String path) throws IOException {
         final URL url = LogicalTypeConversionsTest.class.getResource(path);
         return IOUtils.toString(url, StandardCharsets.UTF_8);
