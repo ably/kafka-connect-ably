@@ -1,0 +1,79 @@
+{
+  "type": "record",
+  "name": "CustomerEvent",
+  "namespace": "com.ably.example.customers",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "arrivedAtDate",
+      "type": {
+        "type": "int",
+        "logicalType": "date"
+      }
+    },
+    {
+      "name": "arrivedAtTimeMillis",
+      "type": {
+        "type": "long",
+        "logicalType": "time-millis"
+      }
+    },
+    {
+      "name": "arrivedAtTimeMicros",
+      "type": {
+        "type": "long",
+        "logicalType": "time-micros"
+      }
+    },
+    {
+      "name": "arrivedAtTimestampMillis",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "arrivedAtTimestampMicros",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      }
+    },
+    {
+      "name": "arrivedAtLocalTimestampMillis",
+      "type": {
+        "type": "long",
+        "logicalType": "local-timestamp-millis"
+      }
+    },
+    {
+      "name": "arrivedAtLocalTimestampMicros",
+      "type": {
+        "type": "long",
+        "logicalType": "local-timestamp-micros"
+      }
+    },
+    {
+      "name": "durationMillis",
+      "type": {
+        "type": "long",
+        "logicalType": "duration"
+      }
+    },
+    {
+      "name": "amount",
+      "type": {
+        "type": "bytes",
+        "logicalType": "decimal",
+        "precision": 20,
+        "scale": 10
+      }
+    }
+  ]
+}

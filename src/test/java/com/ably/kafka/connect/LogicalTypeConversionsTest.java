@@ -212,6 +212,22 @@ public class LogicalTypeConversionsTest {
         assertEquals(expected, output);
     }
 
+    @Test
+    public void testMixedLogicalTypes() throws IOException, RestClientException {
+        //given
+        final String mixedSchema = "/avro_mixed_schema.avsc";
+        final String mixedDataPath = "/avro_data_with_mixed_logical_values.json";
+        final Struct struct = structFromAvro(topic, mixedSchema, mixedDataPath);
+
+        final JsonElement expected = JsonParser.parseString(readText(mixedDataPath));
+
+        //when
+        final String jsonOutput = StructToJsonConverter.toJsonString(struct, gson);
+        final JsonElement output = JsonParser.parseString(jsonOutput);
+        //then
+        assertEquals(expected, output);
+    }
+
     private String readText(String path) throws IOException {
         final URL url = LogicalTypeConversionsTest.class.getResource(path);
         return IOUtils.toString(url, StandardCharsets.UTF_8);
