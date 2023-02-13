@@ -19,7 +19,7 @@ class LogicalTypeConversions{
     * Check @link https://avro.apache.org/docs/1.10.2/spec.html#Logical+Types
     * for the reference on logical types.
     * */
-     static Object tryGetLogicalValue(final Schema.Type type, Object value) {
+     static Object tryGetLogicalValue(final Schema.Type type, final Object value) {
         switch (type){
             case INT8:
             case INT16:
