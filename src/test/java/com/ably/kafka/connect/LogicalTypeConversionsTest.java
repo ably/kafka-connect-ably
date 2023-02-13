@@ -213,6 +213,22 @@ public class LogicalTypeConversionsTest {
     }
 
     @Test
+    public void testNullableLogicalType() throws IOException, RestClientException {
+        //given
+        final String nullableSchema = "/avro_logical_type_date_with_null_schema.avsc";
+        final String nullableDataPath = "/avro_data_with_date_null.json";
+        final Struct struct = structFromAvro(topic, nullableSchema, nullableDataPath);
+
+        final JsonElement expected = JsonParser.parseString(readText(nullableDataPath));
+
+        //when
+        final String jsonOutput = StructToJsonConverter.toJsonString(struct, gson);
+        final JsonElement output = JsonParser.parseString(jsonOutput);
+        //then
+        assertEquals(expected, output);
+    }
+
+    @Test
     public void testMixedLogicalTypes() throws IOException, RestClientException {
         //given
         final String mixedSchema = "/avro_mixed_schema.avsc";
