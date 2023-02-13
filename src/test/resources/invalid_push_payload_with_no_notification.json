@@ -1,0 +1,10 @@
+{
+  "no_notification": {
+    "title": "Notification title",
+    "body": "This is the body of notification"
+  },
+  "data": {
+    "foo": "foo",
+    "bar": "bar"
+  }
+}

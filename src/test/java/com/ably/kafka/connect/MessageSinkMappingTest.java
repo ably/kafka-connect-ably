@@ -6,13 +6,17 @@ import com.ably.kafka.connect.mapping.MessageSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
 import com.ably.kafka.connect.utils.AvroToStruct;
 import com.ably.kafka.connect.utils.StructToJsonConverter;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.ably.lib.types.Message;
 import io.ably.lib.types.MessageExtras;
 import io.ably.lib.util.JsonUtils;
 import io.confluent.connect.avro.AvroConverter;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import org.apache.commons.io.IOUtils;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
@@ -22,6 +26,8 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -181,6 +187,55 @@ class MessageSinkMappingTest {
         final JsonObject receivedHeaders = receivedObject.get("headers").getAsJsonObject();
         assertEquals(receivedHeaders.get("key1").getAsString(), "value1");
         assertEquals(receivedHeaders.get("key2").getAsString(), "value2");
+    }
+
+    @Test
+    void testGetMessage_pushPayloadReceivedCorrectly() throws IOException {
+        //given
+        final URL url = MessageSinkMappingTest.class.getResource("/example_push_payload.json");
+        final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
+
+        final JsonElement expected = JsonParser.parseString(pushHeaderValue);
+
+        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
+        final List<Header> headersList = new ArrayList<>();
+        final Map<String, String> headersMap = Map.of("com.ably.push", pushHeaderValue);
+        for (Map.Entry<String, String> entry : headersMap.entrySet()) {
+            headersList.add(new Header() {
+                @Override
+                public String key() {
+                    return entry.getKey();
+                }
+
+                @Override
+                public Schema schema() {
+                    return null;
+                }
+
+                @Override
+                public Object value() {
+                    return entry.getValue();
+                }
+
+                @Override
+                public Header with(Schema schema, Object value) {
+                    return null;
+                }
+
+                @Override
+                public Header rename(String key) {
+                    return null;
+                }
+            });
+        }
+        final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0, 0L, null, headersList);
+
+        //when
+        final MessageExtras messageExtras = sinkMapping.getMessage(record).extras;
+
+        //then
+        final JsonObject pushObject = messageExtras.asJsonObject().get("push").getAsJsonObject();
+        assertEquals(expected, pushObject);
     }
 
     @Test

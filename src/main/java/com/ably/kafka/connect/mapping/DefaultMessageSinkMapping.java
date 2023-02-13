@@ -2,7 +2,7 @@ package com.ably.kafka.connect.mapping;
 
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
-import com.ably.kafka.connect.utils.KafkaExtrasExtractor;
+import com.ably.kafka.connect.utils.RecordHeaderConversions;
 import com.ably.kafka.connect.utils.StructToJsonConverter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -34,10 +34,11 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
         final Message message = messageFromRecord(record);
         message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
 
-        JsonUtils.JsonUtilsObject kafkaExtras = KafkaExtrasExtractor.createKafkaExtras(record);
-        if (kafkaExtras.toJson().size() > 0) {
-            message.extras = new MessageExtras(JsonUtils.object().add("kafka", kafkaExtras).toJson());
+        final MessageExtras extras = RecordHeaderConversions.toMessageExtras(record);
+        if (extras != null) {
+            message.extras = extras;
         }
+
         return message;
     }
 
