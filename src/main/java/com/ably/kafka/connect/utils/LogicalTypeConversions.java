@@ -35,6 +35,7 @@ class LogicalTypeConversions{
                      final LocalTime time = (LocalTime) value;
                      return (int) TimeUnit.NANOSECONDS.toMillis(time.toNanoOfDay());
                  }
+                break;
             case INT64:
                  if (value instanceof Instant) { // timestamp-millis
                     final Instant time = (Instant) value;
