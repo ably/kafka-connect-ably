@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 class LogicalTypeConversions{
+
     /*
     *This method will try to get Avro logical type of
     * @param value and if it exists it will return a value that that has a sensible serialization format.
