@@ -84,13 +84,13 @@ public class StructToJsonConverter {
                 case BYTES:
                     final Object logicalValue = LogicalTypeConversions.tryGetLogicalValue(schemaType, struct.get(field.name()));
                     if (!(logicalValue instanceof BigDecimal)) {
-                        throw new ConnectException("Bytes are currently not supported for conversion to JSON.");
+                        throw new UnsupportedJsonTypeException(Schema.Type.BYTES);
                     }
 
                     structMap.put(field.name(), logicalValue);
                     break;
                 default:
-                    throw new ConnectException("Unexpected and unsupported type encountered." + schemaType);
+                    throw new UnsupportedJsonTypeException(schemaType);
             }
         }
         return structMap;
