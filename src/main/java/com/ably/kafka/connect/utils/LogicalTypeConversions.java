@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 class LogicalTypeConversions{
+
     /*
     *This method will try to get Avro logical type of
     * @param value and if it exists it will return a value that that has a sensible serialization format.
@@ -19,7 +20,7 @@ class LogicalTypeConversions{
     * Check @link https://avro.apache.org/docs/1.10.2/spec.html#Logical+Types
     * for the reference on logical types.
     * */
-     static Object tryGetLogicalValue(final Schema.Type type, Object value) {
+     static Object tryGetLogicalValue(final Schema.Type type, final Object value) {
         switch (type){
             case INT8:
             case INT16:
@@ -35,6 +36,7 @@ class LogicalTypeConversions{
                      final LocalTime time = (LocalTime) value;
                      return (int) TimeUnit.NANOSECONDS.toMillis(time.toNanoOfDay());
                  }
+                break;
             case INT64:
                  if (value instanceof Instant) { // timestamp-millis
                     final Instant time = (Instant) value;

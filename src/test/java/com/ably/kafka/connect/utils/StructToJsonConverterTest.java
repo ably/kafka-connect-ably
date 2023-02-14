@@ -3,8 +3,8 @@ package com.ably.kafka.connect.utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
-import org.apache.kafka.connect.errors.ConnectException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -127,9 +127,9 @@ public class StructToJsonConverterTest {
         final AvroToStruct.Computer computer = new AvroToStruct.Computer("My good computer", ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
         final Struct struct = avroToStruct.getStruct(computer);
 
-        final Throwable exception = assertThrows(ConnectException.class, () -> StructToJsonConverter.toJsonString(struct, gson),
+        final Throwable exception = assertThrows(UnsupportedJsonTypeException.class, () -> StructToJsonConverter.toJsonString(struct, gson),
             "StructToJsonConverter.toJsonString(struct, gson) is expected to throw ConnectException");
-        assertEquals(exception.getMessage(), "Bytes are currently not supported for conversion to JSON.");
+        assertEquals(exception.getMessage(), "Type "+ Schema.Type.BYTES.getName() +" is not supported for JSON conversion");
     }
 
     // add tests with using a class containing general primitives

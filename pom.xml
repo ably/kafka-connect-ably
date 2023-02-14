@@ -256,6 +256,7 @@
       <groupId>io.confluent</groupId>
       <artifactId>kafka-connect-avro-data</artifactId>
       <version>5.5.1</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
