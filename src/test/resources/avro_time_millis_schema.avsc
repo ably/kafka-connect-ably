@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "CustomerEvent",
+  "namespace": "com.ably.example.customers",
+  "fields": [
+    {
+      "name": "onboardedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "time-millis"
+      }
+    }
+  ]
+}

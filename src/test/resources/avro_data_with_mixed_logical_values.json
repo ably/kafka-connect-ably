@@ -1,0 +1,12 @@
+{
+  "customerId": "3d2aab15-29b0-4755-a55a-ab4757007134",
+  "arrivedAtDate": 19396,
+  "arrivedAtTimeMillis": 19396,
+  "arrivedAtTimeMicros": 19396,
+  "arrivedAtTimestampMillis": 1671413240210,
+  "arrivedAtTimestampMicros": 1671413240210,
+  "arrivedAtLocalTimestampMillis": 1671413240210,
+  "arrivedAtLocalTimestampMicros": 1671413240210,
+  "durationMillis": 1814400000,
+  "amount": 1234567890.0123456789
+}
