@@ -1,5 +1,13 @@
 # Changelog
 
+## [v2.1.1](https://github.com/ably/kafka-connect-ably/tree/v2.1.1)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.1.0...v2.1.1)
+
+**Implemented enhancements:**
+
+- Add logical type support to Json converter [\#99](https://github.com/ably/kafka-connect-ably/pull/99) ([ikbalkaya](https://github.com/ikbalkaya))
+
 ## [v2.1.0](https://github.com/ably/kafka-connect-ably/tree/v2.1.0)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.0.3...v2.1.0)
