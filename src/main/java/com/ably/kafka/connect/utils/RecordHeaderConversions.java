@@ -2,6 +2,7 @@ package com.ably.kafka.connect.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.internal.LinkedTreeMap;
 import io.ably.lib.types.MessageExtras;
 import io.ably.lib.util.JsonUtils;
 import org.apache.kafka.connect.header.Header;
@@ -109,33 +110,27 @@ public class RecordHeaderConversions {
 
         return null;
     }
-    private static class PushPayload {
-        private Notification notification;
-        static class Notification{
-            private String title;
-            private String body;
-        }
-        private Object data;
-    }
+    /**
+     * Validate and build push payload using given pushJson
+     * @param pushJson json string payload to validate and create a valid payload from
+     * */
     private static JsonObject buildPushPayload(final String pushJson){
         final Gson gson = new Gson();
-        final PushPayload pushPayload = gson.fromJson(pushJson, PushPayload.class);
-
-        if (pushPayload.notification == null){
+        final Map<String,Object> map = gson.fromJson(pushJson, Map.class);
+        if (map.get("notification") == null){
             logger.error("Push payload is invalid : No 'notification' field was found");
             return null;
         }
-
-        if (pushPayload.notification.title == null){
+        final Map notification = (Map) map.get("notification");
+        if (notification.get("title") == null){
             logger.error("Push payload is invalid : No 'title' for notification was found");
             return null;
         }
 
-        if (pushPayload.notification.body == null){
+        if (notification.get("body") == null){
             logger.error("Push payload is invalid : No 'body' for notification was found");
             return null;
         }
-
-        return gson.toJsonTree(pushPayload).getAsJsonObject();
+        return gson.toJsonTree(map).getAsJsonObject();
     }
 }

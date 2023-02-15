@@ -1,0 +1,11 @@
+{
+  "notification": {
+    "title": "Notification title",
+    "body": "This is the body of notification",
+    "icon": "icon_1.png"
+  },
+  "data": {
+    "foo": "foo",
+    "bar": "bar"
+  }
+}
