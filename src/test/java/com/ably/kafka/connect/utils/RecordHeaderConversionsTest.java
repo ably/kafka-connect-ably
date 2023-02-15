@@ -162,8 +162,16 @@ class RecordHeaderConversionsTest {
         assertEquals(expected, pushElement);
     }
     @Test
-    public void testPushAddsPushExtrasWithHeaderSchemaString() throws IOException {
-        //given
+    public void testPushAddsPushExtrasWithStringSchema() throws IOException {
+       testWithSchema(Schema.STRING_SCHEMA);
+    }
+
+    @Test
+    public void testPushAddsPushExtrasWithBytesSchema() throws IOException {
+        testWithSchema(Schema.BYTES_SCHEMA);
+    }
+
+    private void testWithSchema(Schema schema) throws IOException {
         final URL url = RecordHeaderConversionsTest.class.getResource("/example_push_payload.json");
         final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
         final JsonElement expected = JsonParser.parseString(pushHeaderValue);
@@ -179,7 +187,7 @@ class RecordHeaderConversionsTest {
 
                 @Override
                 public Schema schema() {
-                    return Schema.STRING_SCHEMA;
+                    return schema;
                 }
 
                 @Override
