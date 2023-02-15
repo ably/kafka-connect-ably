@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class RecordHeaderConversions {
 
@@ -84,13 +86,21 @@ public class RecordHeaderConversions {
         }
 
         if (pushExtras != null) {
-            final String pushJson = (String) pushExtras;
-            final JsonObject pushPayload = buildPushPayload(pushJson);
-            if (pushPayload != null) {
-                if (extrasObject == null) {
-                    extrasObject = JsonUtils.object();
+            String pushExtrasJson = null;
+            if (pushExtras instanceof String){
+                pushExtrasJson = (String) pushExtras;
+            } else if (pushExtras instanceof LinkedHashMap) {
+                // tests outputs this type when reading from a Java based producer
+                pushExtrasJson = new Gson().toJson(pushExtras, Map.class);
+            }
+            if (pushExtrasJson != null){
+                final JsonObject pushPayload = buildPushPayload(pushExtrasJson);
+                if (pushPayload != null) {
+                    if (extrasObject == null) {
+                        extrasObject = JsonUtils.object();
+                    }
+                    extrasObject.add(PUSH_KEY, pushPayload);
                 }
-                extrasObject.add(PUSH_KEY, pushPayload);
             }
         }
 
