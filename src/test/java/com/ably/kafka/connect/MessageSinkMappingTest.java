@@ -199,7 +199,7 @@ class MessageSinkMappingTest {
 
         sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
         final List<Header> headersList = new ArrayList<>();
-        final Map<String, String> headersMap = Map.of("com.ably.push", pushHeaderValue);
+        final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
         for (Map.Entry<String, String> entry : headersMap.entrySet()) {
             headersList.add(new Header() {
                 @Override

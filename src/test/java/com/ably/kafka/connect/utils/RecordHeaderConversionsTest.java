@@ -63,7 +63,7 @@ class RecordHeaderConversionsTest {
         final JsonElement expected = JsonParser.parseString(pushHeaderValue);
 
         final List<Header> headersList = new ArrayList<>();
-        final Map<String, String> headersMap = Map.of("com.ably.push", pushHeaderValue);
+        final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
         for (Map.Entry<String, String> entry : headersMap.entrySet()) {
             headersList.add(new Header() {
                 @Override
@@ -118,7 +118,7 @@ class RecordHeaderConversionsTest {
         final JsonElement expected = JsonParser.parseString(pushHeaderValue);
 
         final List<Header> headersList = new ArrayList<>();
-        final Map<String, String> headersMap = Map.of("com.ably.push", pushHeaderValue);
+        final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
         for (Map.Entry<String, String> entry : headersMap.entrySet()) {
             headersList.add(new Header() {
                 @Override
@@ -168,7 +168,7 @@ class RecordHeaderConversionsTest {
         final URL url = RecordHeaderConversionsTest.class.getResource("/invalid_push_payload_with_no_notification.json");
         final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
         final List<Header> headersList = new ArrayList<>();
-        final Map<String, String> headersMap = Map.of("com.ably.push", pushHeaderValue);
+        final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
         for (Map.Entry<String, String> entry : headersMap.entrySet()) {
             headersList.add(new Header() {
                 @Override
@@ -212,7 +212,7 @@ class RecordHeaderConversionsTest {
         final URL url = RecordHeaderConversionsTest.class.getResource("/invalid_push_payload_with_no_title.json");
         final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
         final List<Header> headersList = new ArrayList<>();
-        final Map<String, String> headersMap = Map.of("com.ably.push", pushHeaderValue);
+        final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
         for (Map.Entry<String, String> entry : headersMap.entrySet()) {
             headersList.add(new Header() {
                 @Override
@@ -256,7 +256,7 @@ class RecordHeaderConversionsTest {
         final URL url = RecordHeaderConversionsTest.class.getResource("/invalid_push_payload_with_no_body.json");
         final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
         final List<Header> headersList = new ArrayList<>();
-        final Map<String, String> headersMap = Map.of("com.ably.push", pushHeaderValue);
+        final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
         for (Map.Entry<String, String> entry : headersMap.entrySet()) {
             headersList.add(new Header() {
                 @Override

@@ -17,7 +17,7 @@ import java.util.Map;
 public class RecordHeaderConversions {
 
     private static final Logger logger = LoggerFactory.getLogger(RecordHeaderConversions.class);
-    private static final String PUSH_HEADER = "com.ably.push";
+    private static final String PUSH_HEADER = "com.ably.extras.push";
     private static final String KAFKA_KEY = "kafka";
     private static final String PUSH_KEY = "push";
     /**
@@ -30,7 +30,7 @@ public class RecordHeaderConversions {
      * If the Kafka message has headers, they are set as the "headers" field
      * in the extras.
      *
-     * If the Kafka message has "com.ably.push" header this is set as "push" extras for Ably message.
+     * If the Kafka message has "com.ably.extras.push" header this is set as "push" extras for Ably message.
      *
      * @param record The sink record representing the Kafka message
      * @return The Kafka message extras object
