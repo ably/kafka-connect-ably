@@ -1,5 +1,6 @@
 package com.ably.kafka.connect.utils;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -120,6 +121,58 @@ class RecordHeaderConversionsTest {
         final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
         for (Map.Entry<String, String> entry : headersMap.entrySet()) {
+            headersList.add(new Header() {
+                @Override
+                public String key() {
+                    return entry.getKey();
+                }
+
+                @Override
+                public Schema schema() {
+                    return null;
+                }
+
+                @Override
+                public Object value() {
+                    return entry.getValue();
+                }
+
+                @Override
+                public Header with(Schema schema, Object value) {
+                    return null;
+                }
+
+                @Override
+                public Header rename(String key) {
+                    return null;
+                }
+            });
+        }
+        final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, null, Schema.BYTES_SCHEMA, "value", 0, 0L, null, headersList);
+
+        //when
+        final MessageExtras messageExtras = RecordHeaderConversions.toMessageExtras(record);
+
+        //then
+        assertNotNull(messageExtras);
+        final JsonObject jsonObject = messageExtras.asJsonObject();
+        final JsonElement kafkaElement = jsonObject.get("kafka");
+        assertNull(kafkaElement);
+
+        final JsonElement pushElement = jsonObject.get("push");
+        assertEquals(expected, pushElement);
+    }
+
+    @Test
+    public void testPushAddsPushExtrasWithJsonMap() throws IOException {
+        //given
+        final URL url = RecordHeaderConversionsTest.class.getResource("/example_push_payload.json");
+        final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
+        final JsonElement expected = JsonParser.parseString(pushHeaderValue);
+        final Map pushJsonMap = new Gson().fromJson(pushHeaderValue, Map.class);
+        final List<Header> headersList = new ArrayList<>();
+        final Map<String, Map> headersMap = Map.of("com.ably.extras.push", pushJsonMap);
+        for (Map.Entry<String, Map> entry : headersMap.entrySet()) {
             headersList.add(new Header() {
                 @Override
                 public String key() {

@@ -89,8 +89,7 @@ public class RecordHeaderConversions {
             String pushExtrasJson = null;
             if (pushExtras instanceof String){
                 pushExtrasJson = (String) pushExtras;
-            } else if (pushExtras instanceof LinkedHashMap) {
-                // tests outputs this type when reading from a Java based producer
+            } else if (pushExtras instanceof Map) {
                 pushExtrasJson = new Gson().toJson(pushExtras, Map.class);
             }
             if (pushExtrasJson != null){
