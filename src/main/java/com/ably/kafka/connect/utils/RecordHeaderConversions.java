@@ -42,11 +42,14 @@ public class RecordHeaderConversions {
         JsonUtils.JsonUtilsObject extrasObject = null;
 
         Object pushExtras = null;
-        final byte[] key = (byte[]) record.key();
-        if (key != null) {
+        final Object recordKey = record.key();
+        if (recordKey != null) {
             kafkaExtras = JsonUtils.object();
-            final String keyValue = Base64.getEncoder().encodeToString(key);
-            kafkaExtras.add("key", keyValue);
+            if (recordKey instanceof byte[]){
+                kafkaExtras.add("key", Base64.getEncoder().encodeToString((byte[])recordKey));
+            }else if (recordKey instanceof String){
+                kafkaExtras.add("key", recordKey);
+            }
         }
 
         if (record.headers().isEmpty()){

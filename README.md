@@ -239,7 +239,7 @@ The advanced properties that can be configured for the connector are:
 | skipOnKeyAbsence                  | Skips the record if channel name or message name is configured with a value containing #{key} but record does not have a valid key.                                                                                                                                         | *Boolean* | false   |
 
 ## Dynamic Channel Configuration
-You can configure your channels dynamically by using `#{topic}` and/or `#{key}` placeholders in some configuration values. If you specify `#{key}` in your value, you must send a UTF-8 encoded string as your key.
+You can configure your channels dynamically by using `#{topic}` and/or `#{key}` placeholders in some configuration values. If you specify `#{key}` in your value, you must either send a UTF-8 encoded byte array or a string as your key value.
 Configurations that are supported:
 * `channel`
   * For example. if you define a channel value with `channel_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the channel will be configured with `channel_topic1_key1` value.
