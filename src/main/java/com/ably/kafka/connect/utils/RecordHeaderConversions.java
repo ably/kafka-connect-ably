@@ -39,7 +39,7 @@ public class RecordHeaderConversions {
     @Nullable
     public static MessageExtras toMessageExtras(final SinkRecord record) {
        final Extras.Builder extrasBuilder = new Extras.Builder();
-        final Extras extras = extrasBuilder.key((byte[]) record.key())
+        final Extras extras = extrasBuilder.key(record.key())
             .recordHeaders(record.headers())
             .build();
 
@@ -67,10 +67,18 @@ public class RecordHeaderConversions {
                 return extras;
             }
 
-            Extras.Builder key(byte[] key) {
+            Extras.Builder key(Object key) {
                 if (key != null) {
-                    kafkaExtras().add("key", Base64.getEncoder().encodeToString(key));
-                    topExtrasObject().add(KAFKA_KEY, kafkaExtras());
+                    String keyString = null;
+                    if (key instanceof byte[]) {
+                        keyString = Base64.getEncoder().encodeToString((byte[]) key);
+                    } else if (key instanceof String) {
+                        keyString = (String) key;
+                    }
+                    if (keyString != null) {
+                        kafkaExtras().add("key", keyString);
+                        topExtrasObject().add(KAFKA_KEY, kafkaExtras());
+                    }
                 }
 
                 return this;
