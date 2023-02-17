@@ -26,7 +26,7 @@ public class RecordHeaderConversions {
      * to an Ably message.
      * <p>
      * If the Kafka message has a key, it is base64 encoded and set as the
-     * "key" field in the extras and is added under "kafka" extras
+     * "key" field in the extras and is added under "kafka" extras.
      * <p>
      * If the Kafka message has headers, they are set as the "headers" field
      * in the extras.
