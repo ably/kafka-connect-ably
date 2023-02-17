@@ -37,12 +37,12 @@ public class RecordHeaderConversions {
      * @return The Kafka message extras object
      */
     @Nullable
-    public static MessageExtras toMessageExtras(SinkRecord record) {
+    public static MessageExtras toMessageExtras(final SinkRecord record) {
         JsonUtils.JsonUtilsObject kafkaExtras = null;
         JsonUtils.JsonUtilsObject extrasObject = null;
 
         Object pushExtras = null;
-        byte[] key = (byte[]) record.key();
+        final byte[] key = (byte[]) record.key();
         if (key != null) {
             kafkaExtras = JsonUtils.object();
             final String keyValue = Base64.getEncoder().encodeToString(key);
