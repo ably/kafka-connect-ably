@@ -47,15 +47,7 @@ public class ConfigValueEvaluator {
             return new Result(false, null);
         }
 
-        String keyString = null;
-        final Object recordKey = record.key();
-        if (recordKey != null) {
-            if (recordKey instanceof byte[]  && ByteArrayUtils.isUTF8Encoded((byte[]) recordKey)){
-                keyString = new String((byte[]) recordKey, StandardCharsets.UTF_8);
-            }else if (recordKey instanceof String){
-                keyString = (String) recordKey;
-            }
-        }
+        final String keyString = getKeyString(record);
 
         if (keyString == null && pattern.contains(KEY_TOKEN)) {
             if (skippable) {
@@ -69,5 +61,18 @@ public class ConfigValueEvaluator {
         } else {
             return new Result(false, pattern.replace(TOPIC_TOKEN, record.topic()));
         }
+    }
+
+    private String getKeyString(SinkRecord record) {
+        String keyString = null;
+        final Object recordKey = record.key();
+        if (recordKey != null) {
+            if (recordKey instanceof byte[] && ByteArrayUtils.isUTF8Encoded((byte[]) recordKey)) {
+                keyString = new String((byte[]) recordKey, StandardCharsets.UTF_8);
+            } else if (recordKey instanceof String) {
+                keyString = (String) recordKey;
+            }
+        }
+        return keyString;
     }
 }
