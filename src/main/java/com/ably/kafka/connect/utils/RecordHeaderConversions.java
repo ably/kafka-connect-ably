@@ -50,6 +50,7 @@ public class RecordHeaderConversions {
     Wrapper class representing extras and is to be used to simplify building of extras object
     * */
     private static class Extras {
+
         private JsonUtils.JsonUtilsObject kafkaObject;
         private JsonUtils.JsonUtilsObject topObject;
         private Object pushExtrasValue;
@@ -61,6 +62,7 @@ public class RecordHeaderConversions {
             Builder() {
                 extras = new Extras();
             }
+
             Extras build() {
                 return extras;
             }
