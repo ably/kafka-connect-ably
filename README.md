@@ -116,7 +116,8 @@ An example cURL command to start the connector in distributed mode is:
 #### Publishing messages with a Push Notification
 
 Messages can be delivered to end user devices as Push Notifications by setting a Kafka message header named `com.ably.extras.push` with a notification payload, for example:
-  ```json
+
+```json
       {
         "notification": {
           "title": "Notification title",
