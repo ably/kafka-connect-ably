@@ -113,12 +113,9 @@ An example cURL command to start the connector in distributed mode is:
     event: message
     data: {"id":"1543960661:0:2","clientId":"kafka-connect-ably-example","connectionId":"SuJTceISnT","timestamp":1623496744538,"encoding":"base64", "channel":"kafka-connect-ably-example","data":"bWVzc2FnZSAz","name":"sink"}
     ```
-#### Publishing messages with notification payload
-If you want to publish your messages including notification payload, you can do so by adding
-```
-com.ably.extras.push
-``` 
-header with the notification payload as the value. An example value for push payload is shown below.
+#### Publishing messages with a Push Notification
+
+Messages can be delivered to end user devices as Push Notifications by setting a Kafka message header named `com.ably.extras.push` with a notification payload, for example:
   ```json
       {
         "notification": {
@@ -131,8 +128,7 @@ header with the notification payload as the value. An example value for push pay
         }
       }
 ```
-Please do not forget to do necessary configurations to receive your push notifications on receiver and. 
-We recommend you read [Ably's push notifications documentation](https://ably.com/push-notifications)
+Extra Ably configuration is also required to enable push notifications, see the [Push Notification documentation](https://ably.com/docs/general/push).
 
 #### Publishing messages with schema
 
