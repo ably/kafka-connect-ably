@@ -1,0 +1,9 @@
+{
+  "notification": {
+    "body": "This is the body of notification"
+  },
+  "data": {
+    "foo": "foo",
+    "bar": "bar"
+  }
+}

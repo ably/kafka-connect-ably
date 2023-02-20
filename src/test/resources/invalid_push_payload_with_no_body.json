@@ -1,0 +1,9 @@
+{
+  "notification": {
+    "title": "Notification title"
+  },
+  "data": {
+    "foo": "foo",
+    "bar": "bar"
+  }
+}
