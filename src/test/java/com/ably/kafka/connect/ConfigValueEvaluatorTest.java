@@ -1,6 +1,7 @@
 package com.ably.kafka.connect;
 
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
+import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.junit.jupiter.api.Test;
 
@@ -37,6 +38,19 @@ class ConfigValueEvaluatorTest {
     void testEvaluateKeyIsEvaluated() {
         //given
         SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, null,"greatKey".getBytes(), null, null, 0);
+
+        //when
+        ConfigValueEvaluator.Result result = configValueEvaluator.evaluate(sinkRecord, "#{key}_hello", false);
+
+        //then
+        assertEquals("greatKey_hello", result.getValue());
+    }
+
+    @Test
+    void testEvaluateStringKeyIsEvaluated() {
+        //given
+        final String key = "greatKey";
+        SinkRecord sinkRecord = new SinkRecord("greatTopic", 0, Schema.STRING_SCHEMA, key, null, null, 0);
 
         //when
         ConfigValueEvaluator.Result result = configValueEvaluator.evaluate(sinkRecord, "#{key}_hello", false);

@@ -46,13 +46,9 @@ public class ConfigValueEvaluator {
         if (pattern == null) {
             return new Result(false, null);
         }
-        final byte[] key = (byte[]) record.key();
-        String keyString = null;
 
-        //we only want to evalutate UTF-8 encoded strings
-        if(key != null && ByteArrayUtils.isUTF8Encoded(key)) {
-            keyString = new String(key, StandardCharsets.UTF_8);
-        }
+        final String keyString = getKeyString(record);
+
         if (keyString == null && pattern.contains(KEY_TOKEN)) {
             if (skippable) {
                 return new Result(true, null);
@@ -65,5 +61,18 @@ public class ConfigValueEvaluator {
         } else {
             return new Result(false, pattern.replace(TOPIC_TOKEN, record.topic()));
         }
+    }
+
+    private String getKeyString(SinkRecord record) {
+        String keyString = null;
+        final Object recordKey = record.key();
+        if (recordKey != null) {
+            if (recordKey instanceof byte[] && ByteArrayUtils.isUTF8Encoded((byte[]) recordKey)) {
+                keyString = new String((byte[]) recordKey, StandardCharsets.UTF_8);
+            } else if (recordKey instanceof String) {
+                keyString = (String) recordKey;
+            }
+        }
+        return keyString;
     }
 }

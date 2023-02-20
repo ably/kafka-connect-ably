@@ -53,6 +53,25 @@ class RecordHeaderConversionsTest {
     }
 
     @Test
+    public void testStringKeyAddsKeyOnKafkaHeader(){
+        //given
+        final String myKey = "my_key";
+        final SinkRecord record = new SinkRecord("topic", 0, Schema.STRING_SCHEMA, myKey, null, null, 0);
+
+        //when
+        final MessageExtras messageExtras = RecordHeaderConversions.toMessageExtras(record);
+
+        //then
+        assertNotNull(messageExtras);
+        final JsonObject jsonObject = messageExtras.asJsonObject();
+        final JsonElement kafkaElement = jsonObject.get("kafka");
+        assertNotNull(kafkaElement);
+        final JsonElement keyElement = kafkaElement.getAsJsonObject().get("key");
+        assertNotNull(keyElement);
+        assertEquals(myKey, keyElement.getAsString());
+    }
+
+    @Test
     public void testPushAddsPushExtrasWithKey() throws IOException {
         //given
         final byte[] keyBytes = "my_key".getBytes();
