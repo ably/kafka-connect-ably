@@ -1,5 +1,22 @@
 # Changelog
 
+## [v2.1.2](https://github.com/ably/kafka-connect-ably/tree/v2.1.2)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.1.1...v2.1.2)
+
+**Implemented enhancements:**
+
+- Use record headers to add push payload [\#101](https://github.com/ably/kafka-connect-ably/issues/101)
+
+**Closed issues:**
+
+- Add support for String keys  [\#98](https://github.com/ably/kafka-connect-ably/issues/98)
+
+**Merged pull requests:**
+
+- Update ably java version [\#103](https://github.com/ably/kafka-connect-ably/pull/103) ([ikbalkaya](https://github.com/ikbalkaya))
+
+
 ## [v2.1.1](https://github.com/ably/kafka-connect-ably/tree/v2.1.1)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.1.0...v2.1.1)
