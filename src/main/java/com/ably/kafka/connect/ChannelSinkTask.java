@@ -16,12 +16,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
 
     private AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory();
     private AblyClient ablyClient;
+    //in case connection is suspended, sinked messages will be fed to suspend queue
+    private final SuspendQueue<SinkRecord> suspendQueue = new SuspendQueue<>();
+    private final AtomicBoolean suspended = new AtomicBoolean(false);
 
     public ChannelSinkTask() {}
 
@@ -38,7 +42,7 @@ public class ChannelSinkTask extends SinkTask {
         } catch (ChannelSinkConnectorConfig.ConfigException e) {
             logger.error("Failed to create Ably client", e);
         }
-        ablyClient.connect();
+        ablyClient.connect(suspended::set);
     }
 
     @Override
@@ -48,6 +52,19 @@ public class ChannelSinkTask extends SinkTask {
         }
 
         for (final SinkRecord record : records) {
+            publishSingleRecord(record);
+        }
+    }
+
+    private void publishSingleRecord(SinkRecord record) {
+        SinkRecord suspendRecord = null;
+        if (suspended.get()){
+            suspendQueue.enqueue(record);
+        } else if ((suspendRecord = suspendQueue.dequeue()) != null) {
+            ablyClient.publishFrom(suspendRecord);
+            //re-call for the same record so that (if available) other suspended records are processed first
+            publishSingleRecord(record);
+        }else {
             ablyClient.publishFrom(record);
         }
     }

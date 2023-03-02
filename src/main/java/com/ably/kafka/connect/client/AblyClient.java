@@ -6,9 +6,10 @@ import org.apache.kafka.connect.sink.SinkRecord;
 public interface AblyClient {
     /**
      * Connect to an Ably service.
+     * @param suspensionCallback callback to tell the client whether the connection was suspended.
      * @throws ConnectException if the connection fails
      */
-    void connect() throws ConnectException;
+    void connect(SuspensionCallback suspensionCallback) throws ConnectException;
 
     /**
      * Publish a sink record to Ably.

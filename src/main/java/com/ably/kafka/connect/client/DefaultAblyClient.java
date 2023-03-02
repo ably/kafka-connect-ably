@@ -44,7 +44,7 @@ public class DefaultAblyClient implements AblyClient {
     }
 
     @Override
-    public void connect() throws ConnectException {
+    public void connect(SuspensionCallback suspensionCallback) throws ConnectException {
         try {
             realtime = new AblyRealtime(connectorConfig.clientOptions);
             realtime.connection.on(connectionStateChange -> {
@@ -53,6 +53,10 @@ public class DefaultAblyClient implements AblyClient {
                     connectionFailed.set(true);
                 } else if (connectionStateChange.current == ConnectionState.connected) {
                     logger.info("Ably connection successfully established");
+                    suspensionCallback.on(false);
+                } else if (connectionStateChange.current == ConnectionState.suspended) {
+                    logger.info("Ably connection is suspended");
+                    suspensionCallback.on(true);
                 }
             });
 
