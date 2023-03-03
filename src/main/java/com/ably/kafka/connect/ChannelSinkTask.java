@@ -66,9 +66,10 @@ public class ChannelSinkTask extends SinkTask {
         if (suspended.get()){
             suspendQueue.enqueue(record);
         } else if ((suspendRecord = suspendQueue.dequeue()) != null) {
-            ablyClient.publishFrom(suspendRecord);
-            //re-call for the same record so that (if available) other suspended records are processed first
-            publishSingleRecord(record);
+            while (suspendRecord != null && !suspended.get()){
+                ablyClient.publishFrom(suspendRecord);
+                suspendRecord = suspendQueue.dequeue();
+            }
         }else {
             ablyClient.publishFrom(record);
         }
