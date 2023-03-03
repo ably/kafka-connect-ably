@@ -34,6 +34,11 @@ public class ChannelSinkTask extends SinkTask {
         this.ablyClientFactory = factory;
     }
 
+    @VisibleForTesting
+    AblyClient getAblyClient() {
+        return ablyClient;
+    }
+
     @Override
     public void start(Map<String, String> settings) {
         logger.info("Starting Ably channel Sink task");

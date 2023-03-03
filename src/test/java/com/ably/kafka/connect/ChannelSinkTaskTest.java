@@ -16,14 +16,63 @@
 
 package com.ably.kafka.connect;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
+import com.ably.kafka.connect.fakes.FakeAblyClient;
+import com.ably.kafka.connect.fakes.FakeClientFactory;
+import org.apache.kafka.connect.data.Schema;
+import org.apache.kafka.connect.sink.SinkRecord;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.TestInfo;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ChannelSinkTaskTest {
-  @Test
-  public void test() {
-    // Congrats on a passing test!
-  }
+    private FakeAblyClient fakeAblyClient;
+    private ChannelSinkTask SUT;
+
+    @BeforeEach
+    public void setup() throws ChannelSinkConnectorConfig.ConfigException {
+        final FakeClientFactory fakeClientFactory = new FakeClientFactory(3000);
+        SUT = new ChannelSinkTask(fakeClientFactory);
+    }
+    @AfterEach
+    public void tearDown() throws ChannelSinkConnectorConfig.ConfigException {
+        fakeAblyClient.stop();
+    }
+
+    /**
+     * Add records while changing suspended state and ensure records are processed in correct order
+     * */
+    @RepeatedTest(10)
+    public void addRecordsChangingSuspensionStateRandomly_messagesReceivedInCorrectOrder(TestInfo testInfo) throws InterruptedException {
+        SUT.start(null);
+        fakeAblyClient = (FakeAblyClient) SUT.getAblyClient();
+        final Random random = new Random();
+        int recordCounter = 0;
+        for (int i = 0; i < 100; i++) {
+            final List<SinkRecord> sinkRecords = new ArrayList<>();
+            for (int j = 0; j < 10; j++) {
+                final String recordValue = "record"+recordCounter++;
+                SinkRecord sinkRecord = new SinkRecord("topic", 0, Schema.STRING_SCHEMA, null, null, recordValue, 0);
+                sinkRecords.add(sinkRecord);
+
+            }
+            //run for 30 seconds in total
+            Thread.sleep(random.nextInt(300));
+            SUT.put(sinkRecords);
+        }
+
+        final List<SinkRecord> publishedRecords = fakeAblyClient.getPublishedRecords();
+        assertEquals(1000, publishedRecords.size());
+
+        final int[] receiverCount = {0};
+        publishedRecords.forEach(sinkRecord -> assertEquals("record"+(receiverCount[0]++), sinkRecord.value()));
+    }
+
 }
