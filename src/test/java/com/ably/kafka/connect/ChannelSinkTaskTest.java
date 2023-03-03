@@ -38,7 +38,7 @@ public class ChannelSinkTaskTest {
 
     @BeforeEach
     public void setup() throws ChannelSinkConnectorConfig.ConfigException {
-        final FakeClientFactory fakeClientFactory = new FakeClientFactory(3000);
+        final FakeClientFactory fakeClientFactory = new FakeClientFactory(1000);
         SUT = new ChannelSinkTask(fakeClientFactory);
     }
     @AfterEach
@@ -63,8 +63,8 @@ public class ChannelSinkTaskTest {
                 sinkRecords.add(sinkRecord);
 
             }
-            //run for 30 seconds in total
-            Thread.sleep(random.nextInt(300));
+            //run for up to 10 seconds each
+            Thread.sleep(random.nextInt(100));
             SUT.put(sinkRecords);
         }
 
