@@ -1,4 +1,6 @@
 package com.ably.kafka.connect;
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,5 +21,10 @@ public class SuspendQueue<T> {
 
     synchronized T dequeue() {
         return queue.isEmpty() ? null : queue.remove(0);
+    }
+
+    @VisibleForTesting
+    synchronized void clear() {
+        queue.clear();
     }
 }
