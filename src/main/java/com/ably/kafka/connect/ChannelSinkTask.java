@@ -4,6 +4,7 @@ import com.ably.kafka.connect.client.AblyClient;
 import com.ably.kafka.connect.client.AblyClientFactory;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
+import com.ably.kafka.connect.client.SuspensionCallback;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -18,7 +19,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ChannelSinkTask extends SinkTask {
+public class ChannelSinkTask extends SinkTask implements SuspensionCallback {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
 
     private AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory();
@@ -47,7 +48,7 @@ public class ChannelSinkTask extends SinkTask {
         } catch (ChannelSinkConnectorConfig.ConfigException e) {
             logger.error("Failed to create Ably client", e);
         }
-        ablyClient.connect(suspended::set);
+        ablyClient.connect(this);
     }
 
     @Override
@@ -61,16 +62,21 @@ public class ChannelSinkTask extends SinkTask {
         }
     }
 
-    private void publishSingleRecord(SinkRecord record) {
-        SinkRecord suspendRecord = null;
-        if (suspended.get()){
-            suspendQueue.enqueue(record);
-        } else if ((suspendRecord = suspendQueue.dequeue()) != null) {
-            while (suspendRecord != null && !suspended.get()){
+    public void onSuspendedStateChange(boolean suspended) {
+        this.suspended.set(suspended);
+        if (!suspended) {
+            SinkRecord suspendRecord = suspendQueue.dequeue();
+            while (suspendRecord != null && !this.suspended.get()){
                 ablyClient.publishFrom(suspendRecord);
                 suspendRecord = suspendQueue.dequeue();
             }
-        }else {
+        }
+    }
+
+    private void publishSingleRecord(SinkRecord record) {
+        if (suspended.get()){
+            suspendQueue.enqueue(record);
+        } else {
             ablyClient.publishFrom(record);
         }
     }

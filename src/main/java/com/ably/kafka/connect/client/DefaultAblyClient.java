@@ -53,10 +53,10 @@ public class DefaultAblyClient implements AblyClient {
                     connectionFailed.set(true);
                 } else if (connectionStateChange.current == ConnectionState.connected) {
                     logger.info("Ably connection successfully established");
-                    suspensionCallback.on(false);
+                    suspensionCallback.onSuspendedStateChange(false);
                 } else if (connectionStateChange.current == ConnectionState.suspended) {
                     logger.info("Ably connection is suspended");
-                    suspensionCallback.on(true);
+                    suspensionCallback.onSuspendedStateChange(true);
                 }
             });
 

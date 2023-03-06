@@ -22,9 +22,9 @@ public class FakeAblyClient implements AblyClient {
     public void connect(SuspensionCallback suspensionCallback) throws ConnectException {
        randomConnectionStateChanger = new RandomConnectionStateChanger(randomTimeBound, state -> {
            if (state == ConnectionState.connected){
-               suspensionCallback.on(false);
+               suspensionCallback.onSuspendedStateChange(false);
            } else if (state == ConnectionState.suspended) {
-               suspensionCallback.on(false);
+               suspensionCallback.onSuspendedStateChange(false);
            }
        });
     }
