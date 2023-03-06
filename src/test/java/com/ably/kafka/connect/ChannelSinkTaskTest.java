@@ -53,6 +53,7 @@ public class ChannelSinkTaskTest {
     public void addRecordsChangingSuspensionStateRandomly_messagesReceivedInCorrectOrder(TestInfo testInfo) throws InterruptedException {
         SUT.start(null);
         fakeAblyClient = (FakeAblyClient) SUT.getAblyClient();
+        fakeAblyClient.randomlyChangeSuspendedState();
         final Random random = new Random();
         int recordCounter = 0;
         for (int i = 0; i < 100; i++) {

@@ -12,7 +12,7 @@ import java.util.List;
 public class FakeAblyClient implements AblyClient {
     final long randomTimeBound;
     private final List<SinkRecord> publishedRecords = new ArrayList<>();
-    private RandomConnectionStateChanger randomConnectionStateChanger;
+    private SuspensionCallback suspensionCallback;
 
     public FakeAblyClient(long randomTimeBound) {
         this.randomTimeBound = randomTimeBound;
@@ -20,13 +20,7 @@ public class FakeAblyClient implements AblyClient {
 
     @Override
     public void connect(SuspensionCallback suspensionCallback) throws ConnectException {
-       randomConnectionStateChanger = new RandomConnectionStateChanger(randomTimeBound, state -> {
-           if (state == ConnectionState.connected){
-               suspensionCallback.onSuspendedStateChange(false);
-           } else if (state == ConnectionState.suspended) {
-               suspensionCallback.onSuspendedStateChange(false);
-           }
-       });
+       this.suspensionCallback = suspensionCallback;
     }
 
     @Override
@@ -36,6 +30,20 @@ public class FakeAblyClient implements AblyClient {
 
     public List<SinkRecord> getPublishedRecords() {
         return publishedRecords;
+    }
+
+    public void randomlyChangeSuspendedState() {
+       new RandomConnectionStateChanger(randomTimeBound, state -> {
+           if (state == ConnectionState.connected){
+               suspensionCallback.onSuspendedStateChange(false);
+           } else if (state == ConnectionState.suspended) {
+               suspensionCallback.onSuspendedStateChange(true);
+           }
+       });
+    }
+
+    public void setSuspendedState(boolean state) {
+        this.suspensionCallback.onSuspendedStateChange(state);
     }
 
     @Override
