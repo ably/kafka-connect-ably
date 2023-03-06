@@ -24,6 +24,7 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 import java.util.ArrayList;
@@ -76,4 +77,59 @@ public class ChannelSinkTaskTest {
         publishedRecords.forEach(sinkRecord -> assertEquals("record"+(receiverCount[0]++), sinkRecord.value()));
     }
 
+    /**
+     * Ensures that records are published/queued appropriately before, during, and after Ably connection is suspended
+     * */
+    @Test
+    public void whenPublishingAfterSuspension_messageIsPublishedSuccessfully(TestInfo testInfo) throws InterruptedException {
+        SUT.start(null);
+        fakeAblyClient = (FakeAblyClient) SUT.getAblyClient();
+
+        // Publish a record
+        final List<SinkRecord> sinkRecords = new ArrayList<>();
+        SinkRecord sinkRecord = new SinkRecord("topic", 0, Schema.STRING_SCHEMA, null, null, "record0", 0);
+        sinkRecords.add(sinkRecord);
+        Thread.sleep(1000);
+        SUT.put(sinkRecords);
+
+        // Check that the first record is published sucessfully
+        final List<SinkRecord> publishedRecords = fakeAblyClient.getPublishedRecords();
+        assertEquals(1, publishedRecords.size());
+        assertEquals(publishedRecords.get(0).value(), "record0");
+
+        // Enter the suspended state
+        fakeAblyClient.setSuspendedState(true);
+        
+        // Publish while suspended
+        final List<SinkRecord> sinkRecordsWhileSuspended = new ArrayList<>();
+        SinkRecord sinkRecordWhileSuspended = new SinkRecord("topic", 0, Schema.STRING_SCHEMA, null, null, "record1", 0);
+        sinkRecordsWhileSuspended.add(sinkRecordWhileSuspended);
+        Thread.sleep(1000);
+        SUT.put(sinkRecordsWhileSuspended);
+
+        // Check that the message is not published while suspended
+        final List<SinkRecord> publishedRecordsWhileSuspended = fakeAblyClient.getPublishedRecords();
+        assertEquals(1, publishedRecordsWhileSuspended.size());
+
+        // Exit the suspended state
+        fakeAblyClient.setSuspendedState(false);
+
+        // Check that the record we published while suspended is now published successfully
+        Thread.sleep(1000);
+        final List<SinkRecord> publishedRecordsAfterReconnection = fakeAblyClient.getPublishedRecords();
+        assertEquals(2, publishedRecordsAfterReconnection.size());
+        assertEquals(publishedRecordsAfterReconnection.get(1).value(), "record1");
+
+        // Publish another message
+        final List<SinkRecord> sinkRecordsAfterSuspended = new ArrayList<>();
+        SinkRecord sinkRecordAfterSuspended = new SinkRecord("topic", 0, Schema.STRING_SCHEMA, null, null, "record2", 0);
+        sinkRecordsAfterSuspended.add(sinkRecordAfterSuspended);
+        Thread.sleep(1000);
+        SUT.put(sinkRecordsAfterSuspended);
+
+        // Check that the final message is published correctly
+        final List<SinkRecord> publishedRecordsAfterSuspended = fakeAblyClient.getPublishedRecords();
+        assertEquals(3, publishedRecordsAfterSuspended.size());
+        assertEquals(publishedRecordsAfterSuspended.get(2).value(), "record2");
+    }
 }
