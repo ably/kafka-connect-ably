@@ -27,6 +27,7 @@ public class ChannelSinkTask extends SinkTask implements SuspensionCallback {
     //in case connection is suspended, sinked messages will be fed to suspend queue
     private final SuspendQueue<SinkRecord> suspendQueue = new SuspendQueue<>();
     private final AtomicBoolean suspended = new AtomicBoolean(false);
+    private final AtomicBoolean dequeueing = new AtomicBoolean(false);
 
     public ChannelSinkTask() {}
 
@@ -65,11 +66,13 @@ public class ChannelSinkTask extends SinkTask implements SuspensionCallback {
     public void onSuspendedStateChange(boolean suspended) {
         this.suspended.set(suspended);
         if (!suspended) {
+            this.dequeueing.set(true);
             SinkRecord suspendRecord = suspendQueue.dequeue();
             while (suspendRecord != null && !this.suspended.get()){
                 ablyClient.publishFrom(suspendRecord);
                 suspendRecord = suspendQueue.dequeue();
             }
+            this.dequeueing.set(false);
         }
     }
 
