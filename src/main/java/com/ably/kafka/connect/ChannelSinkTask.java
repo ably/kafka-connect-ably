@@ -66,20 +66,50 @@ public class ChannelSinkTask extends SinkTask implements SuspensionCallback {
     public void onSuspendedStateChange(boolean suspended) {
         this.suspended.set(suspended);
         if (!suspended) {
-            this.dequeueing.set(true);
-            SinkRecord suspendRecord = suspendQueue.dequeue();
-            while (suspendRecord != null && !this.suspended.get()){
-                ablyClient.publishFrom(suspendRecord);
-                suspendRecord = suspendQueue.dequeue();
+            SinkRecord suspendRecord;
+            while (true) {
+                // If we get re-suspended, don't process
+                if (this.suspended.get()) {
+                    break;
+                }
+
+                /*
+                    Synchronize against the suspend queue. This means that we cannot dequeue and check
+                    a record if the single record publish might be trying to add to the queue. This prevents
+                    a situation where:
+                    
+                    - Another thread checks the suspend queue, sees there's still things to dequeue, proceeds
+                    to start adding the message.
+                    - We (here) have just processed the last message. We check the suspend queue, there's nothing to send, so we break out of the loop.
+                    - That new message will never be processed.
+                 */
+                synchronized (this.suspendQueue) {
+                    suspendRecord = suspendQueue.dequeue();
+                    if (suspendRecord == null) {
+                        break;
+                    }
+                    ablyClient.publishFrom(suspendRecord);
+                }
             }
-            this.dequeueing.set(false);
         }
     }
 
+    /**
+     * Synchronise against the suspend queue, so we can be sure that nothing else is going out
+     * whilst we do our check.
+     *
+     * If we're currently suspended, OR there are messages still to be dequeued - then add this message
+     * to the end of the suspend queue for processing in order.
+     *
+     * Otherwise, fire away.
+     */
     private void publishSingleRecord(SinkRecord record) {
-        if (suspended.get()){
-            suspendQueue.enqueue(record);
-        } else {
+        synchronized (this.suspendQueue) {
+            if (this.suspended.get() || this.suspendQueue.hasMessages()) {
+                suspendQueue.enqueue(record);
+                return;
+            }
+
             ablyClient.publishFrom(record);
         }
     }
