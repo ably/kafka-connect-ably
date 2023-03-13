@@ -9,16 +9,17 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FakeAblyClient implements AblyClient {
-    public interface Listener{
+public class RandomStateChangingFakeAblyClient implements AblyClient {
+    public interface Listener {
         void onPublish(SinkRecord record);
     }
+
     final long randomTimeBound;
     private final List<SinkRecord> publishedRecords = new ArrayList<>();
     private RandomConnectionStateChanger randomConnectionStateChanger;
     private final Listener publishListener;
 
-    public FakeAblyClient(long randomTimeBound, Listener publishListener) {
+    public RandomStateChangingFakeAblyClient(long randomTimeBound, Listener publishListener) {
         this.randomTimeBound = randomTimeBound;
         this.publishListener = publishListener;
     }
@@ -27,9 +28,9 @@ public class FakeAblyClient implements AblyClient {
     public void connect(SuspensionCallback suspensionCallback) throws ConnectException {
        randomConnectionStateChanger = new RandomConnectionStateChanger(randomTimeBound, state -> {
            if (state == ConnectionState.connected){
-               suspensionCallback.on(false);
+               suspensionCallback.onSuspendedStateChange(false);
            } else if (state == ConnectionState.suspended) {
-               suspensionCallback.on(true);
+               suspensionCallback.onSuspendedStateChange(true);
            }
        });
        new Thread(randomConnectionStateChanger).start();
@@ -47,7 +48,7 @@ public class FakeAblyClient implements AblyClient {
 
     @Override
     public void stop() {
-       publishedRecords.clear();
+        publishedRecords.clear();
     }
 
 }

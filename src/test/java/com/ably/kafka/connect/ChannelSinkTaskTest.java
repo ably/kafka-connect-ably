@@ -17,7 +17,8 @@
 package com.ably.kafka.connect;
 
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
-import com.ably.kafka.connect.fakes.FakeAblyClient;
+import com.ably.kafka.connect.fakes.ManualStateChangingFakeAblyClient;
+import com.ably.kafka.connect.fakes.RandomStateChangingFakeAblyClient;
 import com.ably.kafka.connect.fakes.FakeClientFactory;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.sink.SinkRecord;
@@ -36,20 +37,21 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ChannelSinkTaskTest {
-    private FakeAblyClient fakeAblyClient;
+    private RandomStateChangingFakeAblyClient randomFakeAblyClient;
+    private ManualStateChangingFakeAblyClient manualFakeAblyClient;
     private ChannelSinkTask SUT;
 
     private CountDownLatch countDownLatch;
 
     @BeforeEach
     public void setup() throws ChannelSinkConnectorConfig.ConfigException {
-        final FakeClientFactory fakeClientFactory = new FakeClientFactory(1000, record -> countDownLatch.countDown());
-        SUT = new ChannelSinkTask(fakeClientFactory);
         countDownLatch = new CountDownLatch(1000);
     }
     @AfterEach
     public void tearDown() throws ChannelSinkConnectorConfig.ConfigException {
-        fakeAblyClient.stop();
+        if (randomFakeAblyClient != null) randomFakeAblyClient.stop();
+
+        if (manualFakeAblyClient != null) manualFakeAblyClient.stop();
         countDownLatch = null;
     }
 
@@ -58,9 +60,12 @@ public class ChannelSinkTaskTest {
      * */
     @RepeatedTest(10)
     public void addRecordsChangingSuspensionStateRandomly_messagesReceivedInCorrectOrder(TestInfo testInfo) throws InterruptedException {
+        final FakeClientFactory fakeClientFactory = new FakeClientFactory(1000, record -> countDownLatch.countDown());
+        SUT = new ChannelSinkTask(fakeClientFactory);
+
         SUT.start(null);
-        fakeAblyClient = (FakeAblyClient) SUT.getAblyClient();
-        fakeAblyClient.randomlyChangeSuspendedState();
+        randomFakeAblyClient = (RandomStateChangingFakeAblyClient) SUT.getAblyClient();
+     //   fakeAblyClient.randomlyChangeSuspendedState();
         final Random random = new Random();
         int recordCounter = 0;
         for (int i = 0; i < 100; i++) {
@@ -76,7 +81,7 @@ public class ChannelSinkTaskTest {
             SUT.put(sinkRecords);
         }
         countDownLatch.await(10, TimeUnit.SECONDS);
-        final List<SinkRecord> publishedRecords = fakeAblyClient.getPublishedRecords();
+        final List<SinkRecord> publishedRecords = randomFakeAblyClient.getPublishedRecords();
         assertEquals(1000, publishedRecords.size());
 
         final int[] receiverCount = {0};
@@ -88,8 +93,11 @@ public class ChannelSinkTaskTest {
      * */
     @Test
     public void whenPublishingAfterSuspension_messageIsPublishedSuccessfully(TestInfo testInfo) throws InterruptedException {
+        final FakeClientFactory fakeClientFactory = new FakeClientFactory(0, null);
+        SUT = new ChannelSinkTask(fakeClientFactory);
+
         SUT.start(null);
-        fakeAblyClient = (FakeAblyClient) SUT.getAblyClient();
+        manualFakeAblyClient = (ManualStateChangingFakeAblyClient) SUT.getAblyClient();
 
         // Publish a record
         final List<SinkRecord> sinkRecords = new ArrayList<>();
@@ -99,13 +107,13 @@ public class ChannelSinkTaskTest {
         SUT.put(sinkRecords);
 
         // Check that the first record is published sucessfully
-        final List<SinkRecord> publishedRecords = fakeAblyClient.getPublishedRecords();
+        final List<SinkRecord> publishedRecords = manualFakeAblyClient.getPublishedRecords();
         assertEquals(1, publishedRecords.size());
         assertEquals(publishedRecords.get(0).value(), "record0");
 
         // Enter the suspended state
-        fakeAblyClient.setSuspendedState(true);
-        
+        manualFakeAblyClient.setSuspendedState(true);
+
         // Publish while suspended
         final List<SinkRecord> sinkRecordsWhileSuspended = new ArrayList<>();
         SinkRecord sinkRecordWhileSuspended = new SinkRecord("topic", 0, Schema.STRING_SCHEMA, null, null, "record1", 0);
@@ -114,15 +122,15 @@ public class ChannelSinkTaskTest {
         SUT.put(sinkRecordsWhileSuspended);
 
         // Check that the message is not published while suspended
-        final List<SinkRecord> publishedRecordsWhileSuspended = fakeAblyClient.getPublishedRecords();
+        final List<SinkRecord> publishedRecordsWhileSuspended = manualFakeAblyClient.getPublishedRecords();
         assertEquals(1, publishedRecordsWhileSuspended.size());
 
         // Exit the suspended state
-        fakeAblyClient.setSuspendedState(false);
+        manualFakeAblyClient.setSuspendedState(false);
 
         // Check that the record we published while suspended is now published successfully
         Thread.sleep(1000);
-        final List<SinkRecord> publishedRecordsAfterReconnection = fakeAblyClient.getPublishedRecords();
+        final List<SinkRecord> publishedRecordsAfterReconnection = manualFakeAblyClient.getPublishedRecords();
         assertEquals(2, publishedRecordsAfterReconnection.size());
         assertEquals(publishedRecordsAfterReconnection.get(1).value(), "record1");
 
@@ -134,7 +142,7 @@ public class ChannelSinkTaskTest {
         SUT.put(sinkRecordsAfterSuspended);
 
         // Check that the final message is published correctly
-        final List<SinkRecord> publishedRecordsAfterSuspended = fakeAblyClient.getPublishedRecords();
+        final List<SinkRecord> publishedRecordsAfterSuspended = manualFakeAblyClient.getPublishedRecords();
         assertEquals(3, publishedRecordsAfterSuspended.size());
         assertEquals(publishedRecordsAfterSuspended.get(2).value(), "record2");
     }
