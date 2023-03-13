@@ -10,12 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FakeAblyClient implements AblyClient {
+    public interface Listener{
+        void onPublish(SinkRecord record);
+    }
     final long randomTimeBound;
     private final List<SinkRecord> publishedRecords = new ArrayList<>();
     private RandomConnectionStateChanger randomConnectionStateChanger;
+    private final Listener publishListener;
 
-    public FakeAblyClient(long randomTimeBound) {
+    public FakeAblyClient(long randomTimeBound, Listener publishListener) {
         this.randomTimeBound = randomTimeBound;
+        this.publishListener = publishListener;
     }
 
     @Override
@@ -33,6 +38,7 @@ public class FakeAblyClient implements AblyClient {
     @Override
     public void publishFrom(SinkRecord record) throws ConnectException {
         publishedRecords.add(record);
+        publishListener.onPublish(record);
     }
 
     public List<SinkRecord> getPublishedRecords() {
