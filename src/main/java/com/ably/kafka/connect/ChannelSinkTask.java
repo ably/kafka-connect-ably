@@ -47,7 +47,12 @@ public class ChannelSinkTask extends SinkTask {
         } catch (ChannelSinkConnectorConfig.ConfigException e) {
             logger.error("Failed to create Ably client", e);
         }
-        ablyClient.connect(suspended::set);
+        ablyClient.connect(isSuspended -> {
+            suspended.set(isSuspended);
+            if (!isSuspended){
+                processSuspendQueue();
+            }
+        });
     }
 
     @Override
@@ -62,15 +67,12 @@ public class ChannelSinkTask extends SinkTask {
     }
 
     private void publishSingleRecord(SinkRecord record) {
-        SinkRecord suspendRecord = null;
         if (suspended.get()){
             suspendQueue.enqueue(record);
-        } else if ((suspendRecord = suspendQueue.dequeue()) != null) {
-            while (suspendRecord != null && !suspended.get()){
-                ablyClient.publishFrom(suspendRecord);
-                suspendRecord = suspendQueue.dequeue();
+        } else if (!suspendQueue.isNotEmpty()) {
+            while (suspendQueue.isNotEmpty() && !suspended.get()){
+                //wait for queue to be emptied
             }
-
             // If connection got into suspended state again add record to the queue, otherwise publish normally
             if (suspended.get()) {
                 suspendQueue.enqueue(record);
@@ -79,6 +81,13 @@ public class ChannelSinkTask extends SinkTask {
             }
         } else {
             ablyClient.publishFrom(record);
+        }
+    }
+
+    private void processSuspendQueue() {
+        SinkRecord suspendRecord = null;
+        while ((suspendRecord = suspendQueue.dequeue()) != null && !suspended.get()){
+            ablyClient.publishFrom(suspendRecord);
         }
     }
 
