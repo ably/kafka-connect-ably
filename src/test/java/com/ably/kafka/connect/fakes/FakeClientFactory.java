@@ -8,15 +8,19 @@ import java.util.Map;
 
 public class FakeClientFactory implements AblyClientFactory {
     private final long randomTimeBound;
-    private final FakeAblyClient.Listener publishListener;
+    private final RandomStateChangingFakeAblyClient.Listener publishListener;
 
-    public FakeClientFactory(long randomTimeBound, FakeAblyClient.Listener publishListener) {
+    public FakeClientFactory(long randomTimeBound, RandomStateChangingFakeAblyClient.Listener publishListener) {
         this.randomTimeBound = randomTimeBound;
         this.publishListener = publishListener;
     }
 
+
     @Override
     public AblyClient create(Map<String, String> settings) throws ChannelSinkConnectorConfig.ConfigException {
-        return new FakeAblyClient(randomTimeBound, publishListener);
+        if (randomTimeBound == 0){
+            return new ManualStateChangingFakeAblyClient();
+        }
+        return new RandomStateChangingFakeAblyClient(randomTimeBound, publishListener);
     }
 }
