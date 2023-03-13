@@ -24,9 +24,10 @@ public class FakeAblyClient implements AblyClient {
            if (state == ConnectionState.connected){
                suspensionCallback.on(false);
            } else if (state == ConnectionState.suspended) {
-               suspensionCallback.on(false);
+               suspensionCallback.on(true);
            }
        });
+       new Thread(randomConnectionStateChanger).start();
     }
 
     @Override
