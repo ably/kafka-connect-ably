@@ -23,8 +23,8 @@ public class SuspendQueue<T> {
         return queue.isEmpty() ? null : queue.remove(0);
     }
 
-    synchronized boolean hasMessages() {
-      return !queue.isEmpty();
+    synchronized boolean isNotEmpty(){
+        return !queue.isEmpty();
     }
 
     @VisibleForTesting

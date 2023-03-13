@@ -32,7 +32,7 @@ class RandomConnectionStateChanger implements Runnable {
                 lastState = ConnectionState.suspended;
             }
 
-            final long sleepTime = random.nextLong() % randomTimeBound;
+            final long sleepTime = Math.abs(random.nextLong()) % randomTimeBound;
             try {
                 Thread.sleep(sleepTime);
             } catch (InterruptedException e) {

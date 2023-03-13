@@ -10,40 +10,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FakeAblyClient implements AblyClient {
+    public interface Listener{
+        void onPublish(SinkRecord record);
+    }
     final long randomTimeBound;
     private final List<SinkRecord> publishedRecords = new ArrayList<>();
-    private SuspensionCallback suspensionCallback;
+    private RandomConnectionStateChanger randomConnectionStateChanger;
+    private final Listener publishListener;
 
-    public FakeAblyClient(long randomTimeBound) {
+    public FakeAblyClient(long randomTimeBound, Listener publishListener) {
         this.randomTimeBound = randomTimeBound;
+        this.publishListener = publishListener;
     }
 
     @Override
     public void connect(SuspensionCallback suspensionCallback) throws ConnectException {
-       this.suspensionCallback = suspensionCallback;
+       randomConnectionStateChanger = new RandomConnectionStateChanger(randomTimeBound, state -> {
+           if (state == ConnectionState.connected){
+               suspensionCallback.on(false);
+           } else if (state == ConnectionState.suspended) {
+               suspensionCallback.on(true);
+           }
+       });
+       new Thread(randomConnectionStateChanger).start();
     }
 
     @Override
     public void publishFrom(SinkRecord record) throws ConnectException {
         publishedRecords.add(record);
+        publishListener.onPublish(record);
     }
 
     public List<SinkRecord> getPublishedRecords() {
         return publishedRecords;
-    }
-
-    public void randomlyChangeSuspendedState() {
-       new RandomConnectionStateChanger(randomTimeBound, state -> {
-           if (state == ConnectionState.connected){
-               suspensionCallback.onSuspendedStateChange(false);
-           } else if (state == ConnectionState.suspended) {
-               suspensionCallback.onSuspendedStateChange(true);
-           }
-       });
-    }
-
-    public void setSuspendedState(boolean state) {
-        this.suspensionCallback.onSuspendedStateChange(state);
     }
 
     @Override

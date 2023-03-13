@@ -30,6 +30,8 @@ import org.junit.jupiter.api.TestInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -37,14 +39,18 @@ public class ChannelSinkTaskTest {
     private FakeAblyClient fakeAblyClient;
     private ChannelSinkTask SUT;
 
+    private CountDownLatch countDownLatch;
+
     @BeforeEach
     public void setup() throws ChannelSinkConnectorConfig.ConfigException {
-        final FakeClientFactory fakeClientFactory = new FakeClientFactory(1000);
+        final FakeClientFactory fakeClientFactory = new FakeClientFactory(1000, record -> countDownLatch.countDown());
         SUT = new ChannelSinkTask(fakeClientFactory);
+        countDownLatch = new CountDownLatch(1000);
     }
     @AfterEach
     public void tearDown() throws ChannelSinkConnectorConfig.ConfigException {
         fakeAblyClient.stop();
+        countDownLatch = null;
     }
 
     /**
@@ -65,11 +71,11 @@ public class ChannelSinkTaskTest {
                 sinkRecords.add(sinkRecord);
 
             }
-            //run for up to 10 seconds each
+            //run for up to 100 ms each
             Thread.sleep(random.nextInt(100));
             SUT.put(sinkRecords);
         }
-
+        countDownLatch.await(10, TimeUnit.SECONDS);
         final List<SinkRecord> publishedRecords = fakeAblyClient.getPublishedRecords();
         assertEquals(1000, publishedRecords.size());
 

@@ -4,7 +4,6 @@ import com.ably.kafka.connect.client.AblyClient;
 import com.ably.kafka.connect.client.AblyClientFactory;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
-import com.ably.kafka.connect.client.SuspensionCallback;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -19,7 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ChannelSinkTask extends SinkTask implements SuspensionCallback {
+public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
 
     private AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory();
@@ -27,7 +26,6 @@ public class ChannelSinkTask extends SinkTask implements SuspensionCallback {
     //in case connection is suspended, sinked messages will be fed to suspend queue
     private final SuspendQueue<SinkRecord> suspendQueue = new SuspendQueue<>();
     private final AtomicBoolean suspended = new AtomicBoolean(false);
-    private final AtomicBoolean dequeueing = new AtomicBoolean(false);
 
     public ChannelSinkTask() {}
 
@@ -49,7 +47,14 @@ public class ChannelSinkTask extends SinkTask implements SuspensionCallback {
         } catch (ChannelSinkConnectorConfig.ConfigException e) {
             logger.error("Failed to create Ably client", e);
         }
-        ablyClient.connect(this);
+        ablyClient.connect(isSuspended -> {
+            synchronized(ChannelSinkTask.this){
+                suspended.set(isSuspended);
+                if (!isSuspended){
+                    processSuspendQueue();
+                }
+            }
+        });
     }
 
     @Override
@@ -63,54 +68,29 @@ public class ChannelSinkTask extends SinkTask implements SuspensionCallback {
         }
     }
 
-    public void onSuspendedStateChange(boolean suspended) {
-        this.suspended.set(suspended);
-        if (!suspended) {
-            SinkRecord suspendRecord;
-            while (true) {
-                // If we get re-suspended, don't process
-                if (this.suspended.get()) {
-                    break;
-                }
-
-                /*
-                    Synchronize against the suspend queue. This means that we cannot dequeue and check
-                    a record if the single record publish might be trying to add to the queue. This prevents
-                    a situation where:
-                    
-                    - Another thread checks the suspend queue, sees there's still things to dequeue, proceeds
-                    to start adding the message.
-                    - We (here) have just processed the last message. We check the suspend queue, there's nothing to send, so we break out of the loop.
-                    - That new message will never be processed.
-                 */
-                synchronized (this.suspendQueue) {
-                    suspendRecord = suspendQueue.dequeue();
-                    if (suspendRecord == null) {
-                        break;
-                    }
-                    ablyClient.publishFrom(suspendRecord);
-                }
+    private void publishSingleRecord(SinkRecord record) {
+        if (suspended.get()){
+            suspendQueue.enqueue(record);
+        } else if (!suspendQueue.isNotEmpty()) {
+            while (suspendQueue.isNotEmpty() && !suspended.get()){
+                //wait for queue to be emptied
             }
+            // If connection got into suspended state again add record to the queue, otherwise publish normally
+            if (suspended.get()) {
+                suspendQueue.enqueue(record);
+            } else {
+                ablyClient.publishFrom(record);
+            }
+        } else {
+            ablyClient.publishFrom(record);
         }
     }
 
-    /**
-     * Synchronise against the suspend queue, so we can be sure that nothing else is going out
-     * whilst we do our check.
-     *
-     * If we're currently suspended, OR there are messages still to be dequeued - then add this message
-     * to the end of the suspend queue for processing in order.
-     *
-     * Otherwise, fire away.
-     */
-    private void publishSingleRecord(SinkRecord record) {
-        synchronized (this.suspendQueue) {
-            if (this.suspended.get() || this.suspendQueue.hasMessages()) {
-                suspendQueue.enqueue(record);
-                return;
-            }
-
-            ablyClient.publishFrom(record);
+    private synchronized void processSuspendQueue() {
+        SinkRecord suspendRecord = null;
+        //the order of condition checks are important - do not dequeue before checking suspended state
+        while (!suspended.get() && (suspendRecord = suspendQueue.dequeue()) != null){
+            ablyClient.publishFrom(suspendRecord);
         }
     }
 
