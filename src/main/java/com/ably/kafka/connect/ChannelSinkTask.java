@@ -70,7 +70,14 @@ public class ChannelSinkTask extends SinkTask {
                 ablyClient.publishFrom(suspendRecord);
                 suspendRecord = suspendQueue.dequeue();
             }
-        }else {
+
+            // If connection got into suspended state again add record to the queue, otherwise publish normally
+            if (suspended.get()) {
+                suspendQueue.enqueue(record);
+            } else {
+                ablyClient.publishFrom(record);
+            }
+        } else {
             ablyClient.publishFrom(record);
         }
     }
