@@ -1,5 +1,14 @@
 # Changelog
 
+
+## [v2.1.3](https://github.com/ably/kafka-connect-ably/tree/v2.1.3)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.1.2...v2.1.3)
+
+**Fixed bugs:**
+
+- Republish messages that were canceled after connection suspension [\#106](https://github.com/ably/kafka-connect-ably/issues/106)
+
 ## [v2.1.2](https://github.com/ably/kafka-connect-ably/tree/v2.1.2)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.1.1...v2.1.2)
