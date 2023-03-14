@@ -16,18 +16,27 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
 
     private AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory();
     private AblyClient ablyClient;
+    //in case connection is suspended, sinked messages will be fed to suspend queue
+    private final SuspendQueue<SinkRecord> suspendQueue = new SuspendQueue<>();
+    private final AtomicBoolean suspended = new AtomicBoolean(false);
 
     public ChannelSinkTask() {}
 
     @VisibleForTesting
     ChannelSinkTask(AblyClientFactory factory) {
         this.ablyClientFactory = factory;
+    }
+
+    @VisibleForTesting
+    AblyClient getAblyClient() {
+        return ablyClient;
     }
 
     @Override
@@ -38,7 +47,14 @@ public class ChannelSinkTask extends SinkTask {
         } catch (ChannelSinkConnectorConfig.ConfigException e) {
             logger.error("Failed to create Ably client", e);
         }
-        ablyClient.connect();
+        ablyClient.connect(isSuspended -> {
+            synchronized(ChannelSinkTask.this){
+                suspended.set(isSuspended);
+                if (!isSuspended){
+                    processSuspendQueue();
+                }
+            }
+        });
     }
 
     @Override
@@ -48,7 +64,33 @@ public class ChannelSinkTask extends SinkTask {
         }
 
         for (final SinkRecord record : records) {
+            publishSingleRecord(record);
+        }
+    }
+
+    private void publishSingleRecord(SinkRecord record) {
+        if (suspended.get()){
+            suspendQueue.enqueue(record);
+        } else if (!suspendQueue.isNotEmpty()) {
+            while (suspendQueue.isNotEmpty() && !suspended.get()){
+                //wait for queue to be emptied
+            }
+            // If connection got into suspended state again add record to the queue, otherwise publish normally
+            if (suspended.get()) {
+                suspendQueue.enqueue(record);
+            } else {
+                ablyClient.publishFrom(record);
+            }
+        } else {
             ablyClient.publishFrom(record);
+        }
+    }
+
+    private synchronized void processSuspendQueue() {
+        SinkRecord suspendRecord = null;
+        //the order of condition checks are important - do not dequeue before checking suspended state
+        while (!suspended.get() && (suspendRecord = suspendQueue.dequeue()) != null){
+            ablyClient.publishFrom(suspendRecord);
         }
     }
 
