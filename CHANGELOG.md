@@ -1,5 +1,16 @@
 # Changelog
 
+## [v2.1.4](https://github.com/ably/kafka-connect-ably/tree/v2.1.4)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.1.3...v2.1.4)
+
+**Fixed bugs:**
+
+- Update ably-java version [\#111](https://github.com/ably/kafka-connect-ably/issues/111)
+
+**Merged pull requests:**
+
+- Bump ably java to 1.2.27 [\#112](https://github.com/ably/kafka-connect-ably/pull/112) ([AndyTWF](https://github.com/AndyTWF))
 
 ## [v2.1.3](https://github.com/ably/kafka-connect-ably/tree/v2.1.3)
 
