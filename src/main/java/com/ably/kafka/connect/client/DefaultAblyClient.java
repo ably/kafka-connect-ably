@@ -28,7 +28,7 @@ public class DefaultAblyClient implements AblyClient {
 
     private final ChannelSinkMapping channelSinkMapping;
     private final MessageSinkMapping messageSinkMapping;
-    private final ChannelSinkConnectorConfig connectorConfig;
+    protected final ChannelSinkConnectorConfig connectorConfig;
 
     private final ConfigValueEvaluator configValueEvaluator;
     private AblyRealtime realtime;
@@ -36,7 +36,8 @@ public class DefaultAblyClient implements AblyClient {
     //When this is true, the client should abort all publishing operations and throw an exception
     private final AtomicBoolean connectionFailed = new AtomicBoolean(false);
 
-    public DefaultAblyClient(ChannelSinkConnectorConfig connectorConfig, ChannelSinkMapping channelSinkMapping, MessageSinkMapping messageSinkMapping, ConfigValueEvaluator configValueEvaluator) {
+    public DefaultAblyClient(ChannelSinkConnectorConfig connectorConfig, ChannelSinkMapping channelSinkMapping,
+                             MessageSinkMapping messageSinkMapping, ConfigValueEvaluator configValueEvaluator) {
         this.connectorConfig = connectorConfig;
         this.channelSinkMapping = channelSinkMapping;
         this.messageSinkMapping = messageSinkMapping;
@@ -44,7 +45,7 @@ public class DefaultAblyClient implements AblyClient {
     }
 
     @Override
-    public void connect(SuspensionCallback suspensionCallback) throws ConnectException {
+    public void connect(SuspensionCallback suspensionCallback) throws ConnectException, AblyException {
         try {
             realtime = new AblyRealtime(connectorConfig.clientOptions);
             realtime.connection.on(connectionStateChange -> {

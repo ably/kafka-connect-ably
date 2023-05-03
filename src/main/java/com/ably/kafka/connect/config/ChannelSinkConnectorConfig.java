@@ -180,6 +180,17 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final String SKIP_ON_KEY_ABSENCE_DOC = "If true, it skips the record if the key has been provided as" +
         " part of interpolable configuration value, but key is not available on the time of record creation. Default value is false.";
 
+    public static final String BATCH_EXECUTION_THREAD_POOL_SIZE = "batchExecutionThreadPoolSize";
+
+    private static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DOC = "Size of Thread pool that is used to batch the records" +
+            "and call Ably REST API(Batch)";
+
+    public static final String BATCH_EXECUTION_FLUSH_TIME = "batchExecutionFlushTime";
+
+    private static final String BATCH_EXECUTION_FLUSH_TIME_DOC = "Time period in milliseconds when the buffer " +
+            "is flushed(calling REST Batch Ably API)";
+
+
     // The name of the extra agent identifier to add to the Ably-Agent header to
     // identify this client as using the Ably Kafka Connector.
     private static final String ABLY_AGENT_HEADER_NAME = "kafka-connect-ably";
@@ -551,12 +562,27 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .importance(Importance.MEDIUM)
                     .defaultValue("")
                     .build()
-            ) .define(
+            )
+            .define(
                 ConfigKeyBuilder.of(SKIP_ON_KEY_ABSENCE, Type.BOOLEAN)
                     .documentation(SKIP_ON_KEY_ABSENCE_DOC)
                     .importance(Importance.MEDIUM)
                     .defaultValue(false)
                     .build()
-            );
+            )
+            .define(
+                ConfigKeyBuilder.of(BATCH_EXECUTION_THREAD_POOL_SIZE, Type.INT)
+                    .documentation(BATCH_EXECUTION_THREAD_POOL_SIZE_DOC)
+                    .importance(Importance.MEDIUM)
+                    .defaultValue(10)
+                    .build()
+            )
+            .define(
+                ConfigKeyBuilder.of(BATCH_EXECUTION_FLUSH_TIME, Type.INT)
+                        .documentation(BATCH_EXECUTION_FLUSH_TIME_DOC)
+                        .importance(Importance.MEDIUM)
+                        .defaultValue(5000)
+                        .build()
+        );
     }
 }

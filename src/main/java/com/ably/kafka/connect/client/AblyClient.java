@@ -1,5 +1,6 @@
 package com.ably.kafka.connect.client;
 
+import io.ably.lib.types.AblyException;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 
@@ -9,7 +10,7 @@ public interface AblyClient {
      * @param suspensionCallback callback to tell the client whether the connection was suspended.
      * @throws ConnectException if the connection fails
      */
-    void connect(SuspensionCallback suspensionCallback) throws ConnectException;
+    void connect(SuspensionCallback suspensionCallback) throws ConnectException, AblyException;
 
     /**
      * Publish a sink record to Ably.

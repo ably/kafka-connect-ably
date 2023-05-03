@@ -1,5 +1,7 @@
 package com.ably.kafka.connect;
 
+import com.ably.kafka.connect.batch.BatchProcessingExecutor;
+import com.ably.kafka.connect.batch.BatchProcessingThread;
 import com.ably.kafka.connect.client.AblyClient;
 import com.ably.kafka.connect.client.AblyClientFactory;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
@@ -16,6 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ChannelSinkTask extends SinkTask {
@@ -25,6 +29,12 @@ public class ChannelSinkTask extends SinkTask {
     private AblyClient ablyClient;
     //in case connection is suspended, sinked messages will be fed to suspend queue
     private final SuspendQueue<SinkRecord> suspendQueue = new SuspendQueue<>();
+
+    private BatchProcessingThread batchProcessingThread = null;
+
+    private BatchProcessingExecutor executor = null;
+
+    private ConcurrentLinkedQueue<SinkRecord> sinkRecords = null;
     private final AtomicBoolean suspended = new AtomicBoolean(false);
 
     public ChannelSinkTask() {}
@@ -41,31 +51,44 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public void start(Map<String, String> settings) {
+//        logger.info("Starting Ably channel Sink task");
+//        try {
+//            ablyClient = ablyClientFactory.create(settings);
+//        } catch (ChannelSinkConnectorConfig.ConfigException e) {
+//            logger.error("Failed to create Ably client", e);
+//        }
+//        ablyClient.connect(isSuspended -> {
+//            synchronized(ChannelSinkTask.this){
+//                suspended.set(isSuspended);
+//                if (!isSuspended){
+//                    processSuspendQueue();
+//                }
+//            }
+//        });
         logger.info("Starting Ably channel Sink task");
-        try {
-            ablyClient = ablyClientFactory.create(settings);
-        } catch (ChannelSinkConnectorConfig.ConfigException e) {
-            logger.error("Failed to create Ably client", e);
-        }
-        ablyClient.connect(isSuspended -> {
-            synchronized(ChannelSinkTask.this){
-                suspended.set(isSuspended);
-                if (!isSuspended){
-                    processSuspendQueue();
-                }
-            }
-        });
+        // start the Batch processing thread.
+        this.sinkRecords = new ConcurrentLinkedQueue<>();
+        this.batchProcessingThread = new BatchProcessingThread(this.sinkRecords);
+        this.executor = new BatchProcessingExecutor(Integer.parseInt(settings
+                .get(ChannelSinkConnectorConfig.BATCH_EXECUTION_THREAD_POOL_SIZE)));
+
+        this.executor.scheduleAtFixedRate(this.batchProcessingThread, 0,
+                Integer.parseInt(settings.get(ChannelSinkConnectorConfig.BATCH_EXECUTION_FLUSH_TIME)),
+                TimeUnit.MILLISECONDS);
+
     }
 
     @Override
     public void put(Collection<SinkRecord> records) {
         if (ablyClient == null) {
-            throw new ConnectException("Ably client is unitialized");
+            throw new ConnectException("Ably client is uninitialized");
         }
 
-        for (final SinkRecord record : records) {
-            publishSingleRecord(record);
-        }
+        this.sinkRecords.addAll(records);
+        //
+//        for (final SinkRecord record : records) {
+//            publishSingleRecord(record);
+//        }
     }
 
     private void publishSingleRecord(SinkRecord record) {
@@ -104,6 +127,10 @@ public class ChannelSinkTask extends SinkTask {
     public void stop() {
         logger.info("Stopping Ably channel Sink task");
         ablyClient.stop();
+
+        if(this.executor != null) {
+            this.executor.shutdown();
+        }
 
     }
 
