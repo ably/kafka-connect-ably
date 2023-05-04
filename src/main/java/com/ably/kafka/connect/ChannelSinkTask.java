@@ -4,6 +4,7 @@ import com.ably.kafka.connect.batch.BatchProcessingExecutor;
 import com.ably.kafka.connect.batch.BatchProcessingThread;
 import com.ably.kafka.connect.client.AblyClient;
 import com.ably.kafka.connect.client.AblyClientFactory;
+import com.ably.kafka.connect.client.DefaultAblyBatchClient;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
@@ -26,7 +27,7 @@ public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
 
     private AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory();
-    private AblyClient ablyClient;
+    private DefaultAblyBatchClient ablyClient;
     //in case connection is suspended, sinked messages will be fed to suspend queue
     private final SuspendQueue<SinkRecord> suspendQueue = new SuspendQueue<>();
 
@@ -51,12 +52,12 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public void start(Map<String, String> settings) {
-//        logger.info("Starting Ably channel Sink task");
-//        try {
-//            ablyClient = ablyClientFactory.create(settings);
-//        } catch (ChannelSinkConnectorConfig.ConfigException e) {
-//            logger.error("Failed to create Ably client", e);
-//        }
+        logger.info("Starting Ably channel Sink task");
+        try {
+            ablyClient = ablyClientFactory.create(settings);
+        } catch (ChannelSinkConnectorConfig.ConfigException e) {
+            logger.error("Failed to create Ably client", e);
+        }
 //        ablyClient.connect(isSuspended -> {
 //            synchronized(ChannelSinkTask.this){
 //                suspended.set(isSuspended);
@@ -68,7 +69,7 @@ public class ChannelSinkTask extends SinkTask {
         logger.info("Starting Ably channel Sink task");
         // start the Batch processing thread.
         this.sinkRecords = new ConcurrentLinkedQueue<>();
-        this.batchProcessingThread = new BatchProcessingThread(this.sinkRecords);
+        this.batchProcessingThread = new BatchProcessingThread(this.sinkRecords, this.ablyClient);
         this.executor = new BatchProcessingExecutor(Integer.parseInt(settings
                 .get(ChannelSinkConnectorConfig.BATCH_EXECUTION_THREAD_POOL_SIZE)));
 

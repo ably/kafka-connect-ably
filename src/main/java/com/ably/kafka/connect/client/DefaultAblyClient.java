@@ -26,8 +26,8 @@ import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.SKIP_ON_K
 public class DefaultAblyClient implements AblyClient {
     private static final Logger logger = LoggerFactory.getLogger(DefaultAblyClient.class);
 
-    private final ChannelSinkMapping channelSinkMapping;
-    private final MessageSinkMapping messageSinkMapping;
+    protected final ChannelSinkMapping channelSinkMapping;
+    protected final MessageSinkMapping messageSinkMapping;
     protected final ChannelSinkConnectorConfig connectorConfig;
 
     private final ConfigValueEvaluator configValueEvaluator;
@@ -98,7 +98,7 @@ public class DefaultAblyClient implements AblyClient {
         }
     }
 
-    private boolean shouldSkip(SinkRecord record) {
+    protected boolean shouldSkip(SinkRecord record) {
         final boolean skipOnKeyAbsence = connectorConfig.getBoolean(SKIP_ON_KEY_ABSENCE);
 
         if (skipOnKeyAbsence) {

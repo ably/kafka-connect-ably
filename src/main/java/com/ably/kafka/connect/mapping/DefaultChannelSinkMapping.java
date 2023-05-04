@@ -25,4 +25,9 @@ public class DefaultChannelSinkMapping implements ChannelSinkMapping {
         final String channelName = configValueEvaluator.evaluate(sinkRecord, channelConfig.getName(), false).getValue();
         return ablyRealtime.channels.get(channelName, channelConfig.getOptions());
     }
+
+    @Override
+    public String getChannelName(@Nonnull SinkRecord sinkRecord) {
+        return configValueEvaluator.evaluate(sinkRecord, channelConfig.getName(), false).getValue();
+    }
 }

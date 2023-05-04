@@ -19,7 +19,7 @@ public class DefaultAblyClientFactory implements AblyClientFactory {
     private static final Logger logger = LoggerFactory.getLogger(DefaultAblyClientFactory.class);
 
     @Override
-    public AblyClient create(Map<String, String> settings) {
+    public DefaultAblyBatchClient create(Map<String, String> settings) {
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(settings);
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
         final ChannelConfig channelConfig = new DefaultChannelConfig(connectorConfig);
