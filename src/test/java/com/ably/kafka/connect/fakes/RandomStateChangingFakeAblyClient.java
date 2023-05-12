@@ -3,6 +3,7 @@ package com.ably.kafka.connect.fakes;
 import com.ably.kafka.connect.client.AblyClient;
 import com.ably.kafka.connect.client.SuspensionCallback;
 import io.ably.lib.realtime.ConnectionState;
+import io.ably.lib.types.AblyException;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 
@@ -23,8 +24,6 @@ public class RandomStateChangingFakeAblyClient implements AblyClient {
         this.randomTimeBound = randomTimeBound;
         this.publishListener = publishListener;
     }
-
-    @Override
     public void connect(SuspensionCallback suspensionCallback) throws ConnectException {
        randomConnectionStateChanger = new RandomConnectionStateChanger(randomTimeBound, state -> {
            if (state == ConnectionState.connected){
@@ -37,9 +36,19 @@ public class RandomStateChangingFakeAblyClient implements AblyClient {
     }
 
     @Override
+    public void connect() throws ConnectException, AblyException {
+
+    }
+
+    @Override
     public void publishFrom(SinkRecord record) throws ConnectException {
         publishedRecords.add(record);
         publishListener.onPublish(record);
+    }
+
+    @Override
+    public void publishBatch(List<SinkRecord> records) throws ConnectException, AblyException {
+
     }
 
     public List<SinkRecord> getPublishedRecords() {

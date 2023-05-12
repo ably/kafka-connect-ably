@@ -21,10 +21,10 @@ public class BatchProcessingThread implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(BatchProcessingThread.class);
 
     final private ConcurrentLinkedQueue<SinkRecord> records;
-    final private DefaultAblyBatchClient client;
+    final private AblyClient client;
 
     public BatchProcessingThread(
-            ConcurrentLinkedQueue<SinkRecord> sinkRecords, DefaultAblyBatchClient ablyClient) {
+            ConcurrentLinkedQueue<SinkRecord> sinkRecords, AblyClient ablyClient) {
         this.records = sinkRecords;
         this.client = ablyClient;
     }

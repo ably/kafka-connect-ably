@@ -17,6 +17,7 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CHANNEL_CONFIG;
@@ -45,25 +46,8 @@ public class DefaultAblyClient implements AblyClient {
     }
 
     @Override
-    public void connect(SuspensionCallback suspensionCallback) throws ConnectException, AblyException {
-        try {
-            realtime = new AblyRealtime(connectorConfig.clientOptions);
-            realtime.connection.on(connectionStateChange -> {
-                if (connectionStateChange.current == ConnectionState.failed) {
-                    logger.error("Connection failed with error: {}", connectionStateChange.reason);
-                    connectionFailed.set(true);
-                } else if (connectionStateChange.current == ConnectionState.connected) {
-                    logger.info("Ably connection successfully established");
-                    suspensionCallback.onSuspendedStateChange(false);
-                } else if (connectionStateChange.current == ConnectionState.suspended) {
-                    logger.info("Ably connection is suspended");
-                    suspensionCallback.onSuspendedStateChange(true);
-                }
-            });
+    public void connect() throws ConnectException, AblyException {
 
-        } catch (AblyException e) {
-            logger.error("error initializing ably client", e);
-        }
     }
 
     @Override
@@ -96,6 +80,11 @@ public class DefaultAblyClient implements AblyClient {
             logger.error(e.getMessage(), e);
             throw new ConnectException("Configuration error", e);
         }
+    }
+
+    @Override
+    public void publishBatch(List<SinkRecord> records) throws ConnectException, AblyException {
+
     }
 
     protected boolean shouldSkip(SinkRecord record) {

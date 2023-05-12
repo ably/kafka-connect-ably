@@ -182,10 +182,14 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
     public static final String BATCH_EXECUTION_THREAD_POOL_SIZE = "batchExecutionThreadPoolSize";
 
+    public static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT = "10";
+
     private static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DOC = "Size of Thread pool that is used to batch the records" +
             "and call Ably REST API(Batch)";
 
     public static final String BATCH_EXECUTION_FLUSH_TIME = "batchExecutionFlushTime";
+
+    public static final String BATCH_EXECUTION_FLUSH_TIME_DEFAULT = "5000";
 
     private static final String BATCH_EXECUTION_FLUSH_TIME_DOC = "Time period in milliseconds when the buffer " +
             "is flushed(calling REST Batch Ably API)";
@@ -574,14 +578,14 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                 ConfigKeyBuilder.of(BATCH_EXECUTION_THREAD_POOL_SIZE, Type.INT)
                     .documentation(BATCH_EXECUTION_THREAD_POOL_SIZE_DOC)
                     .importance(Importance.MEDIUM)
-                    .defaultValue(10)
+                    .defaultValue(Integer.parseInt(BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT))
                     .build()
             )
             .define(
                 ConfigKeyBuilder.of(BATCH_EXECUTION_FLUSH_TIME, Type.INT)
                         .documentation(BATCH_EXECUTION_FLUSH_TIME_DOC)
                         .importance(Importance.MEDIUM)
-                        .defaultValue(5000)
+                        .defaultValue(Integer.parseInt(BATCH_EXECUTION_FLUSH_TIME_DEFAULT))
                         .build()
         );
     }

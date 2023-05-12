@@ -4,13 +4,14 @@ import io.ably.lib.types.AblyException;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 
+import java.util.List;
+
 public interface AblyClient {
     /**
      * Connect to an Ably service.
-     * @param suspensionCallback callback to tell the client whether the connection was suspended.
      * @throws ConnectException if the connection fails
      */
-    void connect(SuspensionCallback suspensionCallback) throws ConnectException, AblyException;
+    void connect() throws ConnectException, AblyException;
 
     /**
      * Publish a sink record to Ably.
@@ -19,6 +20,14 @@ public interface AblyClient {
      * throws ConnectException if the publish fails for reasons implementors decide.
     * */
     void publishFrom(SinkRecord record) throws ConnectException;
+
+    /**
+     * Publish a batch of Sink records to Ably Batch REST API.
+     * @param records
+     * @throws ConnectException
+     * @throws AblyException
+     */
+    void publishBatch(List<SinkRecord> records) throws ConnectException, AblyException;
     /**
      * Stop the ability to publish messages to Ably.
      * */
