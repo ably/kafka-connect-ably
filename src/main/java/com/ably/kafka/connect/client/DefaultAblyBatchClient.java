@@ -49,7 +49,7 @@ public class DefaultAblyBatchClient implements AblyClient {
 
     @Override
     public void connect() throws ConnectException, AblyException {
-        this.restClient = new AblyRest(String.valueOf(connectorConfig.getPassword(CLIENT_KEY)));
+        this.restClient = new AblyRest(connectorConfig.getPassword(CLIENT_KEY).value());
     }
 
     @Override
@@ -64,27 +64,20 @@ public class DefaultAblyBatchClient implements AblyClient {
      */
     public void publishBatch(List<SinkRecord> records) throws ConnectException, AblyException {
 
-        BatchSpec batch;
-        Set<String> channelIdSet = new HashSet<>();
-        List<Message> messages = new ArrayList<>();
+        if(!records.isEmpty()) {
+            Map<String, List<Message>> groupedMessages = groupMessagesByChannel(records);
 
-        for(SinkRecord record: records) {
-            if (shouldSkip(record)) return;
-
-            try {
-                final String channelName = channelSinkMapping.getChannelName(record);
-                final Message message = messageSinkMapping.getMessage(record);
-
-                channelIdSet.add(channelName);
-                messages.add(message);
-
-            } catch (Exception e) {
-               logger.error("publishBatch exception translating from sink record", e);
+            if(groupedMessages != null && !groupedMessages.isEmpty())
+            {
+                groupedMessages.forEach((key, value) -> {
+                    logger.info("Ably BATCH call -Thread(" + Thread.currentThread().getName() + ")" + "Num Records:" + groupedMessages.size());
+                    try {
+                        sendBatches(new BatchSpec(Set.of(key), value));
+                    } catch (AblyException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
-
-            batch = new BatchSpec(channelIdSet, messages);
-            logger.debug("Ably BATCH call");
-            sendBatches(batch);
         }
     }
 
@@ -93,25 +86,29 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @param sinkRecords
      * @return
      */
-    public Map<String, Set<Message>> groupMessages(List<SinkRecord> sinkRecords) {
+    public Map<String, List<Message>> groupMessagesByChannel(List<SinkRecord> sinkRecords) {
 
-        HashMap<String, Set<Message>> channelNameToMessagesMap = new HashMap();
+        HashMap<String, List<Message>> channelNameToMessagesMap = new HashMap();
 
         for(SinkRecord record: sinkRecords) {
-            if (!shouldSkip(record)){
-                final String channelName = channelSinkMapping.getChannelName(record);
-                final Message message = messageSinkMapping.getMessage(record);
+            try {
+                if (!shouldSkip(record)) {
+                    final String channelName = channelSinkMapping.getChannelName(record);
+                    final Message message = messageSinkMapping.getMessage(record);
 
-                Set<Message> messages;
-                if(channelNameToMessagesMap.containsKey(channelName)) {
-                    // just retrieve the list and add to it.
-                    messages = channelNameToMessagesMap.get(channelName);
-                } else {
-                    // Create a new Set.
-                    messages = new HashSet<>();
+                    List<Message> messages;
+                    if (channelNameToMessagesMap.containsKey(channelName)) {
+                        // just retrieve the list and add to it.
+                        messages = channelNameToMessagesMap.get(channelName);
+                    } else {
+                        // Create a new Set.
+                        messages = new ArrayList<>();
+                    }
+                    messages.add(message);
+                    channelNameToMessagesMap.put(channelName, messages);
                 }
-                messages.add(message);
-                channelNameToMessagesMap.put(channelName, messages);
+            } catch(Exception e) {
+                logger.error("Error transforming sink record", e);
             }
         }
 

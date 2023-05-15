@@ -9,6 +9,8 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -35,7 +37,16 @@ public class BatchProcessingThread implements Runnable {
         // Process the records.
         if(this.records.size() > 0) {
             try {
-                this.client.publishBatch(Lists.newArrayList(this.records.iterator()));
+                ArrayList<SinkRecord> subsetRecords = new ArrayList<>();
+                while(true) {
+                    final SinkRecord record = this.records.poll();
+                    if(record == null) {
+                        break;
+                    } else {
+                        subsetRecords.add(record);
+                    }
+                }
+                this.client.publishBatch(subsetRecords);
             } catch (AblyException e) {
                 throw new RuntimeException(e);
             }

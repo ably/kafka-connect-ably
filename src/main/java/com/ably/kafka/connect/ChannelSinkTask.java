@@ -64,16 +64,21 @@ public class ChannelSinkTask extends SinkTask {
                 .getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_THREAD_POOL_SIZE,
                         ChannelSinkConnectorConfig.BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT)));
 
-        this.executor.scheduleAtFixedRate(this.batchProcessingThread, 0,
-                Integer.parseInt(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_FLUSH_TIME,
-                        ChannelSinkConnectorConfig.BATCH_EXECUTION_FLUSH_TIME_DEFAULT)),
-                TimeUnit.MILLISECONDS);
+        for(int i = 0; i < this.executor.getCorePoolSize(); i++) {
+            this.executor.scheduleAtFixedRate(this.batchProcessingThread, 0,
+                    Integer.parseInt(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_FLUSH_TIME,
+                            ChannelSinkConnectorConfig.BATCH_EXECUTION_FLUSH_TIME_DEFAULT)),
+                    TimeUnit.MILLISECONDS);
+        }
 
     }
 
     @Override
     public void put(Collection<SinkRecord> records) {
-        this.sinkRecords.addAll(records);
+        if(records.size() > 0) {
+            logger.info("SinkTask put - Num records: "+ records.size());
+            this.sinkRecords.addAll(records);
+        }
     }
 
     @Override

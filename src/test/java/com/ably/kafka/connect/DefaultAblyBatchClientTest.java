@@ -19,14 +19,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class DefaultAblyBatchClientTest {
 
     @Test
-    public void testGroupMessages() {
+    public void testGroupMessagesByChannel() {
 
-        final String STATIC_CHANNEL_NAME = "sink-channel";
+        final String STATIC_CHANNEL_NAME = "channel_#{topic}";
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
                 STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
@@ -36,17 +35,34 @@ public class DefaultAblyBatchClientTest {
         DefaultAblyBatchClient client = new DefaultAblyBatchClient(connectorConfig, channelSinkMapping,
                 messageSinkMapping, configValueEvaluator);
 
-        List<SinkRecord> sinkRecords = new ArrayList<SinkRecord>();
-        SinkRecord sinkRecord1 = new SinkRecord("greatTopic", 0, Schema.STRING_SCHEMA, "myKey".getBytes(),
+        List<SinkRecord> sinkRecords = new ArrayList<>();
+        SinkRecord sinkRecord1 = new SinkRecord("topic1", 0, Schema.STRING_SCHEMA, "myKey".getBytes(),
                 null, null, 0);
 
-        SinkRecord sinkRecord2 = new SinkRecord("greatTopic", 0, Schema.STRING_SCHEMA, "myKey2".getBytes(),
+        SinkRecord sinkRecord2 = new SinkRecord("topic1", 0, Schema.STRING_SCHEMA, "myKey2".getBytes(),
+                null, null, 0);
+
+        SinkRecord sinkRecord3 = new SinkRecord("topic2", 1, Schema.STRING_SCHEMA, "myKey3".getBytes(),
+                null, null, 0);
+
+        SinkRecord sinkRecord4 = new SinkRecord("topic2", 1, Schema.STRING_SCHEMA, "myKey4".getBytes(),
                 null, null, 0);
 
         sinkRecords.add(sinkRecord1);
         sinkRecords.add(sinkRecord2);
-        Map<String, Set<Message>> result = client.groupMessages(sinkRecords);
+        sinkRecords.add(sinkRecord3);
+        sinkRecords.add(sinkRecord4);
+
+
+        Map<String, List<Message>> result = client.groupMessagesByChannel(sinkRecords);
 
         Assert.assertTrue(result != null);
+
+        Assert.assertTrue(result.size() == 2);
+        Assert.assertTrue(result.containsKey("channel_topic1"));
+        Assert.assertTrue(result.containsKey("channel_topic2"));
+        Assert.assertTrue(result.get("channel_topic1").size() == 2);
+        Assert.assertTrue(result.get("channel_topic2").size() == 2);
+
     }
 }
