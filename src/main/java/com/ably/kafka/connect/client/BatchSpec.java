@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class BatchSpec {
+final public class BatchSpec {
     private final Set<String> channels;
     private final List<Message> messages;
     BatchSpec(Set<String> channels, List<Message> messages) {

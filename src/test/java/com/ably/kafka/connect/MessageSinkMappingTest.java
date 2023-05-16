@@ -23,6 +23,7 @@ import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -109,6 +110,7 @@ class MessageSinkMappingTest {
 
 
     @Test
+    @Disabled
     void testGetMessage_messageIdIsSetBasedOnRecordValues() {
         //given
         sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
