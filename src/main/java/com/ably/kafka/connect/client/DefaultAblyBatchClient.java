@@ -52,11 +52,6 @@ public class DefaultAblyBatchClient implements AblyClient {
         this.restClient = new AblyRest(connectorConfig.getPassword(CLIENT_KEY).value());
     }
 
-    @Override
-    public void publishFrom(SinkRecord record) throws ConnectException {
-
-    }
-
     /**
      * Function that uses the REST API client to send batches.
      * @param records list of sink records.
