@@ -14,14 +14,6 @@ public interface AblyClient {
     void connect() throws ConnectException, AblyException;
 
     /**
-     * Publish a sink record to Ably.
-     * @param record the record to publish
-     *
-     * throws ConnectException if the publish fails for reasons implementors decide.
-    * */
-    void publishFrom(SinkRecord record) throws ConnectException;
-
-    /**
      * Publish a batch of Sink records to Ably Batch REST API.
      * @param records
      * @throws ConnectException
