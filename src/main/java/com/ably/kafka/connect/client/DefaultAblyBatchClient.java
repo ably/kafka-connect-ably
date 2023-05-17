@@ -70,7 +70,7 @@ public class DefaultAblyBatchClient implements AblyClient {
             if(groupedMessages != null && !groupedMessages.isEmpty())
             {
                 groupedMessages.forEach((key, value) -> {
-                    logger.info("Ably BATCH call -Thread(" + Thread.currentThread().getName() + ")" + "Num Records:" + groupedMessages.size());
+                    logger.debug("Ably BATCH call -Thread(" + Thread.currentThread().getName() + ")" + "Num Records:" + value.size());
                     try {
                         sendBatches(new BatchSpec(Set.of(key), value));
                     } catch (AblyException e) {

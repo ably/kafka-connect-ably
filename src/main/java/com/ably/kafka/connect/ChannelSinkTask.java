@@ -76,7 +76,7 @@ public class ChannelSinkTask extends SinkTask {
     @Override
     public void put(Collection<SinkRecord> records) {
         if(records.size() > 0) {
-            logger.info("SinkTask put - Num records: "+ records.size());
+            logger.debug("SinkTask put - Num records: "+ records.size());
             this.sinkRecords.addAll(records);
         }
     }
