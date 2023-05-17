@@ -180,7 +180,7 @@
       <artifactId>reflections</artifactId>
       <version>0.9.10</version>
     </dependency>
-    R
+
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka_${kafka.scala.version}</artifactId>
