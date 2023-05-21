@@ -1,7 +1,6 @@
 package com.ably.kafka.connect;
 
-import com.ably.kafka.connect.batch.BatchProcessingExecutor;
-import com.ably.kafka.connect.batch.BatchProcessingThread;
+import com.ably.kafka.connect.batch.SinkRecordsProcessingThread;
 import com.ably.kafka.connect.client.AblyClient;
 import com.ably.kafka.connect.client.AblyClientFactory;
 import com.ably.kafka.connect.client.DefaultAblyBatchClient;
@@ -20,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class ChannelSinkTask extends SinkTask {
@@ -28,9 +29,9 @@ public class ChannelSinkTask extends SinkTask {
     private AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory();
     private DefaultAblyBatchClient ablyClient;
 
-    private BatchProcessingThread batchProcessingThread = null;
+    private SinkRecordsProcessingThread sinkRecordsProcessingThread = null;
 
-    private BatchProcessingExecutor executor = null;
+    private ScheduledExecutorService executor = null;
 
     private ConcurrentLinkedQueue<SinkRecord> sinkRecords = null;
 
@@ -52,24 +53,22 @@ public class ChannelSinkTask extends SinkTask {
 
         try {
             this.ablyClient = (DefaultAblyBatchClient) this.ablyClientFactory.create(settings);
-            this.ablyClient.connect();
         } catch (ChannelSinkConnectorConfig.ConfigException | AblyException e) {
             throw new RuntimeException(e);
         }
 
+        int maxThreadPoolSize = Integer.parseInt(settings.getOrDefault
+                (ChannelSinkConnectorConfig.BATCH_EXECUTION_THREAD_POOL_SIZE,
+        ChannelSinkConnectorConfig.BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT));
         // start the Batch processing thread.
         this.sinkRecords = new ConcurrentLinkedQueue<>();
-        this.batchProcessingThread = new BatchProcessingThread(this.sinkRecords, this.ablyClient);
-        this.executor = new BatchProcessingExecutor(Integer.parseInt(settings
-                .getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_THREAD_POOL_SIZE,
-                        ChannelSinkConnectorConfig.BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT)));
+        this.sinkRecordsProcessingThread = new SinkRecordsProcessingThread(this.sinkRecords,
+                this.ablyClient, maxThreadPoolSize);
+        this.executor =  Executors.newSingleThreadScheduledExecutor();
 
-        for(int i = 0; i < this.executor.getCorePoolSize(); i++) {
-            this.executor.scheduleAtFixedRate(this.batchProcessingThread, 0,
-                    Integer.parseInt(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_FLUSH_TIME,
-                            ChannelSinkConnectorConfig.BATCH_EXECUTION_FLUSH_TIME_DEFAULT)),
-                    TimeUnit.MILLISECONDS);
-        }
+        this.executor.scheduleAtFixedRate(this.sinkRecordsProcessingThread, 0, Integer.parseInt(settings.getOrDefault
+                (ChannelSinkConnectorConfig.BATCH_EXECUTION_FLUSH_TIME,
+                        ChannelSinkConnectorConfig.BATCH_EXECUTION_FLUSH_TIME_DEFAULT)), TimeUnit.MILLISECONDS);
 
     }
 

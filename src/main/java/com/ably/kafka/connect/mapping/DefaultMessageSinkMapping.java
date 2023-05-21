@@ -62,4 +62,8 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
         }
         throw new ConnectException("Unsupported value schema type: " + valueSchema.type());
     }
+
+//    private boolean checkIfMessageExceeedsByteLimit(Message message, Long messageLimit) {
+//        return message.data > 1024 * messageLimit;
+//    }
 }

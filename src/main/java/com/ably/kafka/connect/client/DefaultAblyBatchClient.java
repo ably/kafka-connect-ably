@@ -39,16 +39,11 @@ public class DefaultAblyBatchClient implements AblyClient {
     AblyRest restClient;
 
     public DefaultAblyBatchClient(ChannelSinkConnectorConfig connectorConfig, ChannelSinkMapping channelSinkMapping,
-                                  MessageSinkMapping messageSinkMapping, ConfigValueEvaluator configValueEvaluator) {
+                                  MessageSinkMapping messageSinkMapping, ConfigValueEvaluator configValueEvaluator) throws AblyException {
         this.connectorConfig = connectorConfig;
         this.channelSinkMapping = channelSinkMapping;
         this.messageSinkMapping = messageSinkMapping;
         this.configValueEvaluator = configValueEvaluator;
-
-    }
-
-    @Override
-    public void connect() throws ConnectException, AblyException {
         this.restClient = new AblyRest(connectorConfig.getPassword(CLIENT_KEY).value());
     }
 
@@ -57,7 +52,7 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @param records list of sink records.
      * @throws ConnectException
      */
-    public void publishBatch(List<SinkRecord> records) throws ConnectException, AblyException {
+    public void publishBatch(List<SinkRecord> records) throws ConnectException {
 
         if(!records.isEmpty()) {
             Map<String, List<Message>> groupedMessages = groupMessagesByChannel(records);
@@ -139,8 +134,7 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @param batch
      * @throws AblyException
      */
-    private void sendBatches(
-            final BatchSpec batch) throws AblyException {
+    public void sendBatches(final BatchSpec batch) throws AblyException {
         final HttpCore.RequestBody body = new HttpUtils.JsonRequestBody(batch);
         final Param[] params = new Param[] { new Param("newBatchResponse", "true") };
         final HttpPaginatedResponse response =

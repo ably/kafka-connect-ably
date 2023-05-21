@@ -8,12 +8,6 @@ import java.util.List;
 
 public interface AblyClient {
     /**
-     * Connect to an Ably service.
-     * @throws ConnectException if the connection fails
-     */
-    void connect() throws ConnectException, AblyException;
-
-    /**
      * Publish a batch of Sink records to Ably Batch REST API.
      * @param records
      * @throws ConnectException

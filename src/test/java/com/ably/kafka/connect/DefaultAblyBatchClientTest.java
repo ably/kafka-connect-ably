@@ -9,21 +9,21 @@ import com.ably.kafka.connect.mapping.ChannelSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
+import io.ably.lib.types.AblyException;
 import io.ably.lib.types.Message;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.sink.SinkRecord;
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DefaultAblyBatchClientTest {
 
     @Test
-    public void testGroupMessagesByChannel() {
+    public void testGroupMessagesByChannel() throws AblyException {
 
         final String STATIC_CHANNEL_NAME = "channel_#{topic}";
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
@@ -56,13 +56,13 @@ public class DefaultAblyBatchClientTest {
 
         Map<String, List<Message>> result = client.groupMessagesByChannel(sinkRecords);
 
-        Assert.assertTrue(result != null);
+        assertTrue(result != null);
 
-        Assert.assertTrue(result.size() == 2);
-        Assert.assertTrue(result.containsKey("channel_topic1"));
-        Assert.assertTrue(result.containsKey("channel_topic2"));
-        Assert.assertTrue(result.get("channel_topic1").size() == 2);
-        Assert.assertTrue(result.get("channel_topic2").size() == 2);
+        assertTrue(result.size() == 2);
+        assertTrue(result.containsKey("channel_topic1"));
+        assertTrue(result.containsKey("channel_topic2"));
+        assertTrue(result.get("channel_topic1").size() == 2);
+        assertTrue(result.get("channel_topic2").size() == 2);
 
     }
 }

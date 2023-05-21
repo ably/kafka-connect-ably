@@ -9,7 +9,7 @@ import java.util.Set;
 final public class BatchSpec {
     private final Set<String> channels;
     private final List<Message> messages;
-    BatchSpec(Set<String> channels, List<Message> messages) {
+    public BatchSpec(Set<String> channels, List<Message> messages) {
         this.channels = channels;
         this.messages = messages;
     }
