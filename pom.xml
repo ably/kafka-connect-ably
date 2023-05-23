@@ -170,6 +170,12 @@
       <version>2.9.0</version>
     </dependency>
 
+    <!-- To get memory footprint of objects -->
+    <dependency>
+      <groupId>org.openjdk.jol</groupId>
+      <artifactId>jol-core</artifactId>
+      <version>0.17</version>
+    </dependency>
     <!--
       Pin reflections to 0.9.10 to prevent the following error when running DocumentationTest.java:
 

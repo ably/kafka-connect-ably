@@ -52,6 +52,7 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @param records list of sink records.
      * @throws ConnectException
      */
+    @Override
     public void publishBatch(List<SinkRecord> records) throws ConnectException {
 
         if(!records.isEmpty()) {
@@ -103,11 +104,6 @@ public class DefaultAblyBatchClient implements AblyClient {
         }
 
         return channelNameToMessagesMap;
-    }
-
-    @Override
-    public void stop() {
-
     }
 
     protected boolean shouldSkip(SinkRecord record) {

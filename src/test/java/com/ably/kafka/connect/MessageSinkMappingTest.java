@@ -2,6 +2,8 @@ package com.ably.kafka.connect;
 
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
+import com.ably.kafka.connect.config.DefaultChannelConfig;
+import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
 import com.ably.kafka.connect.utils.AvroToStruct;
@@ -30,14 +32,17 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.openjdk.jol.vm.VM;
 
 class MessageSinkMappingTest {
     private static final String STATIC_MESSAGE_NAME = "static-message";
@@ -276,6 +281,29 @@ class MessageSinkMappingTest {
         assertEquals(exception.getMessage(), String.format("Unsupported value schema type: %s", mapSchema.type()));
     }
 
+    @Test
+    void test_checkIfMessageExceedsByteLimit() {
+        //final Schema mapSchema = SchemaBuilder.type(Schema.Type.MAP).build();
+        final Map<String, String> map = Map.of("key1", "value1", "key2", "value2");
+
+        char f = '+';
+        char [] charArray = new char [100000];
+        Arrays.fill(charArray, f);
+
+        DefaultMessageSinkMapping sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
+        boolean resultPositive = sinkMapping.checkIfMessageExceedsByteLimit(new Message("msg1", charArray));
+
+        assertTrue(resultPositive == true);
+
+        char [] charArrayNegative = new char [1000];
+        Arrays.fill(charArrayNegative, f);
+
+        boolean resultNegative = sinkMapping.checkIfMessageExceedsByteLimit(new Message("msg1", charArrayNegative));
+
+        assertTrue(resultNegative == false);
+
+
+    }
 
     private AvroToStruct.Garage exampleGarage(String name) {
         final AvroToStruct.Part part = new AvroToStruct.Part("wheel", 100);

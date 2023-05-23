@@ -4,6 +4,7 @@ import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import com.ably.kafka.connect.config.DefaultChannelConfig;
 import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
+import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
 import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.realtime.Channel;
 import io.ably.lib.types.AblyException;
@@ -21,7 +22,8 @@ class DefaultChannelSinkMappingTest {
 
     //dependencies
     private static final String STATIC_CHANNEL_NAME = "sink-channel";
-    private static ChannelSinkConnectorConfig STATIC_CHANNEL_CONFIG = new ChannelSinkConnectorConfig(Map.of("channel", STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
+    private static ChannelSinkConnectorConfig STATIC_CHANNEL_CONFIG = new ChannelSinkConnectorConfig(Map.of("channel",
+            STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
     private AblyRealtime ablyRealtime;
 
     @BeforeEach

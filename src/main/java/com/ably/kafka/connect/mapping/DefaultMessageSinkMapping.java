@@ -4,6 +4,7 @@ import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import com.ably.kafka.connect.utils.RecordHeaderConversions;
 import com.ably.kafka.connect.utils.StructToJsonConverter;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.ably.lib.types.Message;
@@ -16,6 +17,7 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import javax.annotation.Nonnull;
 
 import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.MESSAGE_CONFIG;
+import org.openjdk.jol.vm.VM;
 
 public class DefaultMessageSinkMapping implements MessageSinkMapping {
     private static final Gson gson = new GsonBuilder().serializeNulls().create();
@@ -31,6 +33,7 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
     @Override
     public Message getMessage(SinkRecord record) {
         final Message message = messageFromRecord(record);
+        //ToDo: Temporarily disabling, needs to be enabled again for Idempotency.
         //message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
 
         final MessageExtras extras = RecordHeaderConversions.toMessageExtras(record);
@@ -39,6 +42,23 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
         }
 
         return message;
+    }
+
+    /**
+     * Checks if the message size exceeds the configured limit.
+     * @param message
+     * @return
+     */
+    public boolean checkIfMessageExceedsByteLimit(Message message) {
+        boolean result = false;
+
+        long sizeOfMessage = VM.current().sizeOf(message.data);
+        long messageLimit = sinkConnectorConfig.getInt(ChannelSinkConnectorConfig.MESSAGE_PAYLOAD_SIZE_MAX);
+
+        if (sizeOfMessage > messageLimit) {
+            result = true;
+        }
+        return result;
     }
 
     private Message messageFromRecord(SinkRecord record) {
@@ -63,7 +83,4 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
         throw new ConnectException("Unsupported value schema type: " + valueSchema.type());
     }
 
-//    private boolean checkIfMessageExceeedsByteLimit(Message message, Long messageLimit) {
-//        return message.data > 1024 * messageLimit;
-//    }
 }

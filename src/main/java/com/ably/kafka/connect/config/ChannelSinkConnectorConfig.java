@@ -184,6 +184,13 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
     public static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT = "10";
 
+    public static final String MESSAGE_PAYLOAD_SIZE_MAX = "messagePayloadSizeMax";
+
+    // max payload size in bytes(64KB)
+    public static final int MESSAGE_PAYLOAD_SIZE_MAX_DEFAULT = 64 * 1024;
+
+    private static final String MESSAGE_PAYLOAD_SIZE_MAX_DOC = "Maximum size of the message payload in KB";
+
     private static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DOC = "Size of Thread pool that is used to batch the records" +
             "and call Ably REST API(Batch)";
 
@@ -579,6 +586,13 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .documentation(BATCH_EXECUTION_THREAD_POOL_SIZE_DOC)
                     .importance(Importance.MEDIUM)
                     .defaultValue(Integer.parseInt(BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT))
+                    .build()
+            )
+            .define(
+                ConfigKeyBuilder.of(MESSAGE_PAYLOAD_SIZE_MAX, Type.INT)
+                    .documentation(MESSAGE_PAYLOAD_SIZE_MAX_DOC)
+                    .importance(Importance.MEDIUM)
+                    .defaultValue(MESSAGE_PAYLOAD_SIZE_MAX_DEFAULT)
                     .build()
             )
             .define(

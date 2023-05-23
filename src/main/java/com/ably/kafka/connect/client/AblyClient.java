@@ -17,6 +17,5 @@ public interface AblyClient {
     /**
      * Stop the ability to publish messages to Ably.
      * */
-    void stop();
 }
 
