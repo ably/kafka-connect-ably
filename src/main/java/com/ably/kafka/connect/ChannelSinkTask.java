@@ -1,29 +1,29 @@
 package com.ably.kafka.connect;
 
-import com.ably.kafka.connect.batch.SinkRecordsProcessingThread;
+import com.ably.kafka.connect.batch.BatchProcessingThread;
 import com.ably.kafka.connect.client.AblyClient;
 import com.ably.kafka.connect.client.AblyClientFactory;
 import com.ably.kafka.connect.client.DefaultAblyBatchClient;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
+import com.ably.kafka.connect.config.KafkaRecordErrorReporter;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import com.google.common.annotations.VisibleForTesting;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.connect.errors.ConnectException;
-import org.apache.kafka.connect.sink.ErrantRecordReporter;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class ChannelSinkTask extends SinkTask {
@@ -32,11 +32,10 @@ public class ChannelSinkTask extends SinkTask {
     private AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory();
     private DefaultAblyBatchClient ablyClient;
 
-    private SinkRecordsProcessingThread sinkRecordsProcessingThread = null;
+    final BlockingQueue<Runnable> sinkRecordsQueue = new LinkedBlockingQueue<>();
+    private ThreadPoolExecutor executor = null;
 
-    private ScheduledExecutorService executor = null;
-
-    private ConcurrentLinkedQueue<SinkRecord> sinkRecords = null;
+    private int maxBufferLimit = 0;
 
     public ChannelSinkTask() {}
 
@@ -60,26 +59,45 @@ public class ChannelSinkTask extends SinkTask {
             throw new RuntimeException(e);
         }
 
-        int maxThreadPoolSize = Integer.parseInt(settings.getOrDefault
+        final int maxThreadPoolSize = Integer.parseInt(settings.getOrDefault
                 (ChannelSinkConnectorConfig.BATCH_EXECUTION_THREAD_POOL_SIZE,
-        ChannelSinkConnectorConfig.BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT));
-        // start the Batch processing thread.
-        this.sinkRecords = new ConcurrentLinkedQueue<>();
-        this.sinkRecordsProcessingThread = new SinkRecordsProcessingThread(this.sinkRecords,
-                this.ablyClient, maxThreadPoolSize);
-        this.executor =  Executors.newSingleThreadScheduledExecutor();
+                        ChannelSinkConnectorConfig.BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT));
 
-        this.executor.scheduleAtFixedRate(this.sinkRecordsProcessingThread, 0, Integer.parseInt(settings.getOrDefault
-                (ChannelSinkConnectorConfig.BATCH_EXECUTION_FLUSH_TIME,
-                        ChannelSinkConnectorConfig.BATCH_EXECUTION_FLUSH_TIME_DEFAULT)), TimeUnit.MILLISECONDS);
+        this.executor = new ThreadPoolExecutor(maxThreadPoolSize, maxThreadPoolSize, 30,
+                TimeUnit.SECONDS, sinkRecordsQueue,
+                new ThreadPoolExecutor.CallerRunsPolicy());
+
+        this.maxBufferLimit = Integer.parseInt(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE,
+                ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT));
+
 
     }
 
+    // Local buffer of records.
+    //List<SinkRecord> bufferedRecords = new ArrayList<SinkRecord>();
     @Override
     public void put(Collection<SinkRecord> records) {
+
         if(records.size() > 0) {
             logger.debug("SinkTask put - Num records: "+ records.size());
-            this.sinkRecords.addAll(records);
+
+            ArrayList<SinkRecord> bufferedRecords = new ArrayList<SinkRecord>();
+            Iterator<SinkRecord> it = records.iterator();
+            int index = 0;
+            while(it.hasNext()) {
+                if(index++ == this.maxBufferLimit) {
+                    // send the buffered records to the processing thread.
+                    this.executor.execute(new BatchProcessingThread(bufferedRecords, this.ablyClient));
+                    index = 0;
+                } else {
+                    bufferedRecords.add(it.next());
+                }
+            }
+
+            // Flush the remaining records.
+            if(!bufferedRecords.isEmpty()) {
+                this.executor.execute(new BatchProcessingThread(bufferedRecords, this.ablyClient));
+            }
         }
     }
 
@@ -98,6 +116,11 @@ public class ChannelSinkTask extends SinkTask {
         }
 
     }
+
+    static KafkaRecordErrorReporter noOpKafkaRecordErrorReporter() {
+        return (record, e) -> {};
+    }
+
 
     @Override
     public String version() {

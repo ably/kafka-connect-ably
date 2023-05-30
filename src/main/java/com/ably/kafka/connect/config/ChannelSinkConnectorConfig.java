@@ -202,6 +202,13 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
             "is flushed(calling REST Batch Ably API)";
 
 
+    public static final String BATCH_EXECUTION_MAX_BUFFER_SIZE = "batchExecutionMaxBufferSize";
+
+    public static final String BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT = "1000";
+
+    private static final String BATCH_EXECUTION_MAX_BUFFER_SIZE_DOC = "Size of the buffer, records " +
+            "are buffered or chunked before calling the Ably Batch REST API";
+
     // The name of the extra agent identifier to add to the Ably-Agent header to
     // identify this client as using the Ably Kafka Connector.
     private static final String ABLY_AGENT_HEADER_NAME = "kafka-connect-ably";
@@ -601,6 +608,13 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                         .importance(Importance.MEDIUM)
                         .defaultValue(Integer.parseInt(BATCH_EXECUTION_FLUSH_TIME_DEFAULT))
                         .build()
-        );
+            )
+            .define(
+               ConfigKeyBuilder.of(BATCH_EXECUTION_MAX_BUFFER_SIZE, Type.INT)
+                       .documentation(BATCH_EXECUTION_MAX_BUFFER_SIZE_DOC)
+                       .importance(Importance.MEDIUM)
+                       .defaultValue(Integer.parseInt(BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT))
+                       .build()
+            );
     }
 }

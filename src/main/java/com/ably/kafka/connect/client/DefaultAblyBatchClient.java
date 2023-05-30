@@ -56,18 +56,16 @@ public class DefaultAblyBatchClient implements AblyClient {
     public void publishBatch(List<SinkRecord> records) throws ConnectException {
 
         if(!records.isEmpty()) {
-            Map<String, List<Message>> groupedMessages = groupMessagesByChannel(records);
-
-            if(groupedMessages != null && !groupedMessages.isEmpty())
-            {
-                groupedMessages.forEach((key, value) -> {
-                    logger.debug("Ably BATCH call -Thread(" + Thread.currentThread().getName() + ")" + "Num Records:" + value.size());
-                    try {
-                        sendBatches(new BatchSpec(Set.of(key), value));
-                    } catch (AblyException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+            List<BatchSpec> batchSpecs = new ArrayList<>();
+            Map<String, List<Message>> groupedMessages = this.groupMessagesByChannel(records);
+            groupedMessages.forEach((key, value) -> {
+                batchSpecs.add(new BatchSpec(Set.of(key), value));
+            });
+            try {
+                logger.info("Ably BATCH call -Thread(" + Thread.currentThread().getName() + ")");
+                this.sendBatches(batchSpecs);
+            } catch (Exception e) {
+                logger.error("Error while sending batch", e);
             }
         }
     }
@@ -127,11 +125,11 @@ public class DefaultAblyBatchClient implements AblyClient {
     /**
      * Function that uses the Ably REST API
      * to send records in batches.
-     * @param batch
+     * @param batches
      * @throws AblyException
      */
-    public void sendBatches(final BatchSpec batch) throws AblyException {
-        final HttpCore.RequestBody body = new HttpUtils.JsonRequestBody(batch);
+    public void sendBatches(final List<BatchSpec> batches) throws AblyException {
+        final HttpCore.RequestBody body = new HttpUtils.JsonRequestBody(batches);
         final Param[] params = new Param[] { new Param("newBatchResponse", "true") };
         final HttpPaginatedResponse response =
                 this.restClient.request("POST", "/messages", params, body, null);

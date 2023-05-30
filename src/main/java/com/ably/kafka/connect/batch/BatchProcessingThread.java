@@ -1,9 +1,11 @@
 package com.ably.kafka.connect.batch;
 
-import com.ably.kafka.connect.client.BatchSpec;
 import com.ably.kafka.connect.client.DefaultAblyBatchClient;
+import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Part of the thread pool, responsibility
@@ -11,26 +13,17 @@ import org.slf4j.LoggerFactory;
  * for every batch.(its grouped by channel)
  */
 public class BatchProcessingThread implements Runnable{
-    private static final Logger logger = LoggerFactory.getLogger(BatchProcessingThread.class);
 
-    private final BatchSpec batch;
+    private final List<SinkRecord> records;
 
     private final DefaultAblyBatchClient batchClient;
 
-    public BatchProcessingThread(BatchSpec batch, DefaultAblyBatchClient ablyBatchClient) {
-        this.batch = batch;
+    public BatchProcessingThread(List<SinkRecord> sinkRecords, DefaultAblyBatchClient ablyBatchClient) {
+        this.records = sinkRecords;
         this.batchClient = ablyBatchClient;
     }
     @Override
     public void run() {
-        if(batch != null) {
-            // Send Batches.
-            try {
-                logger.debug("Ably BATCH call -Thread(" + Thread.currentThread().getName() + ")");
-                batchClient.sendBatches(batch);
-            } catch (Exception e) {
-                logger.error("Error while sending batch", e);
-            }
-        }
+        batchClient.publishBatch(records);
     }
 }

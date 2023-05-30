@@ -1,10 +1,4 @@
-FROM maven:3-openjdk-11 AS build
-
-WORKDIR /usr/src/app
-
-
 FROM confluentinc/cp-kafka-connect:6.0.2-1-ubi8
-
 COPY target/kafka-connect-target/usr/share/kafka-connect /plugins/
 
 ADD bin/docker-entrypoint.sh /bin/docker-entrypoint.sh
