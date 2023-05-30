@@ -10,14 +10,10 @@ import javax.annotation.Nonnull;
 
 public interface ChannelSinkMapping {
     /**
-     * Returns the channel for the given sink record.
-     *
-     * @param sinkRecord The sink record.
-     * @param ablyRealtime AblyRealtime instance.
-     * @return The channel.
+     * Create a new Ably channel based on the sink record.
+     * @param sinkRecord
+     * @return
+     * @throws AblyException
      */
-    Channel getChannel(@Nonnull SinkRecord sinkRecord,@Nonnull AblyRealtime ablyRealtime) throws AblyException,
-            ChannelSinkConnectorConfig.ConfigException;
-
     String getChannelName(@Nonnull SinkRecord sinkRecord);
 }

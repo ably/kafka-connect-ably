@@ -114,7 +114,7 @@ public class DefaultAblyBatchClient implements AblyClient {
             final ConfigValueEvaluator.Result channelResult = configValueEvaluator.evaluate(record, channelConfig, true);
 
             if (messageResult.shouldSkip() || channelResult.shouldSkip()) {
-                logger.warn("Skipping record as record key is not available in a record where the config for either" +
+                logger.debug("Skipping record as record key is not available in a record where the config for either" +
                         " 'message.name' or 'channel' is configured to use #{key} as placeholders {}", record);
                 return true;
             }

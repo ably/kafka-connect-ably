@@ -33,7 +33,7 @@ public class ChannelSinkTask extends SinkTask {
     private DefaultAblyBatchClient ablyClient;
 
     final BlockingQueue<Runnable> sinkRecordsQueue = new LinkedBlockingQueue<>();
-    private ThreadPoolExecutor executor = null;
+    private ThreadPoolExecutor executor;
 
     private int maxBufferLimit = 0;
 
