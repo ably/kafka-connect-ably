@@ -16,7 +16,6 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,24 +34,15 @@ public class DefaultAblyBatchClientTest {
         DefaultAblyBatchClient client = new DefaultAblyBatchClient(connectorConfig, channelSinkMapping,
                 messageSinkMapping, configValueEvaluator);
 
-        List<SinkRecord> sinkRecords = new ArrayList<>();
-        SinkRecord sinkRecord1 = new SinkRecord("topic1", 0, Schema.STRING_SCHEMA, "myKey".getBytes(),
-                null, null, 0);
-
-        SinkRecord sinkRecord2 = new SinkRecord("topic1", 0, Schema.STRING_SCHEMA, "myKey2".getBytes(),
-                null, null, 0);
-
-        SinkRecord sinkRecord3 = new SinkRecord("topic2", 1, Schema.STRING_SCHEMA, "myKey3".getBytes(),
-                null, null, 0);
-
-        SinkRecord sinkRecord4 = new SinkRecord("topic2", 1, Schema.STRING_SCHEMA, "myKey4".getBytes(),
-                null, null, 0);
-
-        sinkRecords.add(sinkRecord1);
-        sinkRecords.add(sinkRecord2);
-        sinkRecords.add(sinkRecord3);
-        sinkRecords.add(sinkRecord4);
-
+        List<SinkRecord> sinkRecords = List.of(
+                new SinkRecord("topic1", 0, Schema.STRING_SCHEMA, "myKey".getBytes(),
+                null, null, 0),
+                new SinkRecord("topic1", 0, Schema.STRING_SCHEMA, "myKey2".getBytes(),
+                null, null, 0),
+                new SinkRecord("topic2", 1, Schema.STRING_SCHEMA, "myKey3".getBytes(),
+                null, null, 0),
+                new SinkRecord("topic2", 1, Schema.STRING_SCHEMA, "myKey4".getBytes(),
+                null, null, 0));
 
         Map<String, List<Message>> result = client.groupMessagesByChannel(sinkRecords);
 

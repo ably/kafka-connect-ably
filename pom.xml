@@ -11,6 +11,7 @@
   <properties>
     <kafka.version>3.1.0</kafka.version>
     <kafka.scala.version>2.13</kafka.scala.version>
+    <guava.version>32.0.0-jre</guava.version>
   </properties>
 
   <name>kafka-connect-ably</name>
@@ -137,8 +138,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>9</source>
-          <target>9</target>
+          <source>16</source>
+          <target>16</target>
         </configuration>
       </plugin>
     </plugins>
@@ -170,12 +171,14 @@
       <version>2.9.0</version>
     </dependency>
 
-    <!-- To get memory footprint of objects -->
+    <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
     <dependency>
-      <groupId>org.openjdk.jol</groupId>
-      <artifactId>jol-core</artifactId>
-      <version>0.17</version>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
     </dependency>
+
+
     <!--
       Pin reflections to 0.9.10 to prevent the following error when running DocumentationTest.java:
 

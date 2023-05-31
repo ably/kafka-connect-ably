@@ -53,7 +53,6 @@ public class ConfigValueEvaluator {
             if (skippable) {
                 return new Result(true, null);
             }
-            // throw new IllegalArgumentException("Key is null or not a string type but pattern contains #{key}");
         }
 
         if (keyString != null) {

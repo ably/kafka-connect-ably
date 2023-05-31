@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,16 +84,9 @@ public class DefaultAblyBatchClient implements AblyClient {
                     final String channelName = channelSinkMapping.getChannelName(record);
                     final Message message = messageSinkMapping.getMessage(record);
 
-                    List<Message> messages;
-                    if (channelNameToMessagesMap.containsKey(channelName)) {
-                        // just retrieve the list and add to it.
-                        messages = channelNameToMessagesMap.get(channelName);
-                    } else {
-                        // Create a new Set.
-                        messages = new ArrayList<>();
-                    }
-                    messages.add(message);
-                    channelNameToMessagesMap.put(channelName, messages);
+                    final List<Message> updatedMessages = channelNameToMessagesMap.getOrDefault(channelName, new ArrayList<>());
+                    updatedMessages.add(message);
+                    channelNameToMessagesMap.put(channelName, updatedMessages);
                 }
             } catch(Exception e) {
                 logger.error("Error transforming sink record", e);

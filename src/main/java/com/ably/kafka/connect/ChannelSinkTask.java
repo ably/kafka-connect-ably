@@ -9,6 +9,7 @@ import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.KafkaRecordErrorReporter;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -17,9 +18,7 @@ import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,7 +31,7 @@ public class ChannelSinkTask extends SinkTask {
     private AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory();
     private DefaultAblyBatchClient ablyClient;
 
-    final BlockingQueue<Runnable> sinkRecordsQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Runnable> sinkRecordsQueue = new LinkedBlockingQueue<>();
     private ThreadPoolExecutor executor;
 
     private int maxBufferLimit = 0;
@@ -79,25 +78,11 @@ public class ChannelSinkTask extends SinkTask {
     public void put(Collection<SinkRecord> records) {
 
         if(records.size() > 0) {
-            logger.debug("SinkTask put - Num records: "+ records.size());
+            logger.debug("SinkTask put - Num records: " + records.size());
 
-            ArrayList<SinkRecord> bufferedRecords = new ArrayList<SinkRecord>();
-            Iterator<SinkRecord> it = records.iterator();
-            int index = 0;
-            while(it.hasNext()) {
-                if(index++ == this.maxBufferLimit) {
-                    // send the buffered records to the processing thread.
-                    this.executor.execute(new BatchProcessingThread(bufferedRecords, this.ablyClient));
-                    index = 0;
-                } else {
-                    bufferedRecords.add(it.next());
-                }
-            }
-
-            // Flush the remaining records.
-            if(!bufferedRecords.isEmpty()) {
-                this.executor.execute(new BatchProcessingThread(bufferedRecords, this.ablyClient));
-            }
+            Lists.partition(records.stream().toList(), this.maxBufferLimit).forEach(batch -> {
+                this.executor.execute(new BatchProcessingThread(batch, this.ablyClient));
+            });
         }
     }
 

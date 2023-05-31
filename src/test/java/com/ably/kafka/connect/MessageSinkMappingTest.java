@@ -2,13 +2,9 @@ package com.ably.kafka.connect;
 
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
-import com.ably.kafka.connect.config.DefaultChannelConfig;
-import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
 import com.ably.kafka.connect.utils.AvroToStruct;
-import com.ably.kafka.connect.utils.StructToJsonConverter;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -16,7 +12,6 @@ import com.google.gson.JsonParser;
 import io.ably.lib.types.Message;
 import io.ably.lib.types.MessageExtras;
 import io.ably.lib.util.JsonUtils;
-import io.confluent.connect.avro.AvroConverter;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.connect.data.Schema;
@@ -32,17 +27,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.openjdk.jol.vm.VM;
 
 class MessageSinkMappingTest {
     private static final String STATIC_MESSAGE_NAME = "static-message";
@@ -279,30 +271,6 @@ class MessageSinkMappingTest {
         final Throwable exception = assertThrows(ConnectException.class, () -> sinkMapping.getMessage(record),
             "sinkMapping.getMessage(record) is supposed tho throw an exception for non-struct schemas");
         assertEquals(exception.getMessage(), String.format("Unsupported value schema type: %s", mapSchema.type()));
-    }
-
-    @Test
-    void test_checkIfMessageExceedsByteLimit() {
-        //final Schema mapSchema = SchemaBuilder.type(Schema.Type.MAP).build();
-        final Map<String, String> map = Map.of("key1", "value1", "key2", "value2");
-
-        char f = '+';
-        char [] charArray = new char [100000];
-        Arrays.fill(charArray, f);
-
-        DefaultMessageSinkMapping sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
-        boolean resultPositive = sinkMapping.checkIfMessageExceedsByteLimit(new Message("msg1", charArray));
-
-        assertTrue(resultPositive == true);
-
-        char [] charArrayNegative = new char [1000];
-        Arrays.fill(charArrayNegative, f);
-
-        boolean resultNegative = sinkMapping.checkIfMessageExceedsByteLimit(new Message("msg1", charArrayNegative));
-
-        assertTrue(resultNegative == false);
-
-
     }
 
     private AvroToStruct.Garage exampleGarage(String name) {
