@@ -108,6 +108,8 @@ class MessageSinkMappingTest {
 
     @Test
     @Disabled
+    //ToDo: Temporarily disabling, revisit this test after message.id is enabled
+    // //message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
     void testGetMessage_messageIdIsSetBasedOnRecordValues() {
         //given
         sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
