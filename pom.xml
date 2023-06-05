@@ -138,8 +138,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>11</source>
-          <target>11</target>
+          <source>16</source>
+          <target>16</target>
         </configuration>
       </plugin>
     </plugins>
@@ -267,6 +267,33 @@
       <version>5.5.1</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- Start: Integration test dependencies -->
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+      <version>2.8.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.debezium</groupId>
+      <artifactId>debezium-testing-testcontainers</artifactId>
+      <version>1.9.5.Final</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <version>1.17.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>kafka</artifactId>
+      <version>1.17.3</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- End: Integration test dependencies -->
   </dependencies>
 
 </project>

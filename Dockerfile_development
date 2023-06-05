@@ -1,5 +1,8 @@
 FROM confluentinc/cp-kafka-connect:6.0.2-1-ubi8
 COPY target/kafka-connect-target/usr/share/kafka-connect /plugins/
 
+ADD config/docker-compose-worker.properties /etc/kafka-connect/docker-compose-worker.properties
+ADD config/docker-compose-connector.properties /etc/kafka-connect/docker-compose-connector.properties
 ADD bin/docker-entrypoint.sh /bin/docker-entrypoint.sh
 ENTRYPOINT ["/bin/docker-entrypoint.sh"]
+CMD ["/bin/connect-standalone", "/etc/kafka-connect/docker-compose-worker.properties", "/etc/kafka-connect/docker-compose-connector.properties"]
