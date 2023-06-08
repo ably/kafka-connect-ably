@@ -34,15 +34,16 @@ public class DefaultAblyBatchClientTest {
         DefaultAblyBatchClient client = new DefaultAblyBatchClient(connectorConfig, channelSinkMapping,
                 messageSinkMapping, configValueEvaluator);
 
-        List<SinkRecord> sinkRecords = List.of(
-                new SinkRecord("topic1", 0, Schema.STRING_SCHEMA, "myKey".getBytes(),
-                null, null, 0),
-                new SinkRecord("topic1", 0, Schema.STRING_SCHEMA, "myKey2".getBytes(),
-                null, null, 0),
-                new SinkRecord("topic2", 1, Schema.STRING_SCHEMA, "myKey3".getBytes(),
-                null, null, 0),
-                new SinkRecord("topic2", 1, Schema.STRING_SCHEMA, "myKey4".getBytes(),
-                null, null, 0));
+        SinkRecord record1 = new SinkRecord("topic1", 0, Schema.STRING_SCHEMA, "myKey".getBytes(),
+                null, "test1", 0);
+        SinkRecord record2 = new SinkRecord("topic1", 0, Schema.STRING_SCHEMA, "myKey2".getBytes(),
+                null, "test2", 0);
+        SinkRecord record3 = new SinkRecord("topic2", 1, Schema.STRING_SCHEMA, "myKey3".getBytes(),
+                null, "test3", 0);
+        SinkRecord record4 = new SinkRecord("topic2", 1, Schema.STRING_SCHEMA, "myKey4".getBytes(),
+                null, "test4", 0);
+
+        List<SinkRecord> sinkRecords = List.of(record1, record2, record3, record4);
 
         Map<String, List<Message>> result = client.groupMessagesByChannel(sinkRecords);
 
@@ -53,6 +54,15 @@ public class DefaultAblyBatchClientTest {
         assertTrue(result.containsKey("channel_topic2"));
         assertTrue(result.get("channel_topic1").size() == 2);
         assertTrue(result.get("channel_topic2").size() == 2);
+
+        List<Message> topic1Messages = result.get("channel_topic1");
+        List<Message> topic2Messages = result.get("channel_topic2");
+
+        assertTrue(topic1Messages.get(0).data.equals("test1"));
+        assertTrue(topic1Messages.get(1).data.equals("test2"));
+
+        assertTrue(topic2Messages.get(0).data.equals("test3"));
+        assertTrue(topic2Messages.get(1).data.equals("test4"));
 
     }
 }
