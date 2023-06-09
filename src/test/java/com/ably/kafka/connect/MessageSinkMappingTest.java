@@ -5,8 +5,6 @@ import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
 import com.ably.kafka.connect.utils.AvroToStruct;
-import com.ably.kafka.connect.utils.StructToJsonConverter;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -14,7 +12,6 @@ import com.google.gson.JsonParser;
 import io.ably.lib.types.Message;
 import io.ably.lib.types.MessageExtras;
 import io.ably.lib.util.JsonUtils;
-import io.confluent.connect.avro.AvroConverter;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.connect.data.Schema;
@@ -23,6 +20,7 @@ import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -109,6 +107,9 @@ class MessageSinkMappingTest {
 
 
     @Test
+    @Disabled
+    //ToDo: Temporarily disabling, revisit this test after message.id is enabled
+    // //message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
     void testGetMessage_messageIdIsSetBasedOnRecordValues() {
         //given
         sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
@@ -273,7 +274,6 @@ class MessageSinkMappingTest {
             "sinkMapping.getMessage(record) is supposed tho throw an exception for non-struct schemas");
         assertEquals(exception.getMessage(), String.format("Unsupported value schema type: %s", mapSchema.type()));
     }
-
 
     private AvroToStruct.Garage exampleGarage(String name) {
         final AvroToStruct.Part part = new AvroToStruct.Part("wheel", 100);

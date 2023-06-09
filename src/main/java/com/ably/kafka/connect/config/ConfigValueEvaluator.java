@@ -53,7 +53,6 @@ public class ConfigValueEvaluator {
             if (skippable) {
                 return new Result(true, null);
             }
-            throw new IllegalArgumentException("Key is null or not a string type but pattern contains #{key}");
         }
 
         if (keyString != null) {
@@ -63,6 +62,11 @@ public class ConfigValueEvaluator {
         }
     }
 
+    /**
+     * Function to retrieve key from SinkRecord
+     * @param record
+     * @return
+     */
     private String getKeyString(SinkRecord record) {
         String keyString = null;
         final Object recordKey = record.key();

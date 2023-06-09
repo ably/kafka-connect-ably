@@ -1,26 +1,21 @@
 package com.ably.kafka.connect.client;
 
+import io.ably.lib.types.AblyException;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 
+import java.util.List;
+
 public interface AblyClient {
     /**
-     * Connect to an Ably service.
-     * @param suspensionCallback callback to tell the client whether the connection was suspended.
-     * @throws ConnectException if the connection fails
+     * Publish a batch of Sink records to Ably Batch REST API.
+     * @param records
+     * @throws ConnectException
+     * @throws AblyException
      */
-    void connect(SuspensionCallback suspensionCallback) throws ConnectException;
-
-    /**
-     * Publish a sink record to Ably.
-     * @param record the record to publish
-     *
-     * throws ConnectException if the publish fails for reasons implementors decide.
-    * */
-    void publishFrom(SinkRecord record) throws ConnectException;
+    void publishBatch(List<SinkRecord> records) throws ConnectException, AblyException;
     /**
      * Stop the ability to publish messages to Ably.
      * */
-    void stop();
 }
 

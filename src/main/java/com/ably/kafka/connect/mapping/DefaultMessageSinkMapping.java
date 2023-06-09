@@ -31,7 +31,8 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
     @Override
     public Message getMessage(SinkRecord record) {
         final Message message = messageFromRecord(record);
-        message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
+        //ToDo: Temporarily disabling, needs to be enabled again for Idempotency.
+        //message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
 
         final MessageExtras extras = RecordHeaderConversions.toMessageExtras(record);
         if (extras != null) {
@@ -62,4 +63,5 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
         }
         throw new ConnectException("Unsupported value schema type: " + valueSchema.type());
     }
+
 }
