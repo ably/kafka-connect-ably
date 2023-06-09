@@ -180,6 +180,35 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final String SKIP_ON_KEY_ABSENCE_DOC = "If true, it skips the record if the key has been provided as" +
         " part of interpolable configuration value, but key is not available on the time of record creation. Default value is false.";
 
+    public static final String BATCH_EXECUTION_THREAD_POOL_SIZE = "batchExecutionThreadPoolSize";
+
+    public static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT = "10";
+
+    public static final String MESSAGE_PAYLOAD_SIZE_MAX = "messagePayloadSizeMax";
+
+    // max payload size in bytes(64KB)
+    public static final int MESSAGE_PAYLOAD_SIZE_MAX_DEFAULT = 64 * 1024;
+
+    private static final String MESSAGE_PAYLOAD_SIZE_MAX_DOC = "Maximum size of the message payload in KB";
+
+    private static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DOC = "Size of Thread pool that is used to batch the records" +
+            "and call Ably REST API(Batch)";
+
+    public static final String BATCH_EXECUTION_FLUSH_TIME = "batchExecutionFlushTime";
+
+    public static final String BATCH_EXECUTION_FLUSH_TIME_DEFAULT = "5000";
+
+    private static final String BATCH_EXECUTION_FLUSH_TIME_DOC = "Time period in milliseconds when the buffer " +
+            "is flushed(calling REST Batch Ably API)";
+
+
+    public static final String BATCH_EXECUTION_MAX_BUFFER_SIZE = "batchExecutionMaxBufferSize";
+
+    public static final String BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT = "1000";
+
+    private static final String BATCH_EXECUTION_MAX_BUFFER_SIZE_DOC = "Size of the buffer, records " +
+            "are buffered or chunked before calling the Ably Batch REST API";
+
     // The name of the extra agent identifier to add to the Ably-Agent header to
     // identify this client as using the Ably Kafka Connector.
     private static final String ABLY_AGENT_HEADER_NAME = "kafka-connect-ably";
@@ -551,12 +580,41 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .importance(Importance.MEDIUM)
                     .defaultValue("")
                     .build()
-            ) .define(
+            )
+            .define(
                 ConfigKeyBuilder.of(SKIP_ON_KEY_ABSENCE, Type.BOOLEAN)
                     .documentation(SKIP_ON_KEY_ABSENCE_DOC)
                     .importance(Importance.MEDIUM)
                     .defaultValue(false)
                     .build()
+            )
+            .define(
+                ConfigKeyBuilder.of(BATCH_EXECUTION_THREAD_POOL_SIZE, Type.INT)
+                    .documentation(BATCH_EXECUTION_THREAD_POOL_SIZE_DOC)
+                    .importance(Importance.MEDIUM)
+                    .defaultValue(Integer.parseInt(BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT))
+                    .build()
+            )
+            .define(
+                ConfigKeyBuilder.of(MESSAGE_PAYLOAD_SIZE_MAX, Type.INT)
+                    .documentation(MESSAGE_PAYLOAD_SIZE_MAX_DOC)
+                    .importance(Importance.MEDIUM)
+                    .defaultValue(MESSAGE_PAYLOAD_SIZE_MAX_DEFAULT)
+                    .build()
+            )
+            .define(
+                ConfigKeyBuilder.of(BATCH_EXECUTION_FLUSH_TIME, Type.INT)
+                        .documentation(BATCH_EXECUTION_FLUSH_TIME_DOC)
+                        .importance(Importance.MEDIUM)
+                        .defaultValue(Integer.parseInt(BATCH_EXECUTION_FLUSH_TIME_DEFAULT))
+                        .build()
+            )
+            .define(
+               ConfigKeyBuilder.of(BATCH_EXECUTION_MAX_BUFFER_SIZE, Type.INT)
+                       .documentation(BATCH_EXECUTION_MAX_BUFFER_SIZE_DOC)
+                       .importance(Importance.MEDIUM)
+                       .defaultValue(Integer.parseInt(BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT))
+                       .build()
             );
     }
 }

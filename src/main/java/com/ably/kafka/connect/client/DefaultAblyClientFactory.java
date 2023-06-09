@@ -9,6 +9,7 @@ import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
 import com.ably.kafka.connect.utils.ClientOptionsLogHandler;
+import io.ably.lib.types.AblyException;
 import org.apache.kafka.common.config.ConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ public class DefaultAblyClientFactory implements AblyClientFactory {
     private static final Logger logger = LoggerFactory.getLogger(DefaultAblyClientFactory.class);
 
     @Override
-    public AblyClient create(Map<String, String> settings) {
+    public DefaultAblyBatchClient create(Map<String, String> settings) throws AblyException {
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(settings);
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
         final ChannelConfig channelConfig = new DefaultChannelConfig(connectorConfig);
@@ -30,7 +31,7 @@ public class DefaultAblyClientFactory implements AblyClientFactory {
         }
 
         connectorConfig.clientOptions.logHandler = new ClientOptionsLogHandler(logger);
-        return new DefaultAblyClient(connectorConfig, channelSinkMapping, messageSinkMapping, configValueEvaluator);
 
+        return new DefaultAblyBatchClient(connectorConfig, channelSinkMapping, messageSinkMapping, configValueEvaluator);
     }
 }
