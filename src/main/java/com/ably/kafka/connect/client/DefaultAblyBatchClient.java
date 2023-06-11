@@ -13,6 +13,7 @@ import io.ably.lib.types.HttpPaginatedResponse;
 import io.ably.lib.types.Message;
 import io.ably.lib.types.Param;
 import org.apache.kafka.connect.errors.ConnectException;
+import org.apache.kafka.connect.sink.ErrantRecordReporter;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,7 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @throws ConnectException
      */
     @Override
-    public void publishBatch(List<SinkRecord> records) throws ConnectException {
+    public void publishBatch(List<SinkRecord> records, ErrantRecordReporter dlqReporter) throws ConnectException {
 
         if(!records.isEmpty()) {
             List<BatchSpec> batchSpecs = new ArrayList<>();
@@ -63,6 +64,7 @@ public class DefaultAblyBatchClient implements AblyClient {
             try {
                 logger.info("Ably BATCH call -Thread(" + Thread.currentThread().getName() + ")");
                 this.sendBatches(batchSpecs);
+
             } catch (Exception e) {
                 logger.error("Error while sending batch", e);
             }
@@ -129,6 +131,37 @@ public class DefaultAblyBatchClient implements AblyClient {
                 "Response: " + response.statusCode
                         + " error: " + response.errorCode + " - " + response.errorMessage
         );
+    }
 
+    /**
+     * Function to check if the error is non-retriable.
+     * @param response HttpPaginatedResponse object.
+     * @return  boolean
+     */
+    public boolean isItNonRetriableError(HttpPaginatedResponse response) {
+        boolean result = false;
+
+        logger.info(
+                "Response: " + response.statusCode
+                        + " error: " + response.errorCode + " - " + response.errorMessage
+        );
+        if(response.errorCode < 500) {
+            // Non-retriable error.
+            logger.info("Non retriable error");
+            result = true;
+        }
+
+        return result;
+    }
+
+    /**
+     * Function to parse the response and retrieve the list
+     * of failed message ids
+     * @param response
+     * @return
+     */
+    public Set<Integer> getFailedMessageIds(HttpPaginatedResponse response) {
+        return null;
+        //return response.items.stream().map(item -> item.id).collect(java.util.stream.Collectors.toSet());
     }
 }

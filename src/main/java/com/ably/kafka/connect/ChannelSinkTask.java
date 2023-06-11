@@ -13,6 +13,7 @@ import com.google.common.collect.Lists;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.connect.sink.ErrantRecordReporter;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
@@ -35,6 +36,8 @@ public class ChannelSinkTask extends SinkTask {
     private ThreadPoolExecutor executor;
 
     private int maxBufferLimit = 0;
+
+    private ErrantRecordReporter kafkaRecordErrorReporter;
 
     public ChannelSinkTask() {}
 
@@ -69,7 +72,7 @@ public class ChannelSinkTask extends SinkTask {
         this.maxBufferLimit = Integer.parseInt(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE,
                 ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT));
 
-
+        this.kafkaRecordErrorReporter = context.errantRecordReporter();
     }
 
     // Local buffer of records.
@@ -81,7 +84,7 @@ public class ChannelSinkTask extends SinkTask {
             logger.debug("SinkTask put - Num records: " + records.size());
 
             Lists.partition(records.stream().toList(), this.maxBufferLimit).forEach(batch -> {
-                this.executor.execute(new BatchProcessingThread(batch, this.ablyClient));
+                this.executor.execute(new BatchProcessingThread(batch, this.ablyClient, this.kafkaRecordErrorReporter));
             });
         }
     }
