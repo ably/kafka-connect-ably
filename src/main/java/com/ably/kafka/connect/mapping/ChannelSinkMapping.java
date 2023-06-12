@@ -13,7 +13,6 @@ public interface ChannelSinkMapping {
      * Create a new Ably channel based on the sink record.
      * @param sinkRecord
      * @return
-     * @throws AblyException
      */
     String getChannelName(@Nonnull SinkRecord sinkRecord);
 }
