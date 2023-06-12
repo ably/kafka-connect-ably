@@ -7,7 +7,7 @@ COPY src src/
 
 RUN mvn clean package
 
-FROM confluentinc/cp-kafka-connect:6.0.2-1-ubi8
+FROM confluentinc/cp-kafka-connect:7.4.0-2-ubi8
 
 COPY --from=build /usr/src/app/target/kafka-connect-target/usr/share/kafka-connect /plugins/
 
