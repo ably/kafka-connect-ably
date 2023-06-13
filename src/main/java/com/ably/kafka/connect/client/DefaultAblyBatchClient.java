@@ -63,8 +63,15 @@ public class DefaultAblyBatchClient implements AblyClient {
             });
             try {
                 logger.info("Ably BATCH call -Thread(" + Thread.currentThread().getName() + ")");
-                this.sendBatches(batchSpecs);
-
+                if(this.sendBatches(batchSpecs)) {
+                    if(dlqReporter == null) {
+                        logger.error("Dead letter queue not configured");
+                        return;
+                    }
+                    for(SinkRecord record: records) {
+                        dlqReporter.report(record, new Throwable("Ably Batch call failed"));
+                    }
+                }
             } catch (Exception e) {
                 logger.error("Error while sending batch", e);
             }
@@ -120,9 +127,10 @@ public class DefaultAblyBatchClient implements AblyClient {
      * Function that uses the Ably REST API
      * to send records in batches.
      * @param batches
+     * @return true if non-retriable, false otherwise
      * @throws AblyException
      */
-    public void sendBatches(final List<BatchSpec> batches) throws AblyException {
+    public boolean sendBatches(final List<BatchSpec> batches) throws AblyException {
         final HttpCore.RequestBody body = new HttpUtils.JsonRequestBody(batches);
         final Param[] params = new Param[] { new Param("newBatchResponse", "true") };
         final HttpPaginatedResponse response =
@@ -131,6 +139,8 @@ public class DefaultAblyBatchClient implements AblyClient {
                 "Response: " + response.statusCode
                         + " error: " + response.errorCode + " - " + response.errorMessage
         );
+
+        return isItNonRetriableError(response);
     }
 
     /**
@@ -141,11 +151,7 @@ public class DefaultAblyBatchClient implements AblyClient {
     public boolean isItNonRetriableError(HttpPaginatedResponse response) {
         boolean result = false;
 
-        logger.info(
-                "Response: " + response.statusCode
-                        + " error: " + response.errorCode + " - " + response.errorMessage
-        );
-        if(response.errorCode < 500) {
+        if(Integer.toString(response.errorCode).startsWith("4")) {
             // Non-retriable error.
             logger.info("Non retriable error");
             result = true;
