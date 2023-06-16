@@ -2,7 +2,8 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2
           http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-  <!-- Assembles a packaged version targeting OS installation. -->
+  <!-- Assembles a zip containing the connector jar and all dependencies in a flat structure -->
+  <!-- This can be used with MSK Connect directly or with self-hosted Kafka deployments -->
   <id>bin</id>
   <formats>
     <format>zip</format>
