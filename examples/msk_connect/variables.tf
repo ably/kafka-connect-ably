@@ -13,7 +13,7 @@ variable "global_project_tag" {
 variable "region" {
     description = "AWS region to deploy to"
     type = string
-    default = "us-west-2"
+    default = "eu-west-2"
 }
 
 variable "bastion_ec2_key_pair" {
@@ -46,16 +46,14 @@ variable "ably_client_key" {
     sensitive = true
 }
 
-# TODO: Set up a disribution zip for MSK in sdk.ably.com bucket and point
-# to that, rather than using a dedicated bucket here
 variable "connector_binaries_bucket_arn" {
-    description = "S3 bucket ARN to download connector plugin zip from"
+    description = "S3 bucket ARN to download connector plugin zip from. Override to use your own custom builds."
     type = string
-    default = "arn:aws:s3:::ably-kafka-connect-example"
+    default = "arn:aws:s3:::sdk.ably.com"
 }
 
 variable "connector_binary_key" {
     description = "S3 Key for connector plugin zip, within connector_binaries_bucket"
     type = string
-    default = "kafka-connect-ably-standalone.zip"
+    default = "builds/ably/kafka-connect-ably/tag/v3.0.0/kafka-connect-ably-msk-plugin/kafka-connect-ably-3.0.0-bin.zip"
 }
