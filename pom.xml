@@ -153,6 +153,7 @@
           <descriptors>
             <descriptor>src/main/assembly/bin.xml</descriptor>
           </descriptors>
+          <outputDirectory>${project.build.directory}/kafka-connect-ably-msk-plugin</outputDirectory>
         </configuration>
         <executions>
           <execution>
