@@ -18,6 +18,7 @@ import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -80,7 +81,7 @@ public class ChannelSinkTask extends SinkTask {
         if(records.size() > 0) {
             logger.debug("SinkTask put - Num records: " + records.size());
 
-            Lists.partition(records.stream().toList(), this.maxBufferLimit).forEach(batch -> {
+            Lists.partition(new ArrayList<>(records), this.maxBufferLimit).forEach(batch -> {
                 this.executor.execute(new BatchProcessingThread(batch, this.ablyClient));
             });
         }
