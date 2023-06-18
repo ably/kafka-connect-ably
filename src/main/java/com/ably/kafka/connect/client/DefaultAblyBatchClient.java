@@ -5,6 +5,7 @@ import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.*;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import com.ably.kafka.connect.mapping.ChannelSinkMapping;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
+import com.ably.kafka.connect.offset.OffsetRegistryService;
 import io.ably.lib.http.HttpCore;
 import io.ably.lib.http.HttpUtils;
 import io.ably.lib.rest.AblyRest;
@@ -52,7 +53,7 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @throws ConnectException
      */
     @Override
-    public void publishBatch(List<SinkRecord> records) throws ConnectException {
+    public void publishBatch(List<SinkRecord> records, OffsetRegistryService offsetRegistryService) throws ConnectException {
 
         if(!records.isEmpty()) {
             List<BatchSpec> batchSpecs = new ArrayList<>();
@@ -62,7 +63,9 @@ public class DefaultAblyBatchClient implements AblyClient {
             });
             try {
                 logger.info("Ably BATCH call -Thread(" + Thread.currentThread().getName() + ")");
-                this.sendBatches(batchSpecs);
+                if(this.sendBatches(batchSpecs)) {
+                    offsetRegistryService.updateTopicPartitionToOffsetMap(records);
+                }
             } catch (Exception e) {
                 logger.error("Error while sending batch", e);
             }
@@ -120,7 +123,7 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @param batches
      * @throws AblyException
      */
-    public void sendBatches(final List<BatchSpec> batches) throws AblyException {
+    public boolean sendBatches(final List<BatchSpec> batches) throws AblyException {
         final HttpCore.RequestBody body = new HttpUtils.JsonRequestBody(batches);
         final Param[] params = new Param[] { new Param("newBatchResponse", "true") };
         final HttpPaginatedResponse response =
@@ -129,6 +132,8 @@ public class DefaultAblyBatchClient implements AblyClient {
                 "Response: " + response.statusCode
                         + " error: " + response.errorCode + " - " + response.errorMessage
         );
+
+        return true;
 
     }
 }

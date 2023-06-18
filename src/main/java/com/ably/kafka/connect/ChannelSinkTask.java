@@ -7,12 +7,14 @@ import com.ably.kafka.connect.client.DefaultAblyBatchClient;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.KafkaRecordErrorReporter;
+import com.ably.kafka.connect.offset.OffsetRegistryService;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.connect.errors.RetriableException;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
@@ -49,6 +51,8 @@ public class ChannelSinkTask extends SinkTask {
         return ablyClient;
     }
 
+    private final OffsetRegistryService offsetRegistryService = new OffsetRegistryService();
+
     @Override
     public void start(Map<String, String> settings) {
         logger.info("Starting Ably channel Sink task");
@@ -82,15 +86,27 @@ public class ChannelSinkTask extends SinkTask {
             logger.debug("SinkTask put - Num records: " + records.size());
 
             Lists.partition(new ArrayList<>(records), this.maxBufferLimit).forEach(batch -> {
-                this.executor.execute(new BatchProcessingThread(batch, this.ablyClient));
+                this.executor.execute(new BatchProcessingThread(batch, this.ablyClient, this.offsetRegistryService));
             });
         }
     }
 
+    /**
+     * precommit is called in regular intervals by the kafka connect
+     * framework. We store that the offsets that are successfully processed
+     * in the offsetRegistryService. This is used to commit the offsets
+     * precommit automatically calls flush.
+     * @param offsets
+     * @return
+     * @throws RetriableException
+     */
     @Override
-    public void flush(Map<TopicPartition, OffsetAndMetadata> map) {
-        // Currently irrelevant because the put call is synchronous
-        return;
+    public Map<TopicPartition, OffsetAndMetadata> preCommit(
+            Map<TopicPartition, OffsetAndMetadata> offsets) throws RetriableException {
+
+        // The offsets map will contain offsets of other topics and partitions
+        // that are not relevant to this sink task. We need to filter them out.
+        return this.offsetRegistryService.updateOffsets(offsets);
     }
 
     @Override
