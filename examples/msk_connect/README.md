@@ -37,11 +37,15 @@ The Terraform configuration in this directory will create:
 * An MSK Connector using the Ably plugin
 * A bastion host that can be used to access the connector for testing purposes
 
-Take a look at `variables.tf` to see if there's any configuration you'd like to override. You can then run
-this example using:
+Take a look at `variables.tf` to see if there's any configuration you'd like to override. The `ably_client_key` 
+is required and sensitive, you need to generate a key from your Ably account to be used by the connect. You can
+then run this example using:
 
-   $ terraform init
-   $ terraform apply
+```
+$ export TF_VAR_ably_client_key=<your ably key>
+$ terraform init
+$ terraform apply
+```
 
 You will most-likely want to change:
 

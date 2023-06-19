@@ -4,11 +4,12 @@ _[Ably](https://ably.com) is the platform that powers synchronized digital exper
 
 ## Overview
 
-The Ably Kafka Connector is a sink connector used to publish data from [Apache Kafka](http://kafka.apache.org/) into [Ably](https://ably.com) and is available on [Confluent Hub](https://www.confluent.io/hub/ably/kafka-connect-ably).
+The Ably Kafka Connector is a sink connector used to publish data from [Apache Kafka](http://kafka.apache.org/) into [Ably](https://ably.com) and is available on [Confluent Hub](https://www.confluent.io/hub/ably/kafka-connect-ably). It has also been tested with [AWS MSK](https://aws.amazon.com/msk/).
 
-The connector will publish data from one or more [Kafka topics](https://docs.confluent.io/platform/current/kafka/introduction.html#main-concepts-and-terminology) into one or more  [Ably channel](https://ably.com/documentation/core-features/channels) s.
+The connector will publish data from one or more [Kafka topics](https://docs.confluent.io/platform/current/kafka/introduction.html#main-concepts-and-terminology) into one or more  [Ably channels](https://ably.com/documentation/core-features/channels).
 
-The connector is built on top of [Apache Kafka Connect](http://docs.confluent.io/current/connect/) and can be run locally with Docker, or installed into an instance of Confluent Platform.
+The connector is built on top of [Apache Kafka Connect](http://docs.confluent.io/current/connect/) and can be run locally with Docker, installed into an instance of Confluent Platform or attached to an AWS MSK cluster through
+[MSK Connect](https://aws.amazon.com/msk/features/msk-connect/).
 
 ## Install
 
@@ -53,6 +54,10 @@ To manually install the connector on a local installation of Confluent:
 2. Extract the `.zip` into a directory specified in the `plugin.path` of your connect worker's configuration properties file. See the [Confluent instructions](https://docs.confluent.io/home/connect/install.html#install-connector-manually) for further information on this step.
 
 3. [Configure](#configuration) the connector.
+
+### AWS MSK
+
+See the getting started instructions and example deployment in the [examples section](examples/msk_connect/README.md).
 
 ### Docker
 
