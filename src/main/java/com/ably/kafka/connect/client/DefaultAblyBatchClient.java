@@ -5,6 +5,9 @@ import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.*;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import com.ably.kafka.connect.mapping.ChannelSinkMapping;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import io.ably.lib.http.HttpCore;
 import io.ably.lib.http.HttpUtils;
 import io.ably.lib.rest.AblyRest;
@@ -20,6 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +42,12 @@ public class DefaultAblyBatchClient implements AblyClient {
 
     private final ConfigValueEvaluator configValueEvaluator;
     AblyRest restClient;
+
+    // Error Codes.
+    private static final String ABLY_REST_API_ERROR_CODE_4XX = "4";
+    private static final String ABLY_REST_API_ERROR_CODE_5XX = "5";
+    private static final String ABLY_REST_API_ERROR_CODE_2XX = "2";
+
 
     public DefaultAblyBatchClient(ChannelSinkConnectorConfig connectorConfig, ChannelSinkMapping channelSinkMapping,
                                   MessageSinkMapping messageSinkMapping, ConfigValueEvaluator configValueEvaluator) throws AblyException {
@@ -144,6 +155,32 @@ public class DefaultAblyBatchClient implements AblyClient {
     }
 
     /**
+     * Function to parse the able response message
+     * and retrieve the list of failed channel ids.
+     * @param errorMessage
+     */
+    public Set<String> getFailedChannels(String errorMessage) {
+
+        Set<String> failedChannels = new HashSet<>();
+
+        JsonElement element = JsonParser.parseString(errorMessage);
+        // int successCount = element.getAsJsonObject().getAsJsonPrimitive("successCount").getAsInt();
+        int failureCount = element.getAsJsonObject().getAsJsonPrimitive("failureCount").getAsInt();
+
+        if(failureCount > 0) {
+            JsonArray results = element.getAsJsonObject().getAsJsonArray("results");
+            if (results != null) {
+                Iterator<JsonElement> iterator = results.iterator();
+                while (iterator.hasNext()) {
+                    JsonElement resultElement = iterator.next();
+                    String channelName = resultElement.getAsJsonObject().getAsJsonPrimitive("channel").getAsString();
+                    failedChannels.add(channelName);
+                }
+            }
+        }
+        return failedChannels;
+    }
+    /**
      * Function to check if the error is non-retriable.
      * @param response HttpPaginatedResponse object.
      * @return  boolean
@@ -151,7 +188,8 @@ public class DefaultAblyBatchClient implements AblyClient {
     public boolean isItNonRetriableError(HttpPaginatedResponse response) {
         boolean result = false;
 
-        if(Integer.toString(response.errorCode).startsWith("4")) {
+        String errorCode = Integer.toString(response.errorCode);
+        if(errorCode.startsWith("4") || errorCode.startsWith("5")) {
             // Non-retriable error.
             logger.info("Non retriable error");
             result = true;

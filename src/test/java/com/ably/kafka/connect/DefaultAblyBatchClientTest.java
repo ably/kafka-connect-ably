@@ -9,19 +9,27 @@ import com.ably.kafka.connect.mapping.ChannelSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.HttpPaginatedResponse;
 import io.ably.lib.types.Message;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.checkerframework.checker.units.qual.A;
+import org.jose4j.json.internal.json_simple.parser.JSONParser;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DefaultAblyBatchClientTest {
 
@@ -130,5 +138,25 @@ public class DefaultAblyBatchClientTest {
         response.errorCode = 40000;
         assertTrue(client.isItNonRetriableError(response));
 
+    }
+
+    @Test
+    public void testResponseErrorMessage() throws AblyException {
+
+        String errorMessage = "{\"successCount\":0,\"failureCount\":1,\"results\":[{\"channel\":\"SERVER5432\",\"error\":{\"message\":\"action not permitted, app = iaDbjw\",\"code\":40160,\"statusCode\":401,\"nonfatal\":false,\"href\":\"https://help.ably.io/error/40160\"}}]}\n";
+
+        final String STATIC_CHANNEL_NAME = "channel_#{topic}";
+        final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
+                STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
+        final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
+        final ChannelConfig channelConfig = new DefaultChannelConfig(connectorConfig);
+        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(configValueEvaluator, channelConfig);
+        final MessageSinkMapping messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
+        DefaultAblyBatchClient client = new DefaultAblyBatchClient(connectorConfig, channelSinkMapping,
+                messageSinkMapping, configValueEvaluator);
+        Set<String> failedMessageIds = client.getFailedChannels(errorMessage);
+
+        assertTrue(failedMessageIds.size() == 1);
+        assertTrue(failedMessageIds.contains("SERVER5432"));
     }
 }
