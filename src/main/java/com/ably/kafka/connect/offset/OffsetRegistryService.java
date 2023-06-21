@@ -21,20 +21,6 @@ public class OffsetRegistryService implements OffsetRegistry {
     public OffsetRegistryService() {
 
     }
-    @Override
-    public void update(TopicPartition partition, long offset) {
-
-    }
-
-    /**
-     * Returns the latest offset for a given topic partition.
-     * @param partition
-     * @return Offset
-     */
-    @Override
-    public long latestOffset(TopicPartition partition) {
-        return topicPartitionToOffsetMap.get(partition);
-    }
 
     /**
      * Updates the topicPartitionToOffsetMap with the latest offset for each topic partition.
@@ -46,15 +32,26 @@ public class OffsetRegistryService implements OffsetRegistry {
             TopicPartition topicPartition = new TopicPartition(record.topic(), record.kafkaPartition());
 
             if (topicPartitionToOffsetMap.containsKey(topicPartition)) {
-                if (topicPartitionToOffsetMap.get(topicPartition) < record.kafkaOffset()) {
-                    topicPartitionToOffsetMap.put(topicPartition, record.kafkaOffset());
-                }
+                topicPartitionToOffsetMap.compute(topicPartition, (k, v) -> {
+                  if(v < record.kafkaOffset()) {
+                      return record.kafkaOffset();
+                  } else {
+                      return v;
+                  }
+                });
             } else {
                 topicPartitionToOffsetMap.put(topicPartition, record.kafkaOffset());
             }
         }
     }
 
+    /**
+     * Updates the offsets that is received from the Precommit() method in SinkTask.
+     * The logic is to return the tracked offsets in topicPartitionToOffsetMap
+     * which is updated after the messages are sent to Ably.
+     * @param offsets
+     * @return
+     */
     public Map<TopicPartition, OffsetAndMetadata> updateOffsets(Map<TopicPartition, OffsetAndMetadata> offsets) {
 
         Map<TopicPartition, OffsetAndMetadata> committedOffsets = new HashMap<>();
@@ -64,9 +61,7 @@ public class OffsetRegistryService implements OffsetRegistry {
             Long offset = entry.getValue().offset();
 
             if (topicPartitionToOffsetMap.containsKey(topicPartition)) {
-                if (topicPartitionToOffsetMap.get(topicPartition) != 0) {
-                    committedOffsets.put(topicPartition, new OffsetAndMetadata(offset));
-                }
+                committedOffsets.put(topicPartition, new OffsetAndMetadata(offset));
             }
         }
 

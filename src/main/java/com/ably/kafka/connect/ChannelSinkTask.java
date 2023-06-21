@@ -7,6 +7,7 @@ import com.ably.kafka.connect.client.DefaultAblyBatchClient;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.KafkaRecordErrorReporter;
+import com.ably.kafka.connect.offset.OffsetRegistry;
 import com.ably.kafka.connect.offset.OffsetRegistryService;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import com.google.common.annotations.VisibleForTesting;
@@ -51,7 +52,7 @@ public class ChannelSinkTask extends SinkTask {
         return ablyClient;
     }
 
-    private final OffsetRegistryService offsetRegistryService = new OffsetRegistryService();
+    private final OffsetRegistry offsetRegistryService = new OffsetRegistryService();
 
     @Override
     public void start(Map<String, String> settings) {

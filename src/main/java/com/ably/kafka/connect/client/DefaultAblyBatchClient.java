@@ -5,7 +5,7 @@ import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.*;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import com.ably.kafka.connect.mapping.ChannelSinkMapping;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
-import com.ably.kafka.connect.offset.OffsetRegistryService;
+import com.ably.kafka.connect.offset.OffsetRegistry;
 import io.ably.lib.http.HttpCore;
 import io.ably.lib.http.HttpUtils;
 import io.ably.lib.rest.AblyRest;
@@ -53,7 +53,7 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @throws ConnectException
      */
     @Override
-    public void publishBatch(List<SinkRecord> records, OffsetRegistryService offsetRegistryService) throws ConnectException {
+    public void publishBatch(List<SinkRecord> records, OffsetRegistry offsetRegistryService) throws ConnectException {
 
         if(!records.isEmpty()) {
             List<BatchSpec> batchSpecs = new ArrayList<>();
