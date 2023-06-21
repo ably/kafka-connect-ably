@@ -17,22 +17,25 @@ class TestMessage:
     userId: str
     eventType: str
     payload: str
+    sequence: int
 
     @classmethod
     def rand(cls,
-             n_users: int,
+             sequence: int,
+             user_id: int,
              n_types: int,
              max_message_size: int
              ) -> 'TestMessage':
         types = [f'type-{x}' for x in range(n_types)]
         payload_size = random.randint(1, max_message_size)
         return TestMessage(
-            userId=f'user-{random.randint(1, n_users)}',
+            userId=f'user-{user_id}',
             eventType=random.choice(types),
             payload=''.join(
                 random.choice(string.ascii_letters)
                 for _ in range(payload_size)
-            )
+            ),
+            sequence=sequence
         )
 
 

@@ -20,10 +20,12 @@ TEST_SCHEMA = """
     "title": "TestMessage",
     "description": "TestMessage for load testing Ably Connector",
     "type": "object",
+    "additionalProperties": false,
     "properties": {
         "userId": {"type": "string"},
         "eventType": {"type": "string"},
-        "payload": {"type": "string"}
+        "payload": {"type": "string"},
+        "sequence": {"type": "integer"}
     }
 }
 """

@@ -1,13 +1,20 @@
 """Main entry point
 """
 
-from argparse import ArgumentParser
+
 import asyncio
 import logging
+import os
+import sys
+
+from argparse import ArgumentParser
 
 from aiokafka import AIOKafkaProducer
 
-from . import schema, producer
+from . import schema, producer, consumer
+
+
+log = logging.getLogger(__name__)
 
 
 def kafka_producer(
@@ -25,25 +32,36 @@ def kafka_producer(
 
 
 async def main(args):
+    # Set up Ably listener tasks
+    timeout = args.message_send_delay * args.messages_per_channel * 10
+    tasks = consumer.make_consumers(
+        args.ably_client_key,
+        args.n_channels,
+        args.messages_per_channel,
+        timeout,
+        args.check_ordering
+    )
+
     # Create producer tasks and wait for them to complete
+    prod = kafka_producer(
+        args.kafka_bootstrap_servers,
+        args.topic,
+        args.schema_registry_url
+    )
     try:
-        prod = kafka_producer(
-            args.kafka_bootstrap_servers,
-            args.topic,
-            args.schema_registry_url
-        )
         await prod.start()
-        tasks = producer.make_producers(
+        tasks += producer.make_producers(
             prod,
             args.topic,
             args.n_channels,
-            args.messages_per_worker,
+            args.messages_per_channel,
             args.message_send_delay,
             args.max_message_size,
             args.n_message_names,
-            args.n_workers
         )
         await asyncio.gather(*tasks)
+    except TimeoutError as e:
+        log.error('Timeout waiting for subscrbers', e)
     finally:
         await prod.stop()
 
@@ -53,16 +71,22 @@ if __name__ == '__main__':
         description="Simulate load for Ably Kafka Connector"
     )
     parser.add_argument(
+        '--ably-client-key',
+        help='Ably client secret to use for subscribers',
+        type=str,
+        default=os.environ.get('ABLY_CLIENT_KEY', None)
+    )
+    parser.add_argument(
+        '--check-ordering',
+        help='If true, check ordering is preserved of messages',
+        action='store_true',
+        default=False
+    )
+    parser.add_argument(
         '--kafka-bootstrap-servers',
         help='host:port for kafka bootstrap servers to connect to',
         type=str,
         default='localhost:9092'
-    )
-    parser.add_argument(
-        '--n-workers',
-        help='Number of concurrent publishers (to Kafka)',
-        type=int,
-        default=8
     )
     parser.add_argument(
         '--topic',
@@ -73,10 +97,10 @@ if __name__ == '__main__':
         '--n-channels',
         help='Number of destination Ably channels',
         type=int,
-        default=100
+        default=10
     )
     parser.add_argument(
-        '--messages-per-worker',
+        '--messages-per-channel',
         help='Total number of messages to send to each channel',
         type=int,
         default=10
@@ -113,9 +137,14 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    if args.ably_client_key is None:
+        log.error('Either provide --ably-client-key or ' +
+                  ' use ABLY_CLIENT_KEY environment variable')
+        sys.exit(1)
+
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(name)s: %(message)s',
-        level=logging.DEBUG if args.v else logging.INFO
+        level=logging.DEBUG if args.v else logging.WARN
     )
 
     asyncio.run(main(args))

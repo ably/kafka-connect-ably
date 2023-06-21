@@ -6,7 +6,6 @@ from asyncio import Task, sleep
 from logging import getLogger
 from typing import Iterable, List
 
-import itertools as itr
 import random
 
 from aiokafka import AIOKafkaProducer
@@ -17,16 +16,14 @@ log = getLogger(__name__)
 
 
 def rand_messages(
-    n_users: int,
+    user_id: int,
     n_types: int,
     max_payload_size: int,
     n_messages: int
 ) -> Iterable[TestMessage]:
     "Generate a sequence of random TestMessages"
-    return itr.starmap(
-        TestMessage.rand,
-        itr.repeat((n_users, n_types, max_payload_size), n_messages)
-    )
+    for seq in range(0, n_messages):
+        yield TestMessage.rand(seq, user_id, n_types, max_payload_size)
 
 
 def jitter(delay: float):
@@ -59,11 +56,10 @@ def make_producers(
     kafka_producer: AIOKafkaProducer,
     topic: str,
     n_users: int,
-    total_messages_per_worker: int,
+    total_messages_per_user: int,
     message_delay_secs: float,
     max_message_size: int,
     n_message_types: int,
-    n_workers: int
 ) -> List[Task]:
     """Return a list of async tasks that will send randomized
     message data to the given Kafka topic when executed
@@ -72,9 +68,9 @@ def make_producers(
         producer(
             kafka_producer,
             topic,
-            rand_messages(n_users, n_message_types,
-                          max_message_size, total_messages_per_worker),
+            rand_messages(user_id, n_message_types,
+                          max_message_size, total_messages_per_user),
             message_delay_secs
         )
-        for _ in range(n_workers)
+        for user_id in range(n_users)
     ]

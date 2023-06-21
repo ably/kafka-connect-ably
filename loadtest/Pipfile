@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-ably = "*"
+ably = "==2.0.0b6"
 aiokafka = "*"
 confluent-kafka = "*"
 jsonschema = "*"
