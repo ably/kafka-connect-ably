@@ -140,10 +140,16 @@ public class DefaultAblyBatchClientTest {
 
     }
 
+    /**
+     *
+     * @throws AblyException
+     */
     @Test
     public void testResponseErrorMessage() throws AblyException {
 
+        // Failure on one channel
         String errorMessage = "{\"successCount\":0,\"failureCount\":1,\"results\":[{\"channel\":\"SERVER5432\",\"error\":{\"message\":\"action not permitted, app = iaDbjw\",\"code\":40160,\"statusCode\":401,\"nonfatal\":false,\"href\":\"https://help.ably.io/error/40160\"}}]}\n";
+        // Failure on mutiple channels(multiple objects in results)
 
         final String STATIC_CHANNEL_NAME = "channel_#{topic}";
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
