@@ -1,5 +1,6 @@
 package com.ably.kafka.connect;
 
+import com.ably.kafka.connect.batch.AutoFlushingBuffer;
 import com.ably.kafka.connect.batch.BatchProcessingThread;
 import com.ably.kafka.connect.client.AblyClient;
 import com.ably.kafka.connect.client.AblyClientFactory;
@@ -9,7 +10,6 @@ import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.KafkaRecordErrorReporter;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -35,7 +35,9 @@ public class ChannelSinkTask extends SinkTask {
     private final BlockingQueue<Runnable> sinkRecordsQueue = new LinkedBlockingQueue<>();
     private ThreadPoolExecutor executor;
 
-    private int maxBufferLimit = 0;
+    private int maxBufferLimit;
+    private long maxBufferDelay;
+    private AutoFlushingBuffer<SinkRecord> buffer;
 
     public ChannelSinkTask() {}
 
@@ -70,20 +72,21 @@ public class ChannelSinkTask extends SinkTask {
         this.maxBufferLimit = Integer.parseInt(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE,
                 ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT));
 
+        this.maxBufferDelay = Long.parseLong(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS,
+            ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DEFAULT));
+
+        this.buffer = new AutoFlushingBuffer<>(this.maxBufferDelay, this.maxBufferLimit, batch -> {
+            logger.info("SinkTask sending records: " + batch.size());
+            this.executor.execute(new BatchProcessingThread(batch, this.ablyClient));
+        });
 
     }
 
-    // Local buffer of records.
-    //List<SinkRecord> bufferedRecords = new ArrayList<SinkRecord>();
     @Override
     public void put(Collection<SinkRecord> records) {
-
         if(records.size() > 0) {
-            logger.debug("SinkTask put - Num records: " + records.size());
-
-            Lists.partition(new ArrayList<>(records), this.maxBufferLimit).forEach(batch -> {
-                this.executor.execute(new BatchProcessingThread(batch, this.ablyClient));
-            });
+            logger.debug("SinkTask put (buffering) - Num records: " + records.size());
+            this.buffer.addAll(new ArrayList<>(records));
         }
     }
 
