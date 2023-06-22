@@ -9,6 +9,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import io.ably.lib.http.HttpCore;
+import io.ably.lib.http.HttpPaginatedQuery;
 import io.ably.lib.http.HttpUtils;
 import io.ably.lib.rest.AblyRest;
 import io.ably.lib.types.AblyException;
@@ -151,19 +152,26 @@ public class DefaultAblyBatchClient implements AblyClient {
                         + " error: " + response.errorCode + " - " + response.errorMessage
         );
 
-        return isItNonRetriableError(response);
+        Set<String> failedChannels = new HashSet<>();
+       JsonElement[] elements = response.items();
+       for(JsonElement element: elements) {
+           failedChannels.addAll(getFailedChannels(element));
+       }
+       //Set<String> getFailedChannels = getFailedChannels(result);
+
+       return isItNonRetriableError(response);
     }
 
     /**
      * Function to parse the able response message
      * and retrieve the list of failed channel ids.
-     * @param errorMessage
+     * @param element
      */
-    public Set<String> getFailedChannels(String errorMessage) {
+    public Set<String> getFailedChannels(JsonElement element) {
 
         Set<String> failedChannels = new HashSet<>();
 
-        JsonElement element = JsonParser.parseString(errorMessage);
+        // JsonElement element = JsonParser.parseString(errorMessage);
         // int successCount = element.getAsJsonObject().getAsJsonPrimitive("successCount").getAsInt();
         int failureCount = element.getAsJsonObject().getAsJsonPrimitive("failureCount").getAsInt();
 

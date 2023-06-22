@@ -160,7 +160,7 @@ public class DefaultAblyBatchClientTest {
         final MessageSinkMapping messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
         DefaultAblyBatchClient client = new DefaultAblyBatchClient(connectorConfig, channelSinkMapping,
                 messageSinkMapping, configValueEvaluator);
-        Set<String> failedMessageIds = client.getFailedChannels(errorMessage);
+        Set<String> failedMessageIds = client.getFailedChannels(JsonParser.parseString(errorMessage));
 
         assertTrue(failedMessageIds.size() == 1);
         assertTrue(failedMessageIds.contains("SERVER5432"));
