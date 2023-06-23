@@ -43,7 +43,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class ChannelSinkTaskTest {
     private static final String CONNECTOR_NAME = "ably-test-connector";
     private static final String SINK_CONNECTOR_CLASS_NAME = ChannelSinkConnector.class.getSimpleName();
-    private static final int NUM_WORKERS = 1;
     private static final int NUM_TASKS = 1;
     public static final long TIMEOUT = 5000L;
 
@@ -94,7 +93,7 @@ public class ChannelSinkTaskTest {
     public void testMessagePublish_correctConfigAtLeastATaskIsRunning() throws Exception {
         final String channelName = "test-channel";
 
-        Map<String, String> settings = createSettings(channelName, null, null, null);
+        Map<String, String> settings = createSettings(channelName, null);
 
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
@@ -107,7 +106,7 @@ public class ChannelSinkTaskTest {
     public void testMessagePublish_channelExistsWithStaticChannelName() {
         final String channelName = "test-channel";
 
-        Map<String, String> settings = createSettings(channelName, null, null, null);
+        Map<String, String> settings = createSettings(channelName, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
         Channel channel = ablyClient.channels.get(channelName);
@@ -125,7 +124,7 @@ public class ChannelSinkTaskTest {
     @Test
     public void testMessagePublish_ChannelExistsWithTopicPlaceholder() {
         final String topicedChannelName = "#{topic}_channel";
-        Map<String, String> settings = createSettings(topicedChannelName, null, null, null);
+        Map<String, String> settings = createSettings(topicedChannelName, null);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
         Channel channel = ablyClient.channels.get("topic1_channel");
@@ -145,7 +144,7 @@ public class ChannelSinkTaskTest {
         final String keyName = "key1";
         final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
-        Map<String, String> settings = createSettings(channelName, null, null, messageName);
+        Map<String, String> settings = createSettings(channelName, messageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
         Channel channel = ablyClient.channels.get("topic1_key1_channel");
@@ -164,7 +163,7 @@ public class ChannelSinkTaskTest {
     public void testMessagePublish_TaskFailedWhenKeyIsNotProvidedButPlaceholderProvided() throws Exception {
         final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
-        Map<String, String> settings = createSettings(channelName, null, null, messageName);
+        Map<String, String> settings = createSettings(channelName, messageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
 
@@ -178,7 +177,7 @@ public class ChannelSinkTaskTest {
     public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() {
         final String channelName = "channel1";
         final String topicedMessageName = "#{topic}_message";
-        Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
+        Map<String, String> settings = createSettings(channelName, topicedMessageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
         Channel channel = ablyClient.channels.get(channelName);
@@ -199,7 +198,7 @@ public class ChannelSinkTaskTest {
         final String keyName = "key1";
         final String channelName = "channel1";
         final String topicedMessageName = "#{key}_message";
-        Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
+        Map<String, String> settings = createSettings(channelName, topicedMessageName);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
         Channel channel = ablyClient.channels.get(channelName);
@@ -219,8 +218,8 @@ public class ChannelSinkTaskTest {
         //given
         final String keyName = "key1";
         final String channelName = "channel1";
-        final String topicedMessageName = "#{key}_message";
-        Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
+        final String messageNamePattern = "#{key}_message";
+        Map<String, String> settings = createSettings(channelName, messageNamePattern);
         settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
@@ -251,8 +250,8 @@ public class ChannelSinkTaskTest {
         //given
         final String keyName = "key1";
         final String channelName = "channel1";
-        final String topicedMessageName = "#{key}_message";
-        Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
+        final String messageNamePattern = "#{key}_message";
+        Map<String, String> settings = createSettings(channelName, messageNamePattern);
         settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
@@ -280,7 +279,7 @@ public class ChannelSinkTaskTest {
         final String keyName = "key1";
         final String channelName = "channel1_#{key}";
         final String messageName = "my_message";
-        Map<String, String> settings = createSettings(channelName, null, null, messageName);
+        Map<String, String> settings = createSettings(channelName, messageName);
         settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
@@ -308,9 +307,9 @@ public class ChannelSinkTaskTest {
     public void testMessagePublish_MessageSkippedWithKeyPlaceholderChannelWhenKeyProvidedForAllMessages() {
         //given
         final String keyName = "key1";
-        final String channelName = "channel_#{key}";
-        final String topicedMessageName = "myMessage";
-        Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
+        final String channelNamePattern = "channel_#{key}";
+        final String messageName = "myMessage";
+        Map<String, String> settings = createSettings(channelNamePattern, messageName);
         settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
@@ -334,8 +333,8 @@ public class ChannelSinkTaskTest {
     public void testMessagePublish_MessageReceivedWithTopicAndKeyPlaceholderMessageName() {
         final String keyName = "key1";
         final String channelName = "channel1";
-        final String topicedMessageName = "#{topic}_#{key}_message";
-        Map<String, String> settings = createSettings(channelName, null, null, topicedMessageName);
+        final String messageNamePattern = "#{topic}_#{key}_message";
+        Map<String, String> settings = createSettings(channelName, messageNamePattern);
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
 
         Channel channel = ablyClient.channels.get(channelName);
@@ -355,26 +354,20 @@ public class ChannelSinkTaskTest {
         assertEquals(expectedMessageCount, receivedMessages.size(), "Unexpected message count");
     }
 
-    private Map<String, String> createSettings(@Nonnull String channel, String cipherKey, String channelParams, String messageName) {
+    private Map<String, String> createSettings(@Nonnull String channelNamePattern, String messageNamePattern) {
         Map<String, String> settings = new HashMap<>();
         settings.put(CONNECTOR_CLASS_CONFIG, SINK_CONNECTOR_CLASS_NAME);
         settings.put(TASKS_MAX_CONFIG, String.valueOf(NUM_TASKS));
         settings.put(TOPICS_CONFIG, TOPICS);
         settings.put(KEY_CONVERTER_CLASS_CONFIG, ByteArrayConverter.class.getName());
         settings.put(VALUE_CONVERTER_CLASS_CONFIG, ByteArrayConverter.class.getName());
-        settings.put(ChannelSinkConnectorConfig.CHANNEL_CONFIG, channel);
+        settings.put(ChannelSinkConnectorConfig.CHANNEL_CONFIG, channelNamePattern);
         settings.put(ChannelSinkConnectorConfig.CLIENT_KEY, appSpec.key());
         settings.put(ChannelSinkConnectorConfig.CLIENT_ID, "kafka-connect-ably-test");
         settings.put(ChannelSinkConnectorConfig.CLIENT_ENVIRONMENT, AblyHelpers.TEST_ENVIRONMENT);
         settings.put(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS, Integer.toString(TEST_MAX_BUFFERING_DELAY_MS));
-        if (cipherKey != null) {
-            settings.put(ChannelSinkConnectorConfig.CLIENT_CHANNEL_CIPHER_KEY, cipherKey);
-        }
-        if (channelParams != null) {
-            settings.put(ChannelSinkConnectorConfig.CLIENT_CHANNEL_PARAMS, channelParams);
-        }
-        if (messageName != null) {
-            settings.put(ChannelSinkConnectorConfig.MESSAGE_CONFIG, messageName);
+        if (messageNamePattern != null) {
+            settings.put(ChannelSinkConnectorConfig.MESSAGE_CONFIG, messageNamePattern);
         }
         return settings;
     }
