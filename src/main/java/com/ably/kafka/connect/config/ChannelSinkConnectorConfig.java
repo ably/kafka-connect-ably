@@ -3,6 +3,7 @@ package com.ably.kafka.connect.config;
 
 import com.ably.kafka.connect.validators.MultiConfigValidator;
 import com.ably.kafka.connect.validators.ChannelNameValidator;
+import io.ably.lib.util.Log;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Type;
@@ -356,7 +357,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                 ConfigKeyBuilder.of(CLIENT_LOG_LEVEL, Type.INT)
                     .documentation(CLIENT_LOG_LEVEL_DOC)
                     .importance(Importance.LOW)
-                    .defaultValue(0)
+                    .defaultValue(Log.VERBOSE)
                     .build()
             )
             .define(

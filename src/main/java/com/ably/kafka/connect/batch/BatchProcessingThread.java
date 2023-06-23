@@ -12,18 +12,31 @@ import java.util.List;
  * is to call the Ably BATCH REST API
  * for every batch.(its grouped by channel)
  */
-public class BatchProcessingThread implements Runnable{
+public class BatchProcessingThread implements Runnable {
+
+    private static final Logger logger = LoggerFactory.getLogger(BatchProcessingThread.class);
+
+    private final Thread mainSinkTask;
 
     private final List<SinkRecord> records;
 
     private final DefaultAblyBatchClient batchClient;
 
-    public BatchProcessingThread(List<SinkRecord> sinkRecords, DefaultAblyBatchClient ablyBatchClient) {
+    public BatchProcessingThread(
+        final List<SinkRecord> sinkRecords,
+        final DefaultAblyBatchClient ablyBatchClient,
+        final Thread mainSinkTask) {
         this.records = sinkRecords;
         this.batchClient = ablyBatchClient;
+        this.mainSinkTask = mainSinkTask;
     }
     @Override
     public void run() {
-        batchClient.publishBatch(records);
+        try {
+            batchClient.publishBatch(records);
+        } catch (FatalBatchProcessingException e) {
+            logger.error("Worker thread killed due to fatal processing error, interrupting SinkTask", e);
+            mainSinkTask.interrupt();
+        }
     }
 }

@@ -12,7 +12,6 @@ import org.apache.kafka.connect.converters.ByteArrayConverter;
 import org.apache.kafka.connect.util.clusters.EmbeddedConnectCluster;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -41,13 +40,17 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Disabled
 public class ChannelSinkTaskTest {
     private static final String CONNECTOR_NAME = "ably-test-connector";
     private static final String SINK_CONNECTOR_CLASS_NAME = ChannelSinkConnector.class.getSimpleName();
     private static final int NUM_WORKERS = 1;
     private static final int NUM_TASKS = 1;
     public static final long TIMEOUT = 5000L;
+
+    // This needs to be much less than TIMEOUT above, so that buffered data is flushed
+    // long before test timeouts
+    public static final int TEST_MAX_BUFFERING_DELAY_MS = 100;
+
     private static final String TOPICS = "topic1,topic2,topic3";
     private static final String DEFAULT_TOPIC = TOPICS.split(",")[0];
 
@@ -363,6 +366,7 @@ public class ChannelSinkTaskTest {
         settings.put(ChannelSinkConnectorConfig.CLIENT_KEY, appSpec.key());
         settings.put(ChannelSinkConnectorConfig.CLIENT_ID, "kafka-connect-ably-test");
         settings.put(ChannelSinkConnectorConfig.CLIENT_ENVIRONMENT, AblyHelpers.TEST_ENVIRONMENT);
+        settings.put(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS, Integer.toString(TEST_MAX_BUFFERING_DELAY_MS));
         if (cipherKey != null) {
             settings.put(ChannelSinkConnectorConfig.CLIENT_CHANNEL_CIPHER_KEY, cipherKey);
         }

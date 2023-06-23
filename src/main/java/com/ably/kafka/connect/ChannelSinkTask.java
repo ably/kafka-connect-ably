@@ -75,11 +75,14 @@ public class ChannelSinkTask extends SinkTask {
         this.maxBufferDelay = Long.parseLong(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS,
             ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DEFAULT));
 
+        // Pass the sink task thread through to each batch worker thread so that they have the
+        // option of interrupting the main sink task if an error is encountered that requires
+        // complete shutdown of this task.
+        final Thread sinkTaskThread = Thread.currentThread();
         this.buffer = new AutoFlushingBuffer<>(this.maxBufferDelay, this.maxBufferLimit, batch -> {
             logger.info("SinkTask sending records: " + batch.size());
-            this.executor.execute(new BatchProcessingThread(batch, this.ablyClient));
+            this.executor.execute(new BatchProcessingThread(batch, this.ablyClient, sinkTaskThread));
         });
-
     }
 
     @Override

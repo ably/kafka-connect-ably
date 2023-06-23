@@ -1,5 +1,6 @@
 package com.ably.kafka.connect.client;
 
+import com.ably.kafka.connect.batch.FatalBatchProcessingException;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.*;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
@@ -43,7 +44,7 @@ public class DefaultAblyBatchClient implements AblyClient {
         this.channelSinkMapping = channelSinkMapping;
         this.messageSinkMapping = messageSinkMapping;
         this.configValueEvaluator = configValueEvaluator;
-        this.restClient = new AblyRest(connectorConfig.getPassword(CLIENT_KEY).value());
+        this.restClient = new AblyRest(connectorConfig.clientOptions);
     }
 
     /**
@@ -74,22 +75,22 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @param sinkRecords
      * @return
      */
-    public Map<String, List<Message>> groupMessagesByChannel(List<SinkRecord> sinkRecords) {
+    public Map<String, List<Message>> groupMessagesByChannel(List<SinkRecord> sinkRecords) throws FatalBatchProcessingException {
 
         HashMap<String, List<Message>> channelNameToMessagesMap = new HashMap();
 
         for(SinkRecord record: sinkRecords) {
-            try {
-                if (!shouldSkip(record)) {
+            if (!shouldSkip(record)) {
+                try {
                     final String channelName = channelSinkMapping.getChannelName(record);
                     final Message message = messageSinkMapping.getMessage(record);
 
                     final List<Message> updatedMessages = channelNameToMessagesMap.getOrDefault(channelName, new ArrayList<>());
                     updatedMessages.add(message);
                     channelNameToMessagesMap.put(channelName, updatedMessages);
+                } catch (IllegalArgumentException e) {
+                    throw new FatalBatchProcessingException(e);
                 }
-            } catch(Exception e) {
-                logger.error("Error transforming sink record", e);
             }
         }
 
@@ -100,15 +101,19 @@ public class DefaultAblyBatchClient implements AblyClient {
         final boolean skipOnKeyAbsence = connectorConfig.getBoolean(SKIP_ON_KEY_ABSENCE);
 
         if (skipOnKeyAbsence) {
-            final String messageConfig = connectorConfig.getString(MESSAGE_CONFIG);
-            final String channelConfig = connectorConfig.getString(CHANNEL_CONFIG);
-            final ConfigValueEvaluator.Result messageResult = configValueEvaluator.evaluate(record, messageConfig, true);
-            final ConfigValueEvaluator.Result channelResult = configValueEvaluator.evaluate(record, channelConfig, true);
+            try {
+                final String messageConfig = connectorConfig.getString(MESSAGE_CONFIG);
+                final String channelConfig = connectorConfig.getString(CHANNEL_CONFIG);
+                final ConfigValueEvaluator.Result messageResult = configValueEvaluator.evaluate(record, messageConfig, true);
+                final ConfigValueEvaluator.Result channelResult = configValueEvaluator.evaluate(record, channelConfig, true);
 
-            if (messageResult.shouldSkip() || channelResult.shouldSkip()) {
-                logger.debug("Skipping record as record key is not available in a record where the config for either" +
+                if (messageResult.shouldSkip() || channelResult.shouldSkip()) {
+                    logger.debug("Skipping record as record key is not available in a record where the config for either" +
                         " 'message.name' or 'channel' is configured to use #{key} as placeholders {}", record);
-                return true;
+                    return true;
+                }
+            } catch (IllegalArgumentException e) {
+                throw new FatalBatchProcessingException(e);
             }
         }
         return false;

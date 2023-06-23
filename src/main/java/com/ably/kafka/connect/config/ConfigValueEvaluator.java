@@ -42,7 +42,7 @@ public class ConfigValueEvaluator {
      *                  set, the result will be marked as skipped. instead of throwing an exception.
      * @return Evaluated config value given the record and pattern
      */
-    public Result evaluate(SinkRecord record, String pattern, boolean skippable) throws IllegalArgumentException{
+    public Result evaluate(SinkRecord record, String pattern, boolean skippable) throws IllegalArgumentException {
         if (pattern == null) {
             return new Result(false, null);
         }
@@ -52,6 +52,9 @@ public class ConfigValueEvaluator {
         if (keyString == null && pattern.contains(KEY_TOKEN)) {
             if (skippable) {
                 return new Result(true, null);
+            } else {
+                throw new IllegalArgumentException(
+                    "Key is null or not a string type but pattern contains #{key}");
             }
         }
 

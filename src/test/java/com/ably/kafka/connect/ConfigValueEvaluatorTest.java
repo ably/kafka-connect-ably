@@ -3,7 +3,6 @@ package com.ably.kafka.connect;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.sink.SinkRecord;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -73,8 +72,6 @@ class ConfigValueEvaluatorTest {
     }
 
     @Test
-    @Disabled
-    //ToDO: No Key will be passed on to Ably
     void testEvaluateNoKeyWithKeyTokenThrowsIllegalArgumentException() {
         //given
         SinkRecord sinkRecord = new SinkRecord("topic", 0, null, null, null, null, 0);
@@ -88,8 +85,6 @@ class ConfigValueEvaluatorTest {
     }
 
     @Test
-    @Disabled
-    //ToDO: No Key will be passed on to Ably
     void testEvaluateInvalidKeyWithKeyTokenThrowsIllegalArgumentException() {
         //given
         //https://stackoverflow.com/a/58210557
