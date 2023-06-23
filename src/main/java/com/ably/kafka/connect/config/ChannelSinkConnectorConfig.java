@@ -1,30 +1,25 @@
 
 package com.ably.kafka.connect.config;
 
-import com.ably.kafka.connect.validators.MultiConfigValidator;
 import com.ably.kafka.connect.validators.ChannelNameValidator;
-import io.ably.lib.util.Log;
-import org.apache.kafka.common.config.AbstractConfig;
-import org.apache.kafka.common.config.ConfigDef;
-import org.apache.kafka.common.config.ConfigDef.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.ably.kafka.connect.validators.MultiConfigValidator;
+import com.github.jcustenborder.kafka.connect.utils.config.ConfigKeyBuilder;
+import com.github.jcustenborder.kafka.connect.utils.config.recommenders.Recommenders;
+import com.github.jcustenborder.kafka.connect.utils.config.validators.Validators;
 import io.ably.lib.http.HttpAuth;
 import io.ably.lib.rest.Auth.TokenParams;
 import io.ably.lib.transport.Defaults;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.ClientOptions;
-import io.ably.lib.types.Param;
 import io.ably.lib.types.ProxyOptions;
-
+import io.ably.lib.util.Log;
+import org.apache.kafka.common.config.AbstractConfig;
+import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Importance;
-import com.github.jcustenborder.kafka.connect.utils.config.ConfigKeyBuilder;
-import com.github.jcustenborder.kafka.connect.utils.config.recommenders.Recommenders;
-import com.github.jcustenborder.kafka.connect.utils.config.validators.Validators;
+import org.apache.kafka.common.config.ConfigDef.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class ChannelSinkConnectorConfig extends AbstractConfig {
@@ -56,10 +51,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final String CLIENT_REST_HOST_DOC = "For development environments only; allows a non-default Ably " +
         "host to be specified.";
 
-    public static final String CLIENT_REALTIME_HOST = "client.realtime.host";
-    private static final String CLIENT_REALTIME_HOST_DOC = "For development environments only; allows a non-default " +
-        "Ably host to be specified for websocket connections.";
-
     public static final String CLIENT_PORT = "client.port";
     private static final String CLIENT_PORT_DOC = "For development environments only; allows a non-default Ably port " +
         "to be specified.";
@@ -67,19 +58,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     public static final String CLIENT_TLS_PORT = "client.tls.port";
     private static final String CLIENT_TLS_PORT_DOC = "For development environments only; allows a non-default Ably " +
         "TLS port to be specified.";
-
-    public static final String CLIENT_AUTO_CONNECT = "client.auto.connect";
-    private static final String CLIENT_AUTO_CONNECT_DOC = "If false, suppresses the automatic initiation of a " +
-        "connection when the library is instanced.";
-
-    public static final String CLIENT_QUEUE_MESSAGES = "client.queue.messages";
-    private static final String CLIENT_QUEUE_MESSAGES_DOC = "If false, suppresses the default queueing of messages " +
-        "when connection states that anticipate imminent connection (connecting and disconnected). Instead, publish " +
-        "and presence state changes will fail immediately if not in the connected state.";
-
-    public static final String CLIENT_ECHO_MESSAGES = "client.echo.messages";
-    private static final String CLIENT_ECHO_MESSAGES_DOC = "If false, suppresses messages originating from this " +
-        "connection being echoed back on the same connection.";
 
     public static final String CLIENT_PROXY = "client.proxy";
     private static final String CLIENT_PROXY_DOC = "If true, use the configured proxy options to proxy connections.";
@@ -112,10 +90,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final String CLIENT_ENVIRONMENT_DOC = "For development environments only; allows a non-default " +
         "Ably environment to be used such as 'sandbox'. Spec: TO3k1.";
 
-    public static final String CLIENT_IDEMPOTENT_REST_PUBLISHING = "client.idempotent.rest";
-    private static final String CLIENT_IDEMPOTENT_REST_PUBLISHING_DOC = "When true idempotent rest publishing will " +
-        "be enabled.";
-
     public static final String CLIENT_HTTP_OPEN_TIMEOUT = "client.http.open.timeout";
     private static final String CLIENT_HTTP_OPEN_TIMEOUT_DOC = "Timeout for opening the http connection";
 
@@ -125,12 +99,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     public static final String CLIENT_HTTP_MAX_RETRY_COUNT = "client.http.max.retry.count";
     private static final String CLIENT_HTTP_MAX_RETRY_COUNT_DOC = "Max number of fallback hosts to use as a fallback " +
         "when an HTTP request to the primary host is unreachable or indicates that it is unserviceable.";
-
-    public static final String CLIENT_REALTIME_REQUEST_TIMEOUT = "client.realtime.request.timeout";
-    private static final String CLIENT_REALTIME_REQUEST_TIMEOUT_DOC = "When a realtime client library is " +
-        "establishing a connection with Ably, or sending a HEARTBEAT, CONNECT, ATTACH, DETACH or CLOSE ProtocolMessage " +
-        "to Ably, this is the amount of time that the client library will wait before considering that request as " +
-        "failed and triggering a suitable failure condition.";
 
     public static final String CLIENT_FALLBACK_HOSTS = "client.fallback.hosts";
     private static final String CLIENT_FALLBACK_HOSTS_DOC = "List of custom fallback hosts to override the defaults. " +
@@ -153,14 +121,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         "milliseconds. When omitted, the REST API default of 60 minutes is applied by Ably. Client token params must " +
         "be enabled.";
 
-    public static final String CLIENT_CHANNEL_RETRY_TIMEOUT = "client.channel.retry.timeout";
-    private static final String CLIENT_CHANNEL_RETRY_TIMEOUT_DOC = "Channel reattach timeout. Spec: RTL13b.";
-
-    public static final String CLIENT_TRANSPORT_PARAMS = "client.transport.params";
-    private static final String CLIENT_TRANSPORT_PARAMS_DOC = "Additional parameters to be sent in the querystring " +
-        "when initiating a realtime connection. This should be specified in the form \"key1=value1,key2=value2,...\"" +
-        "without URL encoding.";
-
     public static final String CLIENT_ASYNC_HTTP_THREADPOOL_SIZE = "client.async.http.threadpool.size";
     private static final String CLIENT_ASYNC_HTTP_THREADPOOL_SIZE_DOC = "Allows the caller to specify a non-default " +
         "size for the asyncHttp threadpool";
@@ -169,50 +129,28 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final String CLIENT_PUSH_FULL_WAIT_DOC = "Whether to tell Ably to wait for push REST requests to " +
         "fully wait for all their effects before responding.";
 
-    public static final String CLIENT_CHANNEL_CIPHER_KEY = "client.channel.cipher.key";
-    private static final String CLIENT_CHANNEL_CIPHER_KEY_DOC = "Requests encryption for this channel when not null, " +
-        "and specifies encryption-related parameters (such as algorithm, chaining mode, key length and key).";
-
-    public static final String CLIENT_CHANNEL_PARAMS = "client.channel.params";
-    private static final String CLIENT_CHANNEL_PARAMS_DOC = "Additional channel parameters used to configure the " +
-        "behaviour of the channel. This should be specified in the form \"key1=value1,key2=value2,...\".";
+    public static final String MESSAGE_PAYLOAD_SIZE_MAX = "messagePayloadSizeMax";
+    // max payload size in bytes(64KB)
+    public static final int MESSAGE_PAYLOAD_SIZE_MAX_DEFAULT = 64 * 1024;
+    private static final String MESSAGE_PAYLOAD_SIZE_MAX_DOC = "Maximum size of the message payload in KB";
 
     public static final String SKIP_ON_KEY_ABSENCE = "skipOnKeyAbsence";
     private static final String SKIP_ON_KEY_ABSENCE_DOC = "If true, it skips the record if the key has been provided as" +
         " part of interpolable configuration value, but key is not available on the time of record creation. Default value is false.";
 
     public static final String BATCH_EXECUTION_THREAD_POOL_SIZE = "batchExecutionThreadPoolSize";
-
+    private static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DOC = "Size of Thread pool that is used to batch " +
+    "the records and call Ably REST API(Batch)";
     public static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT = "10";
 
-    public static final String MESSAGE_PAYLOAD_SIZE_MAX = "messagePayloadSizeMax";
-
-    // max payload size in bytes(64KB)
-    public static final int MESSAGE_PAYLOAD_SIZE_MAX_DEFAULT = 64 * 1024;
-
-    private static final String MESSAGE_PAYLOAD_SIZE_MAX_DOC = "Maximum size of the message payload in KB";
-
-    private static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DOC = "Size of Thread pool that is used to batch the records" +
-            "and call Ably REST API(Batch)";
-
-    public static final String BATCH_EXECUTION_FLUSH_TIME = "batchExecutionFlushTime";
-
-    public static final String BATCH_EXECUTION_FLUSH_TIME_DEFAULT = "5000";
-
-    private static final String BATCH_EXECUTION_FLUSH_TIME_DOC = "Time period in milliseconds when the buffer " +
-            "is flushed(calling REST Batch Ably API)";
-
-
     public static final String BATCH_EXECUTION_MAX_BUFFER_SIZE = "batchExecutionMaxBufferSize";
-
     public static final String BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT = "1000";
+    private static final String BATCH_EXECUTION_MAX_BUFFER_SIZE_DOC = "Size of the buffer, records " +
+        "are buffered or chunked before calling the Ably Batch REST API";
 
     public static final String BATCH_EXECUTION_MAX_BUFFER_DELAY_MS = "batchExecutionMaxBufferSizeMs";
-
     public static final String BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DEFAULT = "5000";
 
-    private static final String BATCH_EXECUTION_MAX_BUFFER_SIZE_DOC = "Size of the buffer, records " +
-            "are buffered or chunked before calling the Ably Batch REST API";
 
     // The name of the extra agent identifier to add to the Ably-Agent header to
     // identify this client as using the Ably Kafka Connector.
@@ -257,12 +195,8 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         opts.logLevel = getInt(CLIENT_LOG_LEVEL);
         opts.tls = getBoolean(CLIENT_TLS);
         opts.restHost = getString(CLIENT_REST_HOST);
-        opts.realtimeHost = getString(CLIENT_REALTIME_HOST);
         opts.port = getInt(CLIENT_PORT);
         opts.tlsPort = getInt(CLIENT_TLS_PORT);
-        opts.autoConnect = getBoolean(CLIENT_AUTO_CONNECT);
-        opts.queueMessages = getBoolean(CLIENT_QUEUE_MESSAGES);
-        opts.echoMessages = getBoolean(CLIENT_ECHO_MESSAGES);
         if (getBoolean(CLIENT_PROXY)) {
             ProxyOptions proxyOpts = new ProxyOptions();
             proxyOpts.host = getString(CLIENT_PROXY_HOST);
@@ -271,13 +205,12 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
             proxyOpts.password = getPassword(CLIENT_PROXY_PASSWORD) != null ? getPassword(CLIENT_PROXY_PASSWORD).value() : null;
             proxyOpts.nonProxyHosts = getList(CLIENT_PROXY_NON_PROXY_HOSTS) != null ? getList(CLIENT_PROXY_NON_PROXY_HOSTS).toArray(new String[0]) : null;
             proxyOpts.prefAuthType = HttpAuth.Type.valueOf(getString(CLIENT_PROXY_PREF_AUTH_TYPE));
+            opts.proxy = proxyOpts;
         }
         opts.environment = getString(CLIENT_ENVIRONMENT);
-        opts.idempotentRestPublishing = getBoolean(CLIENT_IDEMPOTENT_REST_PUBLISHING);
         opts.httpOpenTimeout = getInt(CLIENT_HTTP_OPEN_TIMEOUT);
         opts.httpRequestTimeout = getInt(CLIENT_HTTP_REQUEST_TIMEOUT);
         opts.httpMaxRetryCount = getInt(CLIENT_HTTP_MAX_RETRY_COUNT);
-        opts.realtimeRequestTimeout = getLong(CLIENT_REALTIME_REQUEST_TIMEOUT);
         opts.fallbackHosts = getList(CLIENT_FALLBACK_HOSTS).toArray(new String[0]);
         if (getBoolean(CLIENT_TOKEN_PARAMS)) {
             TokenParams tokenParams = new TokenParams();
@@ -285,8 +218,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
             tokenParams.capability = getString(CLIENT_TOKEN_PARAMS_CAPABILITY);
             tokenParams.clientId = getString(CLIENT_TOKEN_PARAMS_CLIENT_ID);
         }
-        opts.channelRetryTimeout = getInt(CLIENT_CHANNEL_RETRY_TIMEOUT);
-        opts.transportParams = convertTransportParams(getList(CLIENT_TRANSPORT_PARAMS));
         opts.asyncHttpThreadpoolSize = getInt(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE);
         opts.pushFullWait = getBoolean(CLIENT_PUSH_FULL_WAIT);
 
@@ -298,22 +229,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         opts.agents = Map.of(ABLY_AGENT_HEADER_NAME, version);
 
         return opts;
-    }
-
-    private static Param[] convertTransportParams(List<String> params) throws ConfigException {
-        List<Param> parsedParams = new ArrayList<Param>(params.size());
-        for (String param : params) {
-            String[] parts = param.split("=");
-            if (parts.length == 2) {
-                parsedParams.add(new Param(parts[0], parts[1]));
-            } else {
-                ConfigException e = new ConfigException(String.format("invalid param string %s", param));
-                logger.error("invalid param in transport params configuration", e);
-                throw e;
-            }
-        }
-
-        return parsedParams.toArray(new Param[0]);
     }
 
     public static ConfigDef createConfig() {
@@ -375,13 +290,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .build()
             )
             .define(
-                ConfigKeyBuilder.of(CLIENT_REALTIME_HOST, Type.STRING)
-                    .documentation(CLIENT_REALTIME_HOST_DOC)
-                    .importance(Importance.LOW)
-                    .defaultValue(null)
-                    .build()
-            )
-            .define(
                 ConfigKeyBuilder.of(CLIENT_PORT, Type.INT)
                     .documentation(CLIENT_PORT_DOC)
                     .importance(Importance.LOW)
@@ -393,27 +301,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .documentation(CLIENT_TLS_PORT_DOC)
                     .importance(Importance.LOW)
                     .defaultValue(0)
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_AUTO_CONNECT, Type.BOOLEAN)
-                    .documentation(CLIENT_AUTO_CONNECT_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue(true)
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_QUEUE_MESSAGES, Type.BOOLEAN)
-                    .documentation(CLIENT_QUEUE_MESSAGES_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue(true)
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_ECHO_MESSAGES, Type.BOOLEAN)
-                    .documentation(CLIENT_ECHO_MESSAGES_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue(true)
                     .build()
             )
             .define(
@@ -475,13 +362,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .build()
             )
             .define(
-                ConfigKeyBuilder.of(CLIENT_IDEMPOTENT_REST_PUBLISHING, Type.BOOLEAN)
-                    .documentation(CLIENT_IDEMPOTENT_REST_PUBLISHING_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue(Defaults.ABLY_VERSION_NUMBER >= 1.2)
-                    .build()
-            )
-            .define(
                 ConfigKeyBuilder.of(CLIENT_HTTP_OPEN_TIMEOUT, Type.INT)
                     .documentation(CLIENT_HTTP_OPEN_TIMEOUT_DOC)
                     .importance(Importance.MEDIUM)
@@ -500,13 +380,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .documentation(CLIENT_HTTP_MAX_RETRY_COUNT_DOC)
                     .importance(Importance.MEDIUM)
                     .defaultValue(Defaults.HTTP_MAX_RETRY_COUNT)
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_REALTIME_REQUEST_TIMEOUT, Type.LONG)
-                    .documentation(CLIENT_REALTIME_REQUEST_TIMEOUT_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue(Defaults.realtimeRequestTimeout)
                     .build()
             )
             .define(
@@ -545,20 +418,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .build()
             )
             .define(
-                ConfigKeyBuilder.of(CLIENT_CHANNEL_RETRY_TIMEOUT, Type.INT)
-                    .documentation(CLIENT_CHANNEL_RETRY_TIMEOUT_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue(Defaults.TIMEOUT_CHANNEL_RETRY)
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_TRANSPORT_PARAMS, Type.LIST)
-                    .documentation(CLIENT_TRANSPORT_PARAMS_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue("")
-                    .build()
-            )
-            .define(
                 ConfigKeyBuilder.of(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE, Type.INT)
                     .documentation(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE_DOC)
                     .importance(Importance.MEDIUM)
@@ -570,20 +429,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .documentation(CLIENT_PUSH_FULL_WAIT_DOC)
                     .importance(Importance.MEDIUM)
                     .defaultValue(false)
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_CHANNEL_CIPHER_KEY, Type.STRING)
-                    .documentation(CLIENT_CHANNEL_CIPHER_KEY_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue(null)
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_CHANNEL_PARAMS, Type.LIST)
-                    .documentation(CLIENT_CHANNEL_PARAMS_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue("")
                     .build()
             )
             .define(
@@ -606,13 +451,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .importance(Importance.MEDIUM)
                     .defaultValue(MESSAGE_PAYLOAD_SIZE_MAX_DEFAULT)
                     .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(BATCH_EXECUTION_FLUSH_TIME, Type.INT)
-                        .documentation(BATCH_EXECUTION_FLUSH_TIME_DOC)
-                        .importance(Importance.MEDIUM)
-                        .defaultValue(Integer.parseInt(BATCH_EXECUTION_FLUSH_TIME_DEFAULT))
-                        .build()
             )
             .define(
                ConfigKeyBuilder.of(BATCH_EXECUTION_MAX_BUFFER_SIZE, Type.INT)

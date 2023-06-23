@@ -2,14 +2,11 @@ package com.ably.kafka.connect;
 
 import com.ably.kafka.connect.batch.AutoFlushingBuffer;
 import com.ably.kafka.connect.batch.BatchProcessingThread;
-import com.ably.kafka.connect.client.AblyClient;
 import com.ably.kafka.connect.client.AblyClientFactory;
 import com.ably.kafka.connect.client.DefaultAblyBatchClient;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
-import com.ably.kafka.connect.config.KafkaRecordErrorReporter;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
-import com.google.common.annotations.VisibleForTesting;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -29,27 +26,13 @@ import java.util.concurrent.TimeUnit;
 public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
 
-    private AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory();
+    private final AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory();
     private DefaultAblyBatchClient ablyClient;
 
     private final BlockingQueue<Runnable> sinkRecordsQueue = new LinkedBlockingQueue<>();
     private ThreadPoolExecutor executor;
 
-    private int maxBufferLimit;
-    private long maxBufferDelay;
     private AutoFlushingBuffer<SinkRecord> buffer;
-
-    public ChannelSinkTask() {}
-
-    @VisibleForTesting
-    ChannelSinkTask(AblyClientFactory factory) {
-        this.ablyClientFactory = factory;
-    }
-
-    @VisibleForTesting
-    AblyClient getAblyClient() {
-        return ablyClient;
-    }
 
     @Override
     public void start(Map<String, String> settings) {
@@ -69,17 +52,17 @@ public class ChannelSinkTask extends SinkTask {
                 TimeUnit.SECONDS, sinkRecordsQueue,
                 new ThreadPoolExecutor.CallerRunsPolicy());
 
-        this.maxBufferLimit = Integer.parseInt(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE,
-                ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT));
+        final int maxBufferLimit = Integer.parseInt(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE,
+            ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT));
 
-        this.maxBufferDelay = Long.parseLong(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS,
+        final long maxBufferDelay = Long.parseLong(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS,
             ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DEFAULT));
 
         // Pass the sink task thread through to each batch worker thread so that they have the
         // option of interrupting the main sink task if an error is encountered that requires
         // complete shutdown of this task.
         final Thread sinkTaskThread = Thread.currentThread();
-        this.buffer = new AutoFlushingBuffer<>(this.maxBufferDelay, this.maxBufferLimit, batch -> {
+        this.buffer = new AutoFlushingBuffer<>(maxBufferDelay, maxBufferLimit, batch -> {
             logger.info("SinkTask sending records: " + batch.size());
             this.executor.execute(new BatchProcessingThread(batch, this.ablyClient, sinkTaskThread));
         });
@@ -108,11 +91,6 @@ public class ChannelSinkTask extends SinkTask {
         }
 
     }
-
-    static KafkaRecordErrorReporter noOpKafkaRecordErrorReporter() {
-        return (record, e) -> {};
-    }
-
 
     @Override
     public String version() {

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConfigValueEvaluatorTest {
-    private ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
+    private final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
 
     @Test
     void testEvaluateStaticValuesStaysSame() {

@@ -14,8 +14,5 @@ public interface AblyClient {
      * @throws AblyException
      */
     void publishBatch(List<SinkRecord> records) throws ConnectException, AblyException;
-    /**
-     * Stop the ability to publish messages to Ably.
-     * */
 }
 

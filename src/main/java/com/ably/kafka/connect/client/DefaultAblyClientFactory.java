@@ -1,9 +1,7 @@
 package com.ably.kafka.connect.client;
 
-import com.ably.kafka.connect.config.ChannelConfig;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
-import com.ably.kafka.connect.config.DefaultChannelConfig;
 import com.ably.kafka.connect.mapping.ChannelSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
@@ -23,7 +21,6 @@ public class DefaultAblyClientFactory implements AblyClientFactory {
     public DefaultAblyBatchClient create(Map<String, String> settings) throws AblyException {
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(settings);
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
-        final ChannelConfig channelConfig = new DefaultChannelConfig(connectorConfig);
         final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator);
         final MessageSinkMapping messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
         if (connectorConfig.clientOptions == null) {
