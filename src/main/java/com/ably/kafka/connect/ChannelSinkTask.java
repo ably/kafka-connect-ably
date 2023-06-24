@@ -104,9 +104,7 @@ public class ChannelSinkTask extends SinkTask {
     @Override
     public Map<TopicPartition, OffsetAndMetadata> preCommit(
             Map<TopicPartition, OffsetAndMetadata> offsets) throws RetriableException {
-
-        // The offsets map will contain offsets of other topics and partitions
-        // that are not relevant to this sink task. We need to filter them out.
+        logger.debug("SinkTask preCommit - Num offsets: " + offsets.size());
         return this.offsetRegistryService.updateOffsets(offsets);
     }
 

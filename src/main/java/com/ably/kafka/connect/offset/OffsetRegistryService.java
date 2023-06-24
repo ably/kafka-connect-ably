@@ -28,21 +28,39 @@ public class OffsetRegistryService implements OffsetRegistry {
      */
     @Override
     public void updateTopicPartitionToOffsetMap(List<SinkRecord> records) {
-        for (SinkRecord record : records) {
-            TopicPartition topicPartition = new TopicPartition(record.topic(), record.kafkaPartition());
-
-            if (topicPartitionToOffsetMap.containsKey(topicPartition)) {
-                topicPartitionToOffsetMap.compute(topicPartition, (k, v) -> {
-                  if(v < record.kafkaOffset()) {
-                      return record.kafkaOffset();
-                  } else {
-                      return v;
-                  }
-                });
-            } else {
-                topicPartitionToOffsetMap.put(topicPartition, record.kafkaOffset());
-            }
+        Map<TopicPartition, Long> maximumOffsets = getMaximumOffset(records);
+        for (Map.Entry<TopicPartition, Long> entry : maximumOffsets.entrySet()) {
+            topicPartitionToOffsetMap.compute(entry.getKey(), (k, v) -> {
+                if (v == null || v < entry.getValue()) {
+                    return entry.getValue();
+                } else {
+                    return v;
+                }
+            });
         }
+    }
+
+    /**
+     * Function to calculate the maximum offset for each topic partition.
+     * @param records List of Sink records
+     * @return Map of TopicPartition to Offset
+     */
+    public Map<TopicPartition, Long> getMaximumOffset(List<SinkRecord> records) {
+        HashMap<TopicPartition, Long> maxOffset = new HashMap<>();
+        for(SinkRecord record: records) {
+
+            TopicPartition tp = new TopicPartition(record.topic(), record.kafkaPartition());
+            if(maxOffset.containsKey(tp)) {
+                if(maxOffset.get(tp) < record.kafkaOffset()) {
+                    maxOffset.put(new TopicPartition(record.topic(), record.kafkaPartition()), record.kafkaOffset());
+                }
+            } else {
+                maxOffset.put(new TopicPartition(record.topic(), record.kafkaPartition()), record.kafkaOffset());
+            }
+
+        }
+
+        return maxOffset;
     }
 
     /**
@@ -58,10 +76,9 @@ public class OffsetRegistryService implements OffsetRegistry {
 
         for (Map.Entry<TopicPartition, OffsetAndMetadata> entry : offsets.entrySet()) {
             TopicPartition topicPartition = entry.getKey();
-            Long offset = entry.getValue().offset();
 
             if (topicPartitionToOffsetMap.containsKey(topicPartition)) {
-                committedOffsets.put(topicPartition, new OffsetAndMetadata(offset));
+                committedOffsets.put(topicPartition, new OffsetAndMetadata(topicPartitionToOffsetMap.get(topicPartition)));
             }
         }
 
