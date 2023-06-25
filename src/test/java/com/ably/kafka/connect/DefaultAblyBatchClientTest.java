@@ -9,24 +9,17 @@ import com.ably.kafka.connect.mapping.ChannelSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.HttpPaginatedResponse;
 import io.ably.lib.types.Message;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.sink.SinkRecord;
-import org.checkerframework.checker.units.qual.A;
-import org.jose4j.json.internal.json_simple.parser.JSONParser;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,7 +50,14 @@ public class DefaultAblyBatchClientTest {
 
         List<SinkRecord> sinkRecords = List.of(record1, record2, record3, record4);
 
-        Map<String, List<Message>> result = client.groupMessagesByChannel(sinkRecords);
+        Map<String, List<SinkRecord>> sinkRecordsByChannel = new HashMap<>();
+        Map<String, List<Message>> result = client.groupMessagesByChannel(sinkRecords, sinkRecordsByChannel);
+
+        Map<String, List<SinkRecord>> expectedSinkRecordsByChannel = new HashMap<>();
+        expectedSinkRecordsByChannel.put("channel_topic1", List.of(record1, record2));
+        expectedSinkRecordsByChannel.put("channel_topic2", List.of(record3, record4));
+
+        assertEquals(sinkRecordsByChannel, expectedSinkRecordsByChannel);
 
         assertTrue(result != null);
 
@@ -79,7 +79,7 @@ public class DefaultAblyBatchClientTest {
     }
 
     @Test
-    public void testIsItNonRetriableError() throws AblyException {
+    public void testParseAblyBatchAPIResponse() throws AblyException {
         final String STATIC_CHANNEL_NAME = "channel_#{topic}";
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
                 STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
@@ -132,11 +132,14 @@ public class DefaultAblyBatchClientTest {
                 return false;
             }
         };
-        response.errorCode = 5000;
-        assertFalse(client.isItNonRetriableError(response));
+        response.statusCode = 5000;
 
-        response.errorCode = 40000;
-        assertTrue(client.isItNonRetriableError(response));
+        assertEquals(DefaultAblyBatchClient.ABLY_BATCH_RESPONSE.FAILURE,
+                client.parseAblyBatchAPIResponse(response));
+
+        response.statusCode = 40000;
+        assertEquals(DefaultAblyBatchClient.ABLY_BATCH_RESPONSE.FAILURE,
+                client.parseAblyBatchAPIResponse(response));
 
     }
 
