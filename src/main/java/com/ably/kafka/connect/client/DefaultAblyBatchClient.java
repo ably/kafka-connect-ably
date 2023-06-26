@@ -7,6 +7,7 @@ import com.ably.kafka.connect.mapping.ChannelSinkMapping;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.ably.kafka.connect.offset.OffsetRegistry;
 import io.ably.lib.http.HttpCore;
 import io.ably.lib.http.HttpUtils;
 import io.ably.lib.rest.AblyRest;
@@ -67,7 +68,8 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @throws ConnectException
      */
     @Override
-    public void publishBatch(List<SinkRecord> records, ErrantRecordReporter dlqReporter) throws ConnectException {
+    public void publishBatch(List<SinkRecord> records, ErrantRecordReporter dlqReporter,
+                OffsetRegistry offsetRegistryService) throws ConnectException {
 
         if(!records.isEmpty()) {
             List<BatchSpec> batchSpecs = new ArrayList<>();
@@ -93,8 +95,9 @@ public class DefaultAblyBatchClient implements AblyClient {
                     sendMessagesToDLQ(records, dlqReporter, "");
                 } else if(ablyBatchResponse == AblyBatchResponse.PARTIAL_FAILURE) {
                     handlePartialFailure(response, channelNameToSinkRecordsMap, dlqReporter);
+                } else {
+                    offsetRegistryService.updateTopicPartitionToOffsetMap(records);
                 }
-
             } catch (Exception e) {
                 logger.error("Error while sending batch", e);
                 sendMessagesToDLQ(records, dlqReporter, "");
@@ -237,6 +240,7 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @throws AblyException
      */
     public HttpPaginatedResponse sendBatches(final List<BatchSpec> batches) throws AblyException {
+
         final HttpCore.RequestBody body = new HttpUtils.JsonRequestBody(batches);
         final Param[] params = new Param[]{new Param("newBatchResponse", "true")};
         final HttpPaginatedResponse response =

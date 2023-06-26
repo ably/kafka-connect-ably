@@ -1,5 +1,6 @@
 package com.ably.kafka.connect.client;
 
+import com.ably.kafka.connect.offset.OffsetRegistry;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.ErrantRecordReporter;
@@ -14,7 +15,8 @@ public interface AblyClient {
      * @throws ConnectException
      * @throws AblyException
      */
-    void publishBatch(List<SinkRecord> records, ErrantRecordReporter dlqReporter) throws ConnectException, AblyException;
+    void publishBatch(List<SinkRecord> records, ErrantRecordReporter dlqReporter,
+                      OffsetRegistry offsetRegistryService) throws ConnectException, AblyException;
     /**
      * Stop the ability to publish messages to Ably.
      * */
