@@ -89,14 +89,15 @@ public class DefaultAblyBatchClient implements AblyClient {
                 AblyBatchResponse ablyBatchResponse = parseAblyBatchAPIResponse(response);
 
                 if(ablyBatchResponse == AblyBatchResponse.FAILURE) {
-                    sendMessagesToDLQ(records, dlqReporter);
+                    // ToDO: Extract the error message for a complete failure.
+                    sendMessagesToDLQ(records, dlqReporter, "");
                 } else if(ablyBatchResponse == AblyBatchResponse.PARTIAL_FAILURE) {
                     handlePartialFailure(response, channelNameToSinkRecordsMap, dlqReporter);
                 }
 
             } catch (Exception e) {
                 logger.error("Error while sending batch", e);
-                sendMessagesToDLQ(records, dlqReporter);
+                sendMessagesToDLQ(records, dlqReporter, "");
             }
         }
     }
@@ -111,16 +112,17 @@ public class DefaultAblyBatchClient implements AblyClient {
                                      Map<String, List<SinkRecord>> records,
                                      ErrantRecordReporter dlqReporter) {
 
+        Map<String, String> channelToErrorMessageMap = new HashMap<>();
         Set<String> failedChannels = new HashSet<>();
         JsonElement[] elements = response.items();
         for (JsonElement element : elements) {
-            failedChannels.addAll(getFailedChannels(element));
+            failedChannels.addAll(getFailedChannels(element, channelToErrorMessageMap));
         }
 
         for(String channel : failedChannels) {
             List<SinkRecord> failedRecords = records.get(channel);
             if(failedRecords != null && !failedRecords.isEmpty()) {
-                sendMessagesToDLQ(failedRecords, dlqReporter);
+                sendMessagesToDLQ(failedRecords, dlqReporter, channelToErrorMessageMap.get(channel));
             }
         }
     }
@@ -162,13 +164,17 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @param dlqReporter
      */
     private void sendMessagesToDLQ(List<SinkRecord> records,
-                                   ErrantRecordReporter dlqReporter) {
+                                   ErrantRecordReporter dlqReporter,
+                                   String errorMessage) {
         if(dlqReporter == null) {
             logger.error("Dead letter queue not configured");
             return;
         }
+        if(errorMessage == null || errorMessage.isEmpty()) {
+            errorMessage = "Ably Batch API call failed";
+        }
         for(SinkRecord record: records) {
-            dlqReporter.report(record, new Throwable("Ably Batch call failed"));
+            dlqReporter.report(record, new Throwable(errorMessage));
         }
     }
 
@@ -248,7 +254,7 @@ public class DefaultAblyBatchClient implements AblyClient {
      * and retrieve the list of failed channel ids.
      * @param element
      */
-    public Set<String> getFailedChannels(JsonElement element) {
+    public Set<String> getFailedChannels(JsonElement element, Map<String, String> channelToErrorMessageMap) {
 
         Set<String> failedChannels = new HashSet<>();
 
@@ -264,6 +270,8 @@ public class DefaultAblyBatchClient implements AblyClient {
                     String channelName = resultElement.getAsJsonObject().
                             getAsJsonPrimitive("channel").getAsString();
                     failedChannels.add(channelName);
+                    String errorMessage = resultElement.getAsJsonObject().getAsJsonObject("error").toString();
+                    channelToErrorMessageMap.put(channelName, errorMessage);
                 }
             }
         }
