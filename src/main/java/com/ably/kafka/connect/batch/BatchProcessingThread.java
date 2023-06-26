@@ -1,6 +1,8 @@
 package com.ably.kafka.connect.batch;
 
 import com.ably.kafka.connect.client.DefaultAblyBatchClient;
+import com.ably.kafka.connect.offset.OffsetRegistry;
+import com.ably.kafka.connect.offset.OffsetRegistryService;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +20,17 @@ public class BatchProcessingThread implements Runnable{
 
     private final DefaultAblyBatchClient batchClient;
 
-    public BatchProcessingThread(List<SinkRecord> sinkRecords, DefaultAblyBatchClient ablyBatchClient) {
+    private final OffsetRegistry offsetRegistryService;
+
+    public BatchProcessingThread(List<SinkRecord> sinkRecords,
+                                 DefaultAblyBatchClient ablyBatchClient,
+                                 OffsetRegistry offsetRegistryService) {
         this.records = sinkRecords;
         this.batchClient = ablyBatchClient;
+        this.offsetRegistryService = offsetRegistryService;
     }
     @Override
     public void run() {
-        batchClient.publishBatch(records);
+        batchClient.publishBatch(records, offsetRegistryService);
     }
 }
