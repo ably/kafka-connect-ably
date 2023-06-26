@@ -163,9 +163,11 @@ public class DefaultAblyBatchClientTest {
         final MessageSinkMapping messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
         DefaultAblyBatchClient client = new DefaultAblyBatchClient(connectorConfig, channelSinkMapping,
                 messageSinkMapping, configValueEvaluator);
-        Set<String> failedMessageIds = client.getFailedChannels(JsonParser.parseString(errorMessage));
+        Map<String, String> channelToErrorMessageMap = new HashMap();
+        Set<String> failedMessageIds = client.getFailedChannels(JsonParser.parseString(errorMessage), channelToErrorMessageMap);
 
         assertTrue(failedMessageIds.size() == 1);
+        assertTrue(channelToErrorMessageMap.get("SERVER5432").equals("{\"message\":\"action not permitted, app = iaDbjw\",\"code\":40160,\"statusCode\":401,\"nonfatal\":false,\"href\":\"https://help.ably.io/error/40160\"}"));
         assertEquals(Set.of("SERVER5432"), failedMessageIds);
     }
 }
