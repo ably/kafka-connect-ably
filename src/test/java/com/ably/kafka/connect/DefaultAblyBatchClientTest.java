@@ -132,13 +132,13 @@ public class DefaultAblyBatchClientTest {
                 return false;
             }
         };
-        response.statusCode = 5000;
+        response.statusCode = 500;
 
-        assertEquals(DefaultAblyBatchClient.ABLY_BATCH_RESPONSE.FAILURE,
+        assertEquals(DefaultAblyBatchClient.AblyBatchResponse.FAILURE,
                 client.parseAblyBatchAPIResponse(response));
 
-        response.statusCode = 40000;
-        assertEquals(DefaultAblyBatchClient.ABLY_BATCH_RESPONSE.FAILURE,
+        response.statusCode = 400;
+        assertEquals(DefaultAblyBatchClient.AblyBatchResponse.FAILURE,
                 client.parseAblyBatchAPIResponse(response));
 
     }
@@ -166,6 +166,6 @@ public class DefaultAblyBatchClientTest {
         Set<String> failedMessageIds = client.getFailedChannels(JsonParser.parseString(errorMessage));
 
         assertTrue(failedMessageIds.size() == 1);
-        assertTrue(failedMessageIds.contains("SERVER5432"));
+        assertEquals(Set.of("SERVER5432"), failedMessageIds);
     }
 }

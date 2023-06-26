@@ -47,7 +47,7 @@ public class DefaultAblyBatchClient implements AblyClient {
     private static final String ABLY_REST_API_ERROR_CODE_5XX = "5";
     private static final String ABLY_REST_API_ERROR_CODE_2XX = "2";
 
-    public enum ABLY_BATCH_RESPONSE {
+    public enum AblyBatchResponse {
         SUCCESS,
         PARTIAL_FAILURE,
         FAILURE
@@ -86,11 +86,11 @@ public class DefaultAblyBatchClient implements AblyClient {
                 // Step 2: Parse the response.
                 // If its 4xx or 5xx, then DLQ all the sink records.
                 // If its 2xx, then DLQ only the failed sink records for that specific channel.
-                ABLY_BATCH_RESPONSE ablyBatchResponse = parseAblyBatchAPIResponse(response);
+                AblyBatchResponse ablyBatchResponse = parseAblyBatchAPIResponse(response);
 
-                if(ablyBatchResponse == ABLY_BATCH_RESPONSE.FAILURE) {
+                if(ablyBatchResponse == AblyBatchResponse.FAILURE) {
                     sendMessagesToDLQ(records, dlqReporter);
-                } else if(ablyBatchResponse == ABLY_BATCH_RESPONSE.PARTIAL_FAILURE) {
+                } else if(ablyBatchResponse == AblyBatchResponse.PARTIAL_FAILURE) {
                     handlePartialFailure(response, channelNameToSinkRecordsMap, dlqReporter);
                 }
 
@@ -119,7 +119,7 @@ public class DefaultAblyBatchClient implements AblyClient {
 
         for(String channel : failedChannels) {
             List<SinkRecord> failedRecords = records.get(channel);
-            if(failedRecords != null || !failedRecords.isEmpty()) {
+            if(failedRecords != null && !failedRecords.isEmpty()) {
                 sendMessagesToDLQ(failedRecords, dlqReporter);
             }
         }
@@ -128,25 +128,26 @@ public class DefaultAblyBatchClient implements AblyClient {
     /**
      * Function to parse Ably Batch API response
      * @param response Ably response
-     * @return ABLY_BATCH_RESPONSE
+     * @return AblyBatchResponse
      */
-    public ABLY_BATCH_RESPONSE parseAblyBatchAPIResponse(HttpPaginatedResponse response) {
+    public AblyBatchResponse parseAblyBatchAPIResponse(HttpPaginatedResponse response) {
 
-        ABLY_BATCH_RESPONSE ablyBatchResponse = ABLY_BATCH_RESPONSE.SUCCESS;
+        AblyBatchResponse ablyBatchResponse = AblyBatchResponse.SUCCESS;
 
         String statusCode = Integer.toString(response.statusCode);
         if(statusCode.startsWith(ABLY_REST_API_ERROR_CODE_4XX) || statusCode.startsWith(ABLY_REST_API_ERROR_CODE_5XX)) {
             // DLQ all the sink records.
             logger.error("Ably Batch API call failed with error code: " + statusCode);
-            ablyBatchResponse = ABLY_BATCH_RESPONSE.FAILURE;
+            ablyBatchResponse = AblyBatchResponse.FAILURE;
         } else if(statusCode.startsWith(ABLY_REST_API_ERROR_CODE_2XX)) {
             JsonElement[] elements = response.items();
             for (JsonElement element : elements) {
                 int failureCount = element.getAsJsonObject().getAsJsonPrimitive("failureCount").getAsInt();
                 if (failureCount > 0) {
                     // DLQ only the failed sink records for that specific channel.
-                    logger.error("Ably Batch API call failed with error code: " + statusCode);
-                    ablyBatchResponse = ABLY_BATCH_RESPONSE.PARTIAL_FAILURE;
+                    logger.error("Ably Batch API partial failure, Status Code: " + statusCode +
+                            " Failure Count: " + failureCount);
+                    ablyBatchResponse = AblyBatchResponse.PARTIAL_FAILURE;
                     break;
                 }
             }
@@ -251,8 +252,6 @@ public class DefaultAblyBatchClient implements AblyClient {
 
         Set<String> failedChannels = new HashSet<>();
 
-        // JsonElement element = JsonParser.parseString(errorMessage);
-        // int successCount = element.getAsJsonObject().getAsJsonPrimitive("successCount").getAsInt();
         int failureCount = element.getAsJsonObject().
                 getAsJsonPrimitive("failureCount").getAsInt();
 

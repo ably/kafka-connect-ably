@@ -76,7 +76,7 @@ public class ChannelSinkTask extends SinkTask {
         if(context.errantRecordReporter() != null) {
             this.kafkaRecordErrorReporter = context.errantRecordReporter();
         } else {
-            logger.error("Dead letter queue is not configured");
+            logger.warn("Dead letter queue is not configured");
         }
     }
 
