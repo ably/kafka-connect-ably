@@ -188,8 +188,8 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @return Map of channel name to list of messages.
      */
     public Map<String, List<Message>> groupMessagesByChannel(
-        List<SinkRecord> sinkRecords, Map<String,
-        List<SinkRecord>> channelNameToSinkRecordsMap
+        List<SinkRecord> sinkRecords,
+        Map<String, List<SinkRecord>> channelNameToSinkRecordsMap
     ) throws FatalBatchProcessingException {
         final HashMap<String, List<Message>> channelNameToMessagesMap = new HashMap<>();
 
