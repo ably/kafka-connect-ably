@@ -6,7 +6,6 @@ import com.ably.kafka.connect.client.AblyClientFactory;
 import com.ably.kafka.connect.client.DefaultAblyBatchClient;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
-import com.ably.kafka.connect.config.KafkaRecordErrorReporter;
 import com.ably.kafka.connect.offset.OffsetRegistry;
 import com.ably.kafka.connect.offset.OffsetRegistryService;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
@@ -15,6 +14,7 @@ import com.google.common.collect.Lists;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.connect.sink.ErrantRecordReporter;
 import org.apache.kafka.connect.errors.RetriableException;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
@@ -39,6 +39,8 @@ public class ChannelSinkTask extends SinkTask {
     private ThreadPoolExecutor executor;
 
     private int maxBufferLimit = 0;
+
+    private ErrantRecordReporter kafkaRecordErrorReporter;
 
     public ChannelSinkTask() {}
 
@@ -75,7 +77,11 @@ public class ChannelSinkTask extends SinkTask {
         this.maxBufferLimit = Integer.parseInt(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE,
                 ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT));
 
-
+        if(context.errantRecordReporter() != null) {
+            this.kafkaRecordErrorReporter = context.errantRecordReporter();
+        } else {
+            logger.warn("Dead letter queue is not configured");
+        }
     }
 
     // Local buffer of records.
@@ -86,8 +92,9 @@ public class ChannelSinkTask extends SinkTask {
         if(records.size() > 0) {
             logger.debug("SinkTask put - Num records: " + records.size());
 
-            Lists.partition(new ArrayList<>(records), this.maxBufferLimit).forEach(batch -> {
-                this.executor.execute(new BatchProcessingThread(batch, this.ablyClient, this.offsetRegistryService));
+            Lists.partition(new ArrayList<>(records), this.maxBufferLimit).forEach(batch ->  {
+                this.executor.execute(new BatchProcessingThread(batch, this.ablyClient, this.kafkaRecordErrorReporter,
+                        this.offsetRegistryService));
             });
         }
     }
@@ -117,11 +124,6 @@ public class ChannelSinkTask extends SinkTask {
         }
 
     }
-
-    static KafkaRecordErrorReporter noOpKafkaRecordErrorReporter() {
-        return (record, e) -> {};
-    }
-
 
     @Override
     public String version() {
