@@ -10,8 +10,8 @@ import io.ably.lib.types.AblyException;
 import io.ably.lib.types.Message;
 import org.apache.kafka.connect.converters.ByteArrayConverter;
 import org.apache.kafka.connect.util.clusters.EmbeddedConnectCluster;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -21,14 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import static org.apache.kafka.connect.runtime.ConnectorConfig.CONNECTOR_CLASS_CONFIG;
-import static org.apache.kafka.connect.runtime.ConnectorConfig.KEY_CONVERTER_CLASS_CONFIG;
-import static org.apache.kafka.connect.runtime.ConnectorConfig.TASKS_MAX_CONFIG;
-import static org.apache.kafka.connect.runtime.ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG;
+import static org.apache.kafka.connect.runtime.ConnectorConfig.*;
 import static org.apache.kafka.connect.runtime.SinkConnectorConfig.TOPICS_CONFIG;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration test for {@link com.ably.kafka.connect.ChannelSinkTask}
@@ -57,7 +52,7 @@ public class ChannelSinkTaskTest {
     private AblyHelpers.AppSpec appSpec;
     private AblyRealtime ablyClient;
 
-    @BeforeAll
+    @BeforeEach
     public void prepTestEnvironment() throws Exception {
         assertDoesNotThrow(() -> appSpec = AblyHelpers.createTestApp(), "Failed to create Ably client");
 
@@ -82,10 +77,23 @@ public class ChannelSinkTaskTest {
         latch.await();
     }
 
-    @AfterAll
+    /**
+     * Send the connector settings to the embedded cluster and wait for a connector task to start
+     *
+     * @param settings Connector settings for this test
+     * @throws InterruptedException if interrupted while waiting for tasks
+     */
+    private void configureAndWait(final Map<String, String> settings) throws InterruptedException {
+        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(
+            CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
+    }
+
+    @AfterEach
     public void clearTestEnvironment() {
         ablyClient.close();
         AblyHelpers.deleteTestApp(appSpec);
+        connectCluster.deleteConnector(CONNECTOR_NAME);
         connectCluster.stop();
     }
 
@@ -97,17 +105,15 @@ public class ChannelSinkTaskTest {
 
         connectCluster.configureConnector(CONNECTOR_NAME, settings);
         connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     //channel name tests
     @Test
-    public void testMessagePublish_channelExistsWithStaticChannelName() {
+    public void testMessagePublish_channelExistsWithStaticChannelName() throws InterruptedException {
         final String channelName = "test-channel";
 
         Map<String, String> settings = createSettings(channelName, null);
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get(channelName);
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
@@ -117,15 +123,13 @@ public class ChannelSinkTaskTest {
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 1);
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     @Test
-    public void testMessagePublish_ChannelExistsWithTopicPlaceholder() {
+    public void testMessagePublish_ChannelExistsWithTopicPlaceholder() throws InterruptedException {
         final String topicedChannelName = "#{topic}_channel";
         Map<String, String> settings = createSettings(topicedChannelName, null);
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get("topic1_channel");
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
@@ -135,17 +139,15 @@ public class ChannelSinkTaskTest {
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 1);
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     @Test
-    public void testMessagePublish_ChannelExistsWithTopicAndKeyPlaceholder() {
+    public void testMessagePublish_ChannelExistsWithTopicAndKeyPlaceholder() throws InterruptedException {
         final String keyName = "key1";
         final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
         Map<String, String> settings = createSettings(channelName, messageName);
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get("topic1_key1_channel");
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
@@ -155,8 +157,6 @@ public class ChannelSinkTaskTest {
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 1);
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     @Test
@@ -164,21 +164,18 @@ public class ChannelSinkTaskTest {
         final String channelName = "#{topic}_#{key}_channel";
         final String messageName = "message1";
         Map<String, String> settings = createSettings(channelName, messageName);
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
-        connectCluster.assertions().assertConnectorAndAtLeastNumTasksAreRunning(CONNECTOR_NAME, NUM_TASKS, "Connector tasks did not start in time.");
+        configureAndWait(settings);
 
         connectCluster.kafka().produce(DEFAULT_TOPIC, null, "bar");
         connectCluster.assertions().assertConnectorIsRunningAndTasksHaveFailed(CONNECTOR_NAME, 1, "Connector tasks did not start in time.");
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     @Test
-    public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() {
+    public void testMessagePublish_MessageReceivedWithTopicPlaceholderMessageName() throws InterruptedException {
         final String channelName = "channel1";
         final String topicedMessageName = "#{topic}_message";
         Map<String, String> settings = createSettings(channelName, topicedMessageName);
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get(channelName);
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
@@ -189,17 +186,15 @@ public class ChannelSinkTaskTest {
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 1);
         assertEquals(receivedMessages.get(0).name, "topic1_message", "Unexpected message name");
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     @Test
-    public void testMessagePublish_MessageReceivedWithKeyPlaceholderMessageName() {
+    public void testMessagePublish_MessageReceivedWithKeyPlaceholderMessageName() throws InterruptedException {
         final String keyName = "key1";
         final String channelName = "channel1";
-        final String topicedMessageName = "#{key}_message";
+        final String topicedMessageName = "#{key}_message_d";
         Map<String, String> settings = createSettings(channelName, topicedMessageName);
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get(channelName);
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
@@ -209,19 +204,17 @@ public class ChannelSinkTaskTest {
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 1);
-        assertEquals(receivedMessages.get(0).name, "key1_message", "Unexpected message name");
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
+        assertEquals(receivedMessages.get(0).name, "key1_message_d", "Unexpected message name");
     }
     @Test
-    public void testMessagePublish_MessageSkippedWithKeyPlaceholderMessageNameWhenNoKeyProvided() {
+    public void testMessagePublish_MessageSkippedWithKeyPlaceholderMessageNameWhenNoKeyProvided() throws InterruptedException {
         //given
         final String keyName = "key1";
         final String channelName = "channel1";
-        final String messageNamePattern = "#{key}_message";
+        final String messageNamePattern = "#{key}_message_a";
         Map<String, String> settings = createSettings(channelName, messageNamePattern);
         settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get(channelName);
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
@@ -240,20 +233,18 @@ public class ChannelSinkTaskTest {
         messageWaiter.waitFor(10, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 5);
-        assertEquals(receivedMessages.get(0).name, "key1_message", "Unexpected message name");
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
+        assertEquals(receivedMessages.get(0).name, "key1_message_a", "Unexpected message name");
     }
 
     @Test
-    public void testMessagePublish_MessageSkippedWithKeyPlaceholderMessageWhenKeyProvidedForAllMessages() {
+    public void testMessagePublish_MessageSkippedWithKeyPlaceholderMessageWhenKeyProvidedForAllMessages() throws InterruptedException {
         //given
         final String keyName = "key1";
         final String channelName = "channel1";
-        final String messageNamePattern = "#{key}_message";
+        final String messageNamePattern = "#{key}_message_b";
         Map<String, String> settings = createSettings(channelName, messageNamePattern);
         settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get(channelName);
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
@@ -268,20 +259,18 @@ public class ChannelSinkTaskTest {
         messageWaiter.waitFor(10, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 10);
-        assertEquals(receivedMessages.get(0).name, "key1_message", "Unexpected message name");
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
+        assertEquals(receivedMessages.get(0).name, "key1_message_b", "Unexpected message name");
     }
 
     @Test
-    public void testMessagePublish_MessageSkippedWithKeyPlaceholderChannelNameWhenNoKeyProvided() {
+    public void testMessagePublish_MessageSkippedWithKeyPlaceholderChannelNameWhenNoKeyProvided() throws InterruptedException {
         //given
         final String keyName = "key1";
         final String channelName = "channel1_#{key}";
         final String messageName = "my_message";
         Map<String, String> settings = createSettings(channelName, messageName);
         settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get("channel1_key1");
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
@@ -300,18 +289,17 @@ public class ChannelSinkTaskTest {
         messageWaiter.waitFor(10, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 5);
-        connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     @Test
-    public void testMessagePublish_MessageSkippedWithKeyPlaceholderChannelWhenKeyProvidedForAllMessages() {
+    public void testMessagePublish_MessageSkippedWithKeyPlaceholderChannelWhenKeyProvidedForAllMessages() throws InterruptedException {
         //given
         final String keyName = "key1";
         final String channelNamePattern = "channel_#{key}";
         final String messageName = "myMessage";
         Map<String, String> settings = createSettings(channelNamePattern, messageName);
         settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get("channel_key1");
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
@@ -326,16 +314,15 @@ public class ChannelSinkTaskTest {
         messageWaiter.waitFor(10, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 10);
-        connectCluster.deleteConnector(CONNECTOR_NAME);
     }
 
     @Test
-    public void testMessagePublish_MessageReceivedWithTopicAndKeyPlaceholderMessageName() {
+    public void testMessagePublish_MessageReceivedWithTopicAndKeyPlaceholderMessageName() throws InterruptedException {
         final String keyName = "key1";
         final String channelName = "channel1";
-        final String messageNamePattern = "#{topic}_#{key}_message";
+        final String messageNamePattern = "#{topic}_#{key}_message_c";
         Map<String, String> settings = createSettings(channelName, messageNamePattern);
-        connectCluster.configureConnector(CONNECTOR_NAME, settings);
+        configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get(channelName);
         AblyHelpers.MessageWaiter messageWaiter = new AblyHelpers.MessageWaiter(channel);
@@ -345,9 +332,7 @@ public class ChannelSinkTaskTest {
         messageWaiter.waitFor(1, TIMEOUT);
         final List<Message> receivedMessages = messageWaiter.receivedMessages;
         assertReceivedExactAmountOfMessages(receivedMessages, 1);
-        assertEquals(receivedMessages.get(0).name, "topic1_key1_message", "Unexpected message name");
-
-        connectCluster.deleteConnector(CONNECTOR_NAME);
+        assertEquals(receivedMessages.get(0).name, "topic1_key1_message_c", "Unexpected message name");
     }
 
     private void assertReceivedExactAmountOfMessages(final List<Message> receivedMessages, int expectedMessageCount) {
