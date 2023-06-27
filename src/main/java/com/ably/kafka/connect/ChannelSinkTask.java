@@ -83,7 +83,7 @@ public class ChannelSinkTask extends SinkTask {
             ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DEFAULT));
 
         this.buffer = new AutoFlushingBuffer<>(this.maxBufferDelay, this.maxBufferLimit, batch -> {
-            logger.info("SinkTask sending records: " + batch.size());
+            logger.debug("SinkTask sending records: " + batch.size());
             this.executor.execute(
                 new BatchProcessingThread(
                     batch,
