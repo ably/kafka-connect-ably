@@ -99,7 +99,6 @@ public class ChannelSinkTask extends SinkTask {
         }
     }
 
-    @Override
     public void put(Collection<SinkRecord> records) {
         if(records.size() > 0) {
             logger.debug("SinkTask put (buffering) - Num records: " + records.size());
@@ -118,7 +117,8 @@ public class ChannelSinkTask extends SinkTask {
      */
     @Override
     public Map<TopicPartition, OffsetAndMetadata> preCommit(
-            Map<TopicPartition, OffsetAndMetadata> offsets) throws RetriableException {
+        Map<TopicPartition, OffsetAndMetadata> offsets)
+        throws RetriableException {
         logger.debug("SinkTask preCommit - Num offsets: " + offsets.size());
         return this.offsetRegistryService.updateOffsets(offsets);
     }
