@@ -1,13 +1,12 @@
 package com.ably.kafka.connect.client;
 
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
-import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.*;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import com.ably.kafka.connect.mapping.ChannelSinkMapping;
 import com.ably.kafka.connect.mapping.MessageSinkMapping;
+import com.ably.kafka.connect.offset.OffsetRegistry;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.ably.kafka.connect.offset.OffsetRegistry;
 import io.ably.lib.http.HttpCore;
 import io.ably.lib.http.HttpUtils;
 import io.ably.lib.rest.AblyRest;
@@ -28,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.*;
 
 
 /**
@@ -114,7 +115,6 @@ public class DefaultAblyBatchClient implements AblyClient {
     public void handlePartialFailure(HttpPaginatedResponse response,
                                      Map<String, List<SinkRecord>> records,
                                      ErrantRecordReporter dlqReporter) {
-
         Map<String, String> channelToErrorMessageMap = new HashMap<>();
         Set<String> failedChannels = new HashSet<>();
         JsonElement[] elements = response.items();
@@ -186,11 +186,11 @@ public class DefaultAblyBatchClient implements AblyClient {
      * @param sinkRecords List of Sink Records
      * @return Map of channel name to list of messages.
      */
-    public Map<String, List<Message>> groupMessagesByChannel(List<SinkRecord> sinkRecords,
-                                                             Map<String, List<SinkRecord>>
-                                                                     channelNameToSinkRecordsMap) {
-
-        HashMap<String, List<Message>> channelNameToMessagesMap = new HashMap();
+    public Map<String, List<Message>> groupMessagesByChannel(
+        List<SinkRecord> sinkRecords, Map<String,
+        List<SinkRecord>> channelNameToSinkRecordsMap
+    ) {
+        final HashMap<String, List<Message>> channelNameToMessagesMap = new HashMap<>();
 
         for(SinkRecord record: sinkRecords) {
             try {
