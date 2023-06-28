@@ -33,8 +33,7 @@ public class DefaultAblyBatchClientTest {
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
                 STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
-        final ChannelConfig channelConfig = new DefaultChannelConfig(connectorConfig);
-        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(configValueEvaluator, channelConfig);
+        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator);
         final MessageSinkMapping messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
         DefaultAblyBatchClient client = new DefaultAblyBatchClient(connectorConfig, channelSinkMapping,
                 messageSinkMapping, configValueEvaluator);
@@ -84,8 +83,7 @@ public class DefaultAblyBatchClientTest {
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
                 STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
-        final ChannelConfig channelConfig = new DefaultChannelConfig(connectorConfig);
-        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(configValueEvaluator, channelConfig);
+        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator);
         final MessageSinkMapping messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
         DefaultAblyBatchClient client = new DefaultAblyBatchClient(connectorConfig, channelSinkMapping,
                 messageSinkMapping, configValueEvaluator);
@@ -158,8 +156,7 @@ public class DefaultAblyBatchClientTest {
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
                 STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
-        final ChannelConfig channelConfig = new DefaultChannelConfig(connectorConfig);
-        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(configValueEvaluator, channelConfig);
+        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator);
         final MessageSinkMapping messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
         DefaultAblyBatchClient client = new DefaultAblyBatchClient(connectorConfig, channelSinkMapping,
                 messageSinkMapping, configValueEvaluator);
