@@ -1,37 +1,39 @@
 package com.ably.kafka.connect.client;
 
-import com.ably.kafka.connect.config.ChannelConfig;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
-import com.ably.kafka.connect.config.ConfigValueEvaluator;
-import com.ably.kafka.connect.config.DefaultChannelConfig;
-import com.ably.kafka.connect.mapping.ChannelSinkMapping;
-import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
-import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
-import com.ably.kafka.connect.mapping.MessageSinkMapping;
+import com.ably.kafka.connect.offset.OffsetRegistry;
+import com.ably.kafka.connect.offset.OffsetRegistryService;
 import com.ably.kafka.connect.utils.ClientOptionsLogHandler;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.common.config.ConfigException;
+import org.apache.kafka.connect.sink.ErrantRecordReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 public class DefaultAblyClientFactory implements AblyClientFactory {
     private static final Logger logger = LoggerFactory.getLogger(DefaultAblyClientFactory.class);
 
+    @Nullable private final ErrantRecordReporter dlqReporter;
+    private final OffsetRegistry offsetRegistryService;
+
+    public DefaultAblyClientFactory(
+        @Nullable ErrantRecordReporter dlqReporter,
+        OffsetRegistry offsetRegistryService) {
+        this.dlqReporter = dlqReporter;
+        this.offsetRegistryService = offsetRegistryService;
+    }
+
     @Override
     public DefaultAblyBatchClient create(Map<String, String> settings) throws AblyException {
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(settings);
-        final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
-        final ChannelConfig channelConfig = new DefaultChannelConfig(connectorConfig);
-        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator);
-        final MessageSinkMapping messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
         if (connectorConfig.clientOptions == null) {
             throw new ConfigException("Ably client options were not initialized due to invalid configuration.");
         }
-
         connectorConfig.clientOptions.logHandler = new ClientOptionsLogHandler(logger);
 
-        return new DefaultAblyBatchClient(connectorConfig, channelSinkMapping, messageSinkMapping, configValueEvaluator);
+        return new DefaultAblyBatchClient(connectorConfig, dlqReporter, offsetRegistryService);
     }
 }

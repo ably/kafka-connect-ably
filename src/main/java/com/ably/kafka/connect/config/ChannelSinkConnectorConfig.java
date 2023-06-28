@@ -189,10 +189,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         "stop", "skip", "dlq"
     );
 
-    // TODO: delete this
-    public static final String SKIP_ON_KEY_ABSENCE = "skipOnKeyAbsence";
-
-
     public static final String BATCH_EXECUTION_THREAD_POOL_SIZE = "batchExecutionThreadPoolSize";
 
     public static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT = "10";

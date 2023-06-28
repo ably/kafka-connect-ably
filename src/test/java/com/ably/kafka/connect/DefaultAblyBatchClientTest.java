@@ -1,20 +1,17 @@
 package com.ably.kafka.connect;
 
 import com.ably.kafka.connect.client.DefaultAblyBatchClient;
-import com.ably.kafka.connect.config.ChannelConfig;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
-import com.ably.kafka.connect.config.DefaultChannelConfig;
-import com.ably.kafka.connect.mapping.ChannelSinkMapping;
-import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
-import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
-import com.ably.kafka.connect.mapping.MessageSinkMapping;
+import com.ably.kafka.connect.offset.OffsetRegistry;
+import com.ably.kafka.connect.offset.OffsetRegistryService;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.HttpPaginatedResponse;
 import io.ably.lib.types.Message;
 import org.apache.kafka.connect.data.Schema;
+import org.apache.kafka.connect.sink.ErrantRecordReporter;
 import org.apache.kafka.connect.sink.SinkRecord;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -26,17 +23,20 @@ import java.util.Set;
 
 public class DefaultAblyBatchClientTest {
 
+    private DefaultAblyBatchClient getClient(ChannelSinkConnectorConfig config) throws AblyException {
+        // TODO: add test coverage for DLQ and offset report
+        final ErrantRecordReporter dlqReporter = null;
+        final OffsetRegistry offsetRegistry = new OffsetRegistryService();
+        return new DefaultAblyBatchClient(config, dlqReporter, offsetRegistry);
+    }
+
     @Test
     public void testGroupMessagesByChannel() throws AblyException {
 
         final String STATIC_CHANNEL_NAME = "channel_#{topic}";
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
                 STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
-        final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
-        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator);
-        final MessageSinkMapping messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
-        DefaultAblyBatchClient client = new DefaultAblyBatchClient(connectorConfig, channelSinkMapping,
-                messageSinkMapping, configValueEvaluator);
+        final DefaultAblyBatchClient client = getClient(connectorConfig);
 
         SinkRecord record1 = new SinkRecord("topic1", 0, Schema.STRING_SCHEMA, "myKey".getBytes(),
                 null, "test1", 0);
@@ -83,10 +83,7 @@ public class DefaultAblyBatchClientTest {
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
                 STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
-        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator);
-        final MessageSinkMapping messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
-        DefaultAblyBatchClient client = new DefaultAblyBatchClient(connectorConfig, channelSinkMapping,
-                messageSinkMapping, configValueEvaluator);
+        final DefaultAblyBatchClient client = getClient(connectorConfig);
 
 
         HttpPaginatedResponse response = new HttpPaginatedResponse() {
@@ -156,10 +153,7 @@ public class DefaultAblyBatchClientTest {
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
                 STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
         final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
-        final ChannelSinkMapping channelSinkMapping = new DefaultChannelSinkMapping(connectorConfig, configValueEvaluator);
-        final MessageSinkMapping messageSinkMapping = new DefaultMessageSinkMapping(connectorConfig, configValueEvaluator);
-        DefaultAblyBatchClient client = new DefaultAblyBatchClient(connectorConfig, channelSinkMapping,
-                messageSinkMapping, configValueEvaluator);
+        final DefaultAblyBatchClient client = getClient(connectorConfig);
         Map<String, String> channelToErrorMessageMap = new HashMap();
         Set<String> failedMessageIds = client.getFailedChannels(JsonParser.parseString(errorMessage), channelToErrorMessageMap);
 

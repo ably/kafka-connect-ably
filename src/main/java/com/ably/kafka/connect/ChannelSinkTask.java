@@ -4,18 +4,15 @@ import com.ably.kafka.connect.batch.AutoFlushingBuffer;
 import com.ably.kafka.connect.batch.BatchProcessingThread;
 import com.ably.kafka.connect.client.AblyClient;
 import com.ably.kafka.connect.client.AblyClientFactory;
-import com.ably.kafka.connect.client.DefaultAblyBatchClient;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.offset.OffsetRegistry;
 import com.ably.kafka.connect.offset.OffsetRegistryService;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
-import com.google.common.annotations.VisibleForTesting;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.RetriableException;
-import org.apache.kafka.connect.sink.ErrantRecordReporter;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
@@ -35,29 +32,10 @@ public class ChannelSinkTask extends SinkTask {
     // Maximum time we're willing to wait in a call to stop() for the thread executor pool to end
     private static final long MAX_THREAD_POOL_SHUTDOWN_DELAY_MS = 10000;
 
-    private AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory();
-    private DefaultAblyBatchClient ablyClient;
-
     private final BlockingQueue<Runnable> sinkRecordsQueue = new LinkedBlockingQueue<>();
     private ThreadPoolExecutor executor;
 
-    private int maxBufferLimit;
-    private long maxBufferDelay;
     private AutoFlushingBuffer<SinkRecord> buffer;
-
-    private ErrantRecordReporter kafkaRecordErrorReporter;
-
-    public ChannelSinkTask() {}
-
-    @VisibleForTesting
-    ChannelSinkTask(AblyClientFactory factory) {
-        this.ablyClientFactory = factory;
-    }
-
-    @VisibleForTesting
-    AblyClient getAblyClient() {
-        return ablyClient;
-    }
 
     private final OffsetRegistry offsetRegistryService = new OffsetRegistryService();
 
@@ -65,8 +43,13 @@ public class ChannelSinkTask extends SinkTask {
     public void start(Map<String, String> settings) {
         logger.info("Starting Ably channel Sink task");
 
+        final AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory(
+            this.context.errantRecordReporter(),
+            this.offsetRegistryService);
+
+        AblyClient ablyClient;
         try {
-            this.ablyClient = (DefaultAblyBatchClient) this.ablyClientFactory.create(settings);
+            ablyClient = ablyClientFactory.create(settings);
         } catch (ChannelSinkConnectorConfig.ConfigException | AblyException e) {
             throw new RuntimeException(e);
         }
@@ -79,32 +62,25 @@ public class ChannelSinkTask extends SinkTask {
                 TimeUnit.SECONDS, sinkRecordsQueue,
                 new ThreadPoolExecutor.CallerRunsPolicy());
 
-        this.maxBufferLimit = Integer.parseInt(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE,
-                ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT));
+        final int maxBufferLimit = Integer.parseInt(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE,
+            ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT));
 
-        this.maxBufferDelay = Long.parseLong(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS,
+        final long maxBufferDelay = Long.parseLong(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS,
             ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DEFAULT));
 
         // Pass the sink task thread through to each batch worker thread so that they have the
         // option of interrupting the main sink task if an error is encountered that requires
         // complete shutdown of this task.
         final Thread sinkTaskThread = Thread.currentThread();
-        this.buffer = new AutoFlushingBuffer<>(this.maxBufferDelay, this.maxBufferLimit, batch -> {
+        this.buffer = new AutoFlushingBuffer<>(maxBufferDelay, maxBufferLimit, batch -> {
             logger.info("SinkTask sending records: {}", batch.size());
             this.executor.execute(
                 new BatchProcessingThread(
                     batch,
-                    this.ablyClient,
-                    this.kafkaRecordErrorReporter,
-                    this.offsetRegistryService,
-                    sinkTaskThread));
+                    ablyClient,
+                    sinkTaskThread)
+            );
         });
-
-        if(context.errantRecordReporter() != null) {
-            this.kafkaRecordErrorReporter = context.errantRecordReporter();
-        } else {
-            logger.warn("Dead letter queue is not configured");
-        }
     }
 
     public void put(Collection<SinkRecord> records) {
@@ -114,15 +90,6 @@ public class ChannelSinkTask extends SinkTask {
         }
     }
 
-    /**
-     * precommit is called in regular intervals by the kafka connect
-     * framework. We store that the offsets that are successfully processed
-     * in the offsetRegistryService. This is used to commit the offsets
-     * precommit automatically calls flush.
-     * @param offsets
-     * @return
-     * @throws RetriableException
-     */
     @Override
     public Map<TopicPartition, OffsetAndMetadata> preCommit(
         Map<TopicPartition, OffsetAndMetadata> offsets)

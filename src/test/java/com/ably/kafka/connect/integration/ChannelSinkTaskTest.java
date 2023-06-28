@@ -213,7 +213,7 @@ public class ChannelSinkTaskTest {
         final String channelName = "channel1";
         final String messageNamePattern = "#{key}_message_a";
         Map<String, String> settings = createSettings(channelName, messageNamePattern);
-        settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
+        settings.put(ChannelSinkConnectorConfig.FAILED_RECORD_MAPPING_ACTION, "skip");
         configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get(channelName);
@@ -243,7 +243,7 @@ public class ChannelSinkTaskTest {
         final String channelName = "channel1";
         final String messageNamePattern = "#{key}_message_b";
         Map<String, String> settings = createSettings(channelName, messageNamePattern);
-        settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
+        settings.put(ChannelSinkConnectorConfig.FAILED_RECORD_MAPPING_ACTION, String.valueOf("skip"));
         configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get(channelName);
@@ -269,7 +269,7 @@ public class ChannelSinkTaskTest {
         final String channelName = "channel1_#{key}";
         final String messageName = "my_message";
         Map<String, String> settings = createSettings(channelName, messageName);
-        settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
+        settings.put(ChannelSinkConnectorConfig.FAILED_RECORD_MAPPING_ACTION, String.valueOf("skip"));
         configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get("channel1_key1");
@@ -298,7 +298,7 @@ public class ChannelSinkTaskTest {
         final String channelNamePattern = "channel_#{key}";
         final String messageName = "myMessage";
         Map<String, String> settings = createSettings(channelNamePattern, messageName);
-        settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, String.valueOf(true));
+        settings.put(ChannelSinkConnectorConfig.FAILED_RECORD_MAPPING_ACTION, String.valueOf("skip"));
         configureAndWait(settings);
 
         Channel channel = ablyClient.channels.get("channel_key1");
