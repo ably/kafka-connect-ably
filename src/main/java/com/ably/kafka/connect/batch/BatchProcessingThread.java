@@ -12,26 +12,24 @@ import java.util.List;
  * is to call the Ably BATCH REST API
  * for every batch.(its grouped by channel)
  */
-public class BatchProcessingThread implements Runnable{
+public class BatchProcessingThread implements Runnable {
 
     private final List<SinkRecord> records;
-
     private final DefaultAblyBatchClient batchClient;
-
     private final ErrantRecordReporter dlqReporter;
-
     private final OffsetRegistry offsetRegistryService;
 
-    public BatchProcessingThread(List<SinkRecord> sinkRecords,
-                                 DefaultAblyBatchClient ablyBatchClient,
-                                 ErrantRecordReporter dlqReporter,
-                                 OffsetRegistry offsetRegistryService) {
+    public BatchProcessingThread(
+        final List<SinkRecord> sinkRecords,
+        final DefaultAblyBatchClient ablyBatchClient,
+        final ErrantRecordReporter dlqReporter,
+        final OffsetRegistry offsetRegistryService) {
         this.records = sinkRecords;
         this.batchClient = ablyBatchClient;
         this.dlqReporter = dlqReporter;
         this.offsetRegistryService = offsetRegistryService;
-
     }
+
     @Override
     public void run() {
         batchClient.publishBatch(records, this.dlqReporter, offsetRegistryService);

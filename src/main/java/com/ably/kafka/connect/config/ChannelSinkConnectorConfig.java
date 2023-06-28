@@ -207,7 +207,15 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     public static final String BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT = "1000";
 
     private static final String BATCH_EXECUTION_MAX_BUFFER_SIZE_DOC = "Size of the buffer, records " +
-            "are buffered or chunked before calling the Ably Batch REST API";
+        "are buffered or chunked before calling the Ably Batch REST API";
+
+    public static final String BATCH_EXECUTION_MAX_BUFFER_DELAY_MS = "batchExecutionMaxBufferSizeMs";
+
+    public static final String BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DEFAULT = "5000";
+    public static final String BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DOC =
+        "Maximum delay to buffer records before submitting records collected so far to Ably";
+
+
 
     // The name of the extra agent identifier to add to the Ably-Agent header to
     // identify this client as using the Ably Kafka Connector.
@@ -615,6 +623,13 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                        .importance(Importance.MEDIUM)
                        .defaultValue(Integer.parseInt(BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT))
                        .build()
+            )
+            .define(
+                ConfigKeyBuilder.of(BATCH_EXECUTION_MAX_BUFFER_DELAY_MS, Type.INT)
+                    .documentation(BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DOC)
+                    .importance(Importance.MEDIUM)
+                    .defaultValue(Integer.parseInt(BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DEFAULT))
+                    .build()
             );
     }
 }
