@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# This is a bash script template to install a Kafka distribution
+# on the bastion host and pull in the broker addresses from Terraform
+
+yum update -y
+yum install java-1.8.0 -y
+yum install java-17-amazon-corretto-devel.x86_64 -y
+wget https://archive.apache.org/dist/kafka/3.4.0/kafka_2.12-3.4.0.tgz
+tar -xzf kafka_2.12-3.4.0.tgz
+rm kafka_2.12-3.4.0.tgz
+
+cat > /home/ec2-user/bootstrap-servers <<- "EOF"
+${bootstrap_server_1}
+${bootstrap_server_2}
+${bootstrap_server_3}
+EOF
+
+echo "PATH=$PATH:/bin:/usr/local/bin:/usr/bin:/kafka_2.12-3.4.0/bin" >> /home/ec2-user/.bash_profile

@@ -39,8 +39,7 @@ public class ChannelSinkConnector extends SinkConnector {
 
     @Override
     public List<Map<String, String>> taskConfigs(int maxTasks) {
-        //TODO: Add multi-partition publisher
-        return Collections.singletonList(this.settings);
+        return Collections.nCopies(maxTasks, this.settings);
     }
 
     @Override
