@@ -73,7 +73,7 @@ public class ChannelSinkTask extends SinkTask {
         // complete shutdown of this task.
         final Thread sinkTaskThread = Thread.currentThread();
         this.buffer = new AutoFlushingBuffer<>(maxBufferDelay, maxBufferLimit, batch -> {
-            logger.info("SinkTask sending records: {}", batch.size());
+            logger.debug("SinkTask sending records: {}", batch.size());
             this.executor.execute(
                 new BatchProcessingThread(
                     batch,
