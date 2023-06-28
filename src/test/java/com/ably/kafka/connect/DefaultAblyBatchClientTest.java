@@ -2,7 +2,6 @@ package com.ably.kafka.connect;
 
 import com.ably.kafka.connect.client.DefaultAblyBatchClient;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
-import com.ably.kafka.connect.config.ConfigValueEvaluator;
 import com.ably.kafka.connect.offset.OffsetRegistry;
 import com.ably.kafka.connect.offset.OffsetRegistryService;
 import com.google.gson.JsonElement;
@@ -33,7 +32,6 @@ public class DefaultAblyBatchClientTest {
         final String STATIC_CHANNEL_NAME = "channel_#{topic}";
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
                 STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
-        final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
         final DefaultAblyBatchClient client = getClient(connectorConfig);
 
 
@@ -103,7 +101,6 @@ public class DefaultAblyBatchClientTest {
         final String STATIC_CHANNEL_NAME = "channel_#{topic}";
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(Map.of("channel",
                 STATIC_CHANNEL_NAME, "client.key", "test-key", "client.id", "test-id"));
-        final ConfigValueEvaluator configValueEvaluator = new ConfigValueEvaluator();
         final DefaultAblyBatchClient client = getClient(connectorConfig);
         Map<String, String> channelToErrorMessageMap = new HashMap();
         Set<String> failedMessageIds = client.getFailedChannels(JsonParser.parseString(errorMessage), channelToErrorMessageMap);

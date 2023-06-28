@@ -2,7 +2,6 @@ package com.ably.kafka.connect.client;
 
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.offset.OffsetRegistry;
-import com.ably.kafka.connect.offset.OffsetRegistryService;
 import com.ably.kafka.connect.utils.ClientOptionsLogHandler;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.common.config.ConfigException;
