@@ -1,14 +1,11 @@
 
 package com.ably.kafka.connect.config;
 
-import com.ably.kafka.connect.validators.MultiConfigValidator;
 import com.ably.kafka.connect.validators.ChannelNameValidator;
-import org.apache.kafka.common.config.AbstractConfig;
-import org.apache.kafka.common.config.ConfigDef;
-import org.apache.kafka.common.config.ConfigDef.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.ably.kafka.connect.validators.MultiConfigValidator;
+import com.github.jcustenborder.kafka.connect.utils.config.ConfigKeyBuilder;
+import com.github.jcustenborder.kafka.connect.utils.config.recommenders.Recommenders;
+import com.github.jcustenborder.kafka.connect.utils.config.validators.Validators;
 import io.ably.lib.http.HttpAuth;
 import io.ably.lib.rest.Auth.TokenParams;
 import io.ably.lib.transport.Defaults;
@@ -16,15 +13,17 @@ import io.ably.lib.types.AblyException;
 import io.ably.lib.types.ClientOptions;
 import io.ably.lib.types.Param;
 import io.ably.lib.types.ProxyOptions;
-
+import org.apache.kafka.common.config.AbstractConfig;
+import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Importance;
-import com.github.jcustenborder.kafka.connect.utils.config.ConfigKeyBuilder;
-import com.github.jcustenborder.kafka.connect.utils.config.recommenders.Recommenders;
-import com.github.jcustenborder.kafka.connect.utils.config.validators.Validators;
+import org.apache.kafka.common.config.ConfigDef.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ChannelSinkConnectorConfig extends AbstractConfig {
 
@@ -176,9 +175,22 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final String CLIENT_CHANNEL_PARAMS_DOC = "Additional channel parameters used to configure the " +
         "behaviour of the channel. This should be specified in the form \"key1=value1,key2=value2,...\".";
 
+    public static final String FAILED_RECORD_MAPPING_ACTION = "onFailedRecordMapping";
+    private static final String FAILED_RECORD_MAPPING_ACTION_DOC = "Action to take when an attempt to dynamically " +
+        "assign a message name or channel name to a record based on a template values. This can happen if the record " +
+        "is missing a referenced field, or it's not a valid type. The support actions are `stop`, to stop the sink task " +
+        "(default), `skip` to silently ignore those records or `dlq` to forward those records to a configured dead-letter " +
+        "queue. If `dlq` is selected but no DLQ is configured, the connector defaults to `stop`";
+
+    public static final String FAILED_RECORD_MAPPING_ACTION_DEFAULT = "stop";
+
+    public static final Set<String> FAILED_RECORD_MAPPING_ACTION_OPTIONS = Set.of(
+        "stop", "skip", "dlq"
+    );
+
+    // TODO: delete this
     public static final String SKIP_ON_KEY_ABSENCE = "skipOnKeyAbsence";
-    private static final String SKIP_ON_KEY_ABSENCE_DOC = "If true, it skips the record if the key has been provided as" +
-        " part of interpolable configuration value, but key is not available on the time of record creation. Default value is false.";
+
 
     public static final String BATCH_EXECUTION_THREAD_POOL_SIZE = "batchExecutionThreadPoolSize";
 
@@ -220,6 +232,15 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
     public final ClientOptions clientOptions;
+
+    /**
+     * Actions that can be taking in response to failed record mapping attempts.
+     */
+    public enum FailedRecordMappingAction {
+        STOP_TASK,
+        SKIP_RECORD,
+        DLQ_RECORD
+    }
 
     public static class ConfigException extends Exception {
         private static final long serialVersionUID = 6225540388729441285L;
@@ -309,6 +330,28 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         }
 
         return parsedParams.toArray(new Param[0]);
+    }
+
+    /**
+     * Get the configured behaviour for handling failed attempts to map records to channel or message names.
+     *
+     * @return The configured error handling action
+     *
+     * @throws ConfigException if the configured action is valid, and this wasn't picked up by config validation.
+     */
+    public FailedRecordMappingAction getFailedMappingAction() throws ConfigException {
+        final String actionConfig = getString(FAILED_RECORD_MAPPING_ACTION);
+        switch (actionConfig) {
+            case "stop":
+                return FailedRecordMappingAction.STOP_TASK;
+            case "skip":
+                return FailedRecordMappingAction.SKIP_RECORD;
+            case "dlq":
+                return FailedRecordMappingAction.DLQ_RECORD;
+            default:
+                // unreachable - config validator should prevent this
+                throw new ConfigException("Invalid action configured for FailedRecordMappingAction");
+        }
     }
 
     public static ConfigDef createConfig() {
@@ -582,10 +625,18 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .build()
             )
             .define(
-                ConfigKeyBuilder.of(SKIP_ON_KEY_ABSENCE, Type.BOOLEAN)
-                    .documentation(SKIP_ON_KEY_ABSENCE_DOC)
+                ConfigKeyBuilder.of(FAILED_RECORD_MAPPING_ACTION, Type.STRING)
+                    .documentation(FAILED_RECORD_MAPPING_ACTION_DOC)
                     .importance(Importance.MEDIUM)
-                    .defaultValue(false)
+                    .defaultValue(FAILED_RECORD_MAPPING_ACTION_DEFAULT)
+                    .validator((s, o) -> {
+                        if (!(o instanceof String && FAILED_RECORD_MAPPING_ACTION_OPTIONS.contains((String) o))) {
+                            throw new org.apache.kafka.common.config.ConfigException(
+                              String.format("%s is not a valid option for %s, options are: %s",
+                                  o, FAILED_RECORD_MAPPING_ACTION, FAILED_RECORD_MAPPING_ACTION_OPTIONS)
+                            );
+                        }
+                    })
                     .build()
             )
             .define(

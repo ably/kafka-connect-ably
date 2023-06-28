@@ -51,10 +51,7 @@ public class RecordMappingFactory {
         if (patternConfig == null || patternConfig.isEmpty()) {
             return new NullRecordMapping();
         } else if (TemplatedRecordMapping.hasPlaceholders(patternConfig)) {
-            return new TemplatedRecordMapping(
-                patternConfig,
-                this.connectorConfig.getBoolean(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE)
-            );
+            return new TemplatedRecordMapping(patternConfig);
         } else {
             return new StaticRecordMapping(patternConfig);
         }

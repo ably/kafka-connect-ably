@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -118,14 +117,12 @@ public class RecordMappingTest {
         final RecordMappingFactory factoryWithSkip = configureFactory(
             Map.of(
                 "message.name", "message_#{key}",
-                "channel", "channel_#{key}",
-                "skipOnKeyAbsence", "true"
+                "channel", "channel_#{key}"
             )
         );
-        assertRecordMappingException(RecordMappingException.Action.SKIP_RECORD,
-            () -> factoryWithSkip.channelNameMapping().map(record));
-        assertRecordMappingException(RecordMappingException.Action.SKIP_RECORD,
-            () -> factoryWithSkip.messageNameMapping().map(record));
+
+        assertThrows(RecordMappingException.class, () -> factoryWithSkip.channelNameMapping().map(record));
+        assertThrows(RecordMappingException.class, () -> factoryWithSkip.messageNameMapping().map(record));
 
         // If skip is false, or unset, we should default to stopping the sink task,
         // because skips are a dangerous default and may result in data loss
@@ -135,10 +132,8 @@ public class RecordMappingTest {
                 "channel", "channel_#{key}"
             )
         );
-        assertRecordMappingException(RecordMappingException.Action.STOP_TASK,
-            () -> factoryWithoutSkip.channelNameMapping().map(record));
-        assertRecordMappingException(RecordMappingException.Action.STOP_TASK,
-            () -> factoryWithoutSkip.messageNameMapping().map(record));
+        assertThrows(RecordMappingException.class, () -> factoryWithoutSkip.channelNameMapping().map(record));
+        assertThrows(RecordMappingException.class, () -> factoryWithoutSkip.messageNameMapping().map(record));
     }
 
     /**
@@ -236,8 +231,7 @@ public class RecordMappingTest {
     public void testReferenceToMissingField() {
         final RecordMappingFactory factory = configureFactory(
             Map.of(
-                "channel", "channel_#{value.cheescake}",
-                "skipOnKeyAbsence", "false"
+                "channel", "channel_#{value.cheescake}"
             )
         );
         final RecordMapping channelMapping = factory.channelNameMapping();
@@ -249,8 +243,7 @@ public class RecordMappingTest {
             .put("id", (short) 12);
 
         final SinkRecord record = new SinkRecord("topic7", 5, null, null, schema, testStruct, 0);
-        assertRecordMappingException(RecordMappingException.Action.STOP_TASK,
-            () -> channelMapping.map(record));
+        assertThrows(RecordMappingException.class, () -> channelMapping.map(record));
     }
 
     /**
@@ -261,8 +254,7 @@ public class RecordMappingTest {
         final RecordMappingFactory factory = configureFactory(
             Map.of(
                 "channel", "channel_#{key.structField}",
-                "message.name", "message_#{key}",
-                "skipOnKeyAbsence", "true"
+                "message.name", "message_#{key}"
             )
         );
 
@@ -282,10 +274,8 @@ public class RecordMappingTest {
                     .put("id", 42));
 
         final SinkRecord record = new SinkRecord("topic7", 5, schema, testStruct, null, "value", 0);
-        assertRecordMappingException(RecordMappingException.Action.SKIP_RECORD,
-            () -> channelMapping.map(record));
-        assertRecordMappingException(RecordMappingException.Action.SKIP_RECORD,
-            () -> messageMapping.map(record));
+        assertThrows(RecordMappingException.class, () -> channelMapping.map(record));
+        assertThrows(RecordMappingException.class, () -> messageMapping.map(record));
     }
 
     /**
@@ -296,39 +286,12 @@ public class RecordMappingTest {
     public void testNestedFieldAccessOnSchemalessRecord() {
         final RecordMappingFactory factory = configureFactory(
             Map.of(
-                "channel", "channel_#{key.id}",
-                "skipOnKeyAbsence", "false"
+                "channel", "channel_#{key.id}"
             )
         );
         final RecordMapping channelMapping = factory.channelNameMapping();
         final SinkRecord record = new SinkRecord("topic8", 5, null, "key", null, "value", 0);
-        assertRecordMappingException(RecordMappingException.Action.STOP_TASK,
-            () -> channelMapping.map(record));
-    }
-
-    /**
-     * Check that a RecordMappingException is thrown with the expected error handling action set.
-     *
-     * @param action the expected error handling action
-     * @param fn test code to execute
-     */
-    private <T> void assertRecordMappingException(RecordMappingException.Action action, Supplier<T> fn) {
-        T ret;
-        try {
-            ret = fn.get();
-        } catch (Throwable exc) {
-            if (!exc.getClass().equals(RecordMappingException.class)) {
-                exc.printStackTrace();
-            }
-            assertEquals(exc.getClass(), RecordMappingException.class);
-            if (exc instanceof RecordMappingException) {
-                assertEquals(action, ((RecordMappingException) exc).action());
-            }
-            return;
-        }
-
-        fail("Expected RecordMappingException to be thrown, but nothing was thrown. " +
-             "function returned: " + ret.toString());
+        assertThrows(RecordMappingException.class, () -> channelMapping.map(record));
     }
 
     /**

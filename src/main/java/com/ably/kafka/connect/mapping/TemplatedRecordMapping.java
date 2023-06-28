@@ -53,7 +53,6 @@ public class TemplatedRecordMapping implements RecordMapping {
         );
 
     private final String template;
-    private final boolean allowSkips;
 
     /**
      * If value is one of the types we can sensibly interpret as a String, return a String
@@ -81,12 +80,9 @@ public class TemplatedRecordMapping implements RecordMapping {
     /**
      * Construct a new templated record mapping for given template string.
      *
-     * @param allowSkips If true, will signal to skip when a record cannot
-     *                   fulfill template required. If false, will treat
-     *                   missing template data as fatal and stop the sink task
      * @param template The placeholder template pattern to use for formatting.
      */
-    public TemplatedRecordMapping(String template, boolean allowSkips) {
+    public TemplatedRecordMapping(String template) {
         // Fail early rather than waiting for runtime data, if:
         //  * this template has no placeholders
         //  * the placeholders are invalid
@@ -101,7 +97,6 @@ public class TemplatedRecordMapping implements RecordMapping {
             }
         }
 
-        this.allowSkips = allowSkips;
         this.template = template;
     }
 
@@ -195,30 +190,26 @@ public class TemplatedRecordMapping implements RecordMapping {
         final Object rootObject,
         final Schema rootSchema,
         final List<String> remaining) {
-        // Get the configured error handling action
-        final RecordMappingException.Action skipAction =
-            allowSkips ? RecordMappingException.Action.SKIP_RECORD : RecordMappingException.Action.STOP_TASK;
-
         if (remaining.isEmpty()) {
             // If we're at the end of the reference path, we should have a scalar value now
             if (SUPPORTED_SCALARS.contains(rootSchema.type())) {
                 return stringify(rootObject);
             } else {
                 throw new RecordMappingException(
-                    "Final element in a field reference must be a string-able scalar, got: " + rootSchema.type(),
-                    skipAction
+                    "Final element in a field reference must be a string-able scalar, got: " + rootSchema.type()
                 );
             }
         } else if (rootSchema == null) {
             // Can't make nested references without a record schema
             throw new RecordMappingException(
-                "Template contains a nested field reference but record has no schema",
-                skipAction
+                "Template contains a nested field reference but record has no schema"
             );
         } else if (rootSchema.type().equals(Schema.Type.STRUCT)) {
             // If we're not at the end, this should be a struct, so recurse down
             final String fieldName = remaining.get(0);
-            final Set<String> fieldNames = rootSchema.fields().stream().map(Field::name).collect(Collectors.toSet());
+            final Set<String> fieldNames = rootSchema.fields().stream()
+                .map(Field::name)
+                .collect(Collectors.toSet());
             if (fieldNames.contains(fieldName)) {
                 final Struct struct = (Struct) rootObject;
                 return followReferencePath(
@@ -228,30 +219,25 @@ public class TemplatedRecordMapping implements RecordMapping {
                 );
             } else {
                 throw new RecordMappingException(
-                    "Template contains reference to missing field " + fieldName,
-                    skipAction
+                    "Template contains reference to missing field " + fieldName
                 );
             }
         } else {
             // Attempted `.` access on a non-struct field
             throw new RecordMappingException(
-                "Inner elements in a nested field reference must be structs, found: " + rootSchema.type(),
-                skipAction
+                "Inner elements in a nested field reference must be structs, found: " + rootSchema.type()
             );
         }
     }
 
     /**
-     * Throws a RecordMappingException with given error and configured skip behaviour.
+     * Throws a RecordMappingException with given error.
      *
      * @param message Human-readable message to be sent to DLQ, if configured.
      *
      * @throws RecordMappingException always
      */
     private void mappingError(String message) {
-        throw new RecordMappingException(
-            message,
-            allowSkips ? RecordMappingException.Action.SKIP_RECORD : RecordMappingException.Action.STOP_TASK
-        );
+        throw new RecordMappingException(message);
     }
 }
