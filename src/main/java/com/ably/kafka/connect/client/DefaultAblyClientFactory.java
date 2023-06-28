@@ -27,7 +27,7 @@ public class DefaultAblyClientFactory implements AblyClientFactory {
     }
 
     @Override
-    public DefaultAblyBatchClient create(Map<String, String> settings) throws AblyException {
+    public DefaultAblyBatchClient create(Map<String, String> settings) throws AblyException, ChannelSinkConnectorConfig.ConfigException {
         final ChannelSinkConnectorConfig connectorConfig = new ChannelSinkConnectorConfig(settings);
         if (connectorConfig.clientOptions == null) {
             throw new ConfigException("Ably client options were not initialized due to invalid configuration.");
