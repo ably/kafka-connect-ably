@@ -2,8 +2,8 @@ package com.ably.kafka.connect;
 
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
-import com.ably.kafka.connect.mapping.MessageSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
+import com.ably.kafka.connect.mapping.MessageSinkMapping;
 import com.ably.kafka.connect.utils.AvroToStruct;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -28,33 +28,51 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MessageSinkMappingTest {
     private static final String STATIC_MESSAGE_NAME = "static-message";
     private static final String DYNAMIC_MESSAGE_PATTERN = "message_#{topic}_#{key}";
-    private static final Map<String, String> baseConfigMap = Map.of("channel", "channelX", "client.key",
-        "test-key", "client.id", "test-id");
-    private static final Map<String, String> configMapWithStaticMessageName = Map.of("channel", "channelX", "client.key",
-        "test-key", "client.id", "test-id", "message.name", STATIC_MESSAGE_NAME);
-    private static final Map<String, String> configMapWithPatternedMessageName = Map.of("channel", "channelX", "client.key",
-        "test-key", "client.id", "test-id", "message.name", DYNAMIC_MESSAGE_PATTERN);
+    private static final Map<String, String> baseConfigMap =
+        Map.of(
+            "channel", "channelX",
+            "client.key",  "test-key",
+            "client.id", "test-id"
+        );
+
+    private static final Map<String, String> configMapWithStaticMessageName =
+        Map.of(
+            "channel", "channelX",
+            "client.key", "test-key",
+            "client.id", "test-id",
+            "message.name", STATIC_MESSAGE_NAME
+        );
+
+    private static final Map<String, String> configMapWithPatternedMessageName =
+        Map.of(
+            "channel", "channelX",
+            "client.key", "test-key",
+            "client.id", "test-id",
+            "message.name", DYNAMIC_MESSAGE_PATTERN
+        );
+
     private final ConfigValueEvaluator evaluator = new ConfigValueEvaluator();
 
-    private MessageSinkMapping sinkMapping;
     private final AvroToStruct avroToStruct = new AvroToStruct();
+
+    private MessageSinkMapping getMapping(Map<String, String> settings) {
+        return new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(settings), evaluator);
+    }
 
 
     @Test
     void testGetMessage_messageNameIsNullWhenNotProvided() {
         //given
-        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
+        final MessageSinkMapping sinkMapping = getMapping(baseConfigMap);
         final SinkRecord record = new SinkRecord("not_important", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -67,7 +85,7 @@ class MessageSinkMappingTest {
     @Test
     void testGetMessage_messageNameIsStaticWhenStaticConfigProvided() {
         //given
-        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(configMapWithStaticMessageName), evaluator);
+        final MessageSinkMapping sinkMapping = getMapping(configMapWithStaticMessageName);
         final SinkRecord record = new SinkRecord("not_important", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -81,7 +99,7 @@ class MessageSinkMappingTest {
     void testGetMessage_messageNameIsInterpolatedWhenPatternedConfigProvided() {
         //given
         //"message_#{topic}_#{key}"
-        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(configMapWithPatternedMessageName), evaluator);
+        final MessageSinkMapping sinkMapping = getMapping(configMapWithPatternedMessageName);
         final SinkRecord record = new SinkRecord("niceTopic", 0, Schema.BYTES_SCHEMA, "niceKey".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -95,7 +113,7 @@ class MessageSinkMappingTest {
     @Test
     void testGetMessage_messageDataIsTheSameWithRecordValue() {
         //given
-        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
+        final MessageSinkMapping sinkMapping = getMapping(baseConfigMap);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -112,7 +130,7 @@ class MessageSinkMappingTest {
     // //message.id = String.format("%d:%d:%d", record.topic().hashCode(), record.kafkaPartition(), record.kafkaOffset());
     void testGetMessage_messageIdIsSetBasedOnRecordValues() {
         //given
-        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
+        final MessageSinkMapping sinkMapping = getMapping(baseConfigMap);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -126,7 +144,7 @@ class MessageSinkMappingTest {
     @Test
     void testGetMessage_sentAndReceivedExtrasKeysAreTheSame() {
         //given
-        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
+        final MessageSinkMapping sinkMapping = getMapping(baseConfigMap);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), Schema.BYTES_SCHEMA, "value", 0);
 
         //when
@@ -147,7 +165,7 @@ class MessageSinkMappingTest {
     @Test
     void testGetMessage_recordHeadersAreReceivedCorrectly() {
         //given
-        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
+        final MessageSinkMapping sinkMapping = getMapping(baseConfigMap);
         final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("key1", "value1", "key2", "value2");
         for (Map.Entry<String, String> entry : headersMap.entrySet()) {
@@ -198,7 +216,7 @@ class MessageSinkMappingTest {
 
         final JsonElement expected = JsonParser.parseString(pushHeaderValue);
 
-        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
+        final MessageSinkMapping sinkMapping = getMapping(baseConfigMap);
         final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
         for (final Map.Entry<String, String> entry : headersMap.entrySet()) {
@@ -246,7 +264,7 @@ class MessageSinkMappingTest {
         final Struct struct = avroToStruct.getStruct(garage);
         final Schema valueSchema = avroToStruct.getConnectSchema(garage);
 
-        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
+        final MessageSinkMapping sinkMapping = getMapping(baseConfigMap);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), valueSchema, struct, 0);
 
         //when
@@ -266,13 +284,36 @@ class MessageSinkMappingTest {
         final Schema mapSchema = SchemaBuilder.type(Schema.Type.MAP).build();
         final Map<String, String> map = Map.of("key1", "value1", "key2", "value2");
 
-        sinkMapping = new DefaultMessageSinkMapping(new ChannelSinkConnectorConfig(baseConfigMap), evaluator);
+        final MessageSinkMapping sinkMapping = getMapping(baseConfigMap);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, "key".getBytes(), mapSchema, map, 0);
 
 
         final Throwable exception = assertThrows(ConnectException.class, () -> sinkMapping.getMessage(record),
             "sinkMapping.getMessage(record) is supposed tho throw an exception for non-struct schemas");
         assertEquals(exception.getMessage(), String.format("Unsupported value schema type: %s", mapSchema.type()));
+    }
+
+    @Test
+    void testThrowsIfKeyMissingAndNotSkipping() {
+        final Map<String, String> settings = new HashMap<>(configMapWithPatternedMessageName);
+        settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, "false");
+
+        final MessageSinkMapping sinkMapping = getMapping(settings);
+        final SinkRecord record = new SinkRecord("test", 0, null, null, null, "foo", 0);
+        assertThrows(IllegalArgumentException.class, () -> {
+            final Message msg = sinkMapping.getMessage(record);
+            System.out.println(msg);
+        });
+    }
+
+    @Test
+    void testReturnsNullIfKeyMissingAndSkipping() {
+        final Map<String, String> settings = new HashMap<>(configMapWithPatternedMessageName);
+        settings.put(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE, "true");
+
+        final MessageSinkMapping sinkMapping = getMapping(settings);
+        final SinkRecord record = new SinkRecord("test", 0, null, null, null, "foo", 0);
+        assertNull(sinkMapping.getMessage(record));
     }
 
     private AvroToStruct.Garage exampleGarage(String name) {
@@ -287,5 +328,4 @@ class MessageSinkMappingTest {
 
         return new AvroToStruct.Garage(name, List.of(car1, car2), partMap, AvroToStruct.Garage.GarageType.CAR, false);
     }
-
 }

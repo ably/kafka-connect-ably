@@ -43,8 +43,16 @@ public class DefaultMessageSinkMapping implements MessageSinkMapping {
     }
 
     private Message messageFromRecord(SinkRecord record) {
-        final String messageName = configValueEvaluator.evaluate(record, sinkConnectorConfig.getString(MESSAGE_CONFIG), false).getValue();
+        final boolean skip = sinkConnectorConfig.getBoolean(ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE);
+        final String messageNamePattern = sinkConnectorConfig.getString(MESSAGE_CONFIG);
+        final ConfigValueEvaluator.Result messageNameResult =
+            configValueEvaluator.evaluate(record, messageNamePattern, skip);
 
+        if (messageNameResult.shouldSkip()) {
+            return null;
+        }
+
+        final String messageName = messageNameResult.getValue();
         if (record.valueSchema() == null) {
             return new Message(messageName, record.value());
         }

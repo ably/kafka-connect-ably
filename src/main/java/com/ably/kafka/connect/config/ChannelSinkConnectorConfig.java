@@ -13,6 +13,7 @@ import io.ably.lib.types.AblyException;
 import io.ably.lib.types.ClientOptions;
 import io.ably.lib.types.Param;
 import io.ably.lib.types.ProxyOptions;
+import io.ably.lib.util.Log;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Importance;
@@ -403,7 +404,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                 ConfigKeyBuilder.of(CLIENT_LOG_LEVEL, Type.INT)
                     .documentation(CLIENT_LOG_LEVEL_DOC)
                     .importance(Importance.LOW)
-                    .defaultValue(0)
+                    .defaultValue(Log.VERBOSE)
                     .build()
             )
             .define(

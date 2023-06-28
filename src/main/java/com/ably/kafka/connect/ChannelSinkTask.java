@@ -14,8 +14,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.connect.sink.ErrantRecordReporter;
 import org.apache.kafka.connect.errors.RetriableException;
+import org.apache.kafka.connect.sink.ErrantRecordReporter;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
@@ -31,6 +31,9 @@ import java.util.concurrent.TimeUnit;
 
 public class ChannelSinkTask extends SinkTask {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkTask.class);
+
+    // Maximum time we're willing to wait in a call to stop() for the thread executor pool to end
+    private static final long MAX_THREAD_POOL_SHUTDOWN_DELAY_MS = 10000;
 
     private AblyClientFactory ablyClientFactory = new DefaultAblyClientFactory();
     private DefaultAblyBatchClient ablyClient;
@@ -82,14 +85,19 @@ public class ChannelSinkTask extends SinkTask {
         this.maxBufferDelay = Long.parseLong(settings.getOrDefault(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS,
             ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DEFAULT));
 
+        // Pass the sink task thread through to each batch worker thread so that they have the
+        // option of interrupting the main sink task if an error is encountered that requires
+        // complete shutdown of this task.
+        final Thread sinkTaskThread = Thread.currentThread();
         this.buffer = new AutoFlushingBuffer<>(this.maxBufferDelay, this.maxBufferLimit, batch -> {
-            logger.debug("SinkTask sending records: " + batch.size());
+            logger.info("SinkTask sending records: {}", batch.size());
             this.executor.execute(
                 new BatchProcessingThread(
                     batch,
                     this.ablyClient,
                     this.kafkaRecordErrorReporter,
-                    this.offsetRegistryService));
+                    this.offsetRegistryService,
+                    sinkTaskThread));
         });
 
         if(context.errantRecordReporter() != null) {
@@ -129,6 +137,13 @@ public class ChannelSinkTask extends SinkTask {
 
         if(this.executor != null) {
             this.executor.shutdown();
+            try {
+                if (!this.executor.awaitTermination(MAX_THREAD_POOL_SHUTDOWN_DELAY_MS, TimeUnit.MILLISECONDS)) {
+                    logger.warn("Thread pool still running after {} millis", MAX_THREAD_POOL_SHUTDOWN_DELAY_MS);
+                }
+            } catch (InterruptedException e) {
+                logger.warn("Interrupted while waiting for thread pool shutdown");
+            }
         }
 
     }
