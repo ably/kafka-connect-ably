@@ -34,6 +34,8 @@ import io.ably.lib.types.ClientOptions;
 import io.ably.lib.types.ErrorInfo;
 import io.ably.lib.types.Message;
 import io.ably.lib.util.Serialisation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Helpers for interacting with the Ably Sandbox environment.
@@ -134,7 +136,9 @@ public class AblyHelpers {
             reset();
             try {
                 channel.subscribe(this);
-            } catch(AblyException e) {}
+            } catch(AblyException e) {
+
+            }
         }
 
         /**

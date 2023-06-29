@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.*;
+import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.CHANNEL_CONFIG;
+import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.MESSAGE_CONFIG;
+import static com.ably.kafka.connect.config.ChannelSinkConnectorConfig.SKIP_ON_KEY_ABSENCE;
 
 
 /**

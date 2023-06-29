@@ -1,10 +1,8 @@
 package com.ably.kafka.connect;
 
 import com.ably.kafka.connect.client.DefaultAblyBatchClient;
-import com.ably.kafka.connect.config.ChannelConfig;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.config.ConfigValueEvaluator;
-import com.ably.kafka.connect.config.DefaultChannelConfig;
 import com.ably.kafka.connect.mapping.ChannelSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultChannelSinkMapping;
 import com.ably.kafka.connect.mapping.DefaultMessageSinkMapping;
@@ -16,13 +14,15 @@ import io.ably.lib.types.HttpPaginatedResponse;
 import io.ably.lib.types.Message;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.sink.SinkRecord;
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DefaultAblyBatchClientTest {
 

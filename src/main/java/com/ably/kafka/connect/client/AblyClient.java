@@ -15,10 +15,8 @@ public interface AblyClient {
      * @throws ConnectException
      * @throws AblyException
      */
-    void publishBatch(List<SinkRecord> records, ErrantRecordReporter dlqReporter,
+    void publishBatch(List<SinkRecord> records,
+                      ErrantRecordReporter dlqReporter,
                       OffsetRegistry offsetRegistryService) throws ConnectException, AblyException;
-    /**
-     * Stop the ability to publish messages to Ably.
-     * */
 }
 
