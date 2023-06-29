@@ -70,26 +70,18 @@ public class MessageGroup {
     }
 
     /**
-     * In the event of an entire batch submission failing, we may need to DLQ all
-     * records in all BatchSpecs. This will return all SinkRecords in the corresponding
-     * call to specs().
-     *
-     * @return all SinkRecords submitted in the BatchSpecs returned by specs()
-     */
-    public List<SinkRecord> allRecords() {
-        return groupedRecords.values().stream()
-            .flatMap(recs -> recs.stream()
-                .map(RecordMessagePair::getKafkaRecord))
-            .collect(Collectors.toList());
-    }
-
-
-    /**
      * Return all SinkRecords that correspond to a particular channel
      */
     public List<SinkRecord> recordsForChannel(final String channelName) {
         return groupedRecords.getOrDefault(channelName, Collections.emptyList()).stream()
             .map(RecordMessagePair::getKafkaRecord)
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Return a set of all the channels in this grouping.
+     */
+    public Set<String> allChannels() {
+        return groupedRecords.keySet();
     }
 }

@@ -2,7 +2,7 @@ package com.ably.kafka.connect;
 
 import com.ably.kafka.connect.batch.AutoFlushingBuffer;
 import com.ably.kafka.connect.batch.BatchProcessingThread;
-import com.ably.kafka.connect.client.AblyClient;
+import com.ably.kafka.connect.client.AblyBatchClient;
 import com.ably.kafka.connect.client.AblyClientFactory;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
@@ -47,9 +47,9 @@ public class ChannelSinkTask extends SinkTask {
             this.context.errantRecordReporter(),
             this.offsetRegistryService);
 
-        AblyClient ablyClient;
+        AblyBatchClient ablyBatchClient;
         try {
-            ablyClient = ablyClientFactory.create(settings);
+            ablyBatchClient = ablyClientFactory.create(settings);
         } catch (ChannelSinkConnectorConfig.ConfigException | AblyException e) {
             throw new RuntimeException(e);
         }
@@ -77,7 +77,7 @@ public class ChannelSinkTask extends SinkTask {
             this.executor.execute(
                 new BatchProcessingThread(
                     batch,
-                    ablyClient,
+                    ablyBatchClient,
                     sinkTaskThread)
             );
         });

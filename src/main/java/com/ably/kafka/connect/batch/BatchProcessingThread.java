@@ -1,9 +1,6 @@
 package com.ably.kafka.connect.batch;
 
-import com.ably.kafka.connect.client.AblyClient;
-import com.ably.kafka.connect.client.DefaultAblyBatchClient;
-import org.apache.kafka.connect.sink.ErrantRecordReporter;
-import com.ably.kafka.connect.offset.OffsetRegistry;
+import com.ably.kafka.connect.client.AblyBatchClient;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,11 +19,11 @@ public class BatchProcessingThread implements Runnable {
     private final Thread mainSinkTask;
 
     private final List<SinkRecord> records;
-    private final AblyClient batchClient;
+    private final AblyBatchClient batchClient;
 
     public BatchProcessingThread(
         final List<SinkRecord> sinkRecords,
-        final AblyClient ablyBatchClient,
+        final AblyBatchClient ablyBatchClient,
         final Thread mainSinkTask) {
         this.records = sinkRecords;
         this.batchClient = ablyBatchClient;

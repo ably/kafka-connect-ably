@@ -8,6 +8,7 @@ import com.ably.kafka.connect.client.BatchSpec;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.mapping.RecordMappingException;
 import com.ably.kafka.connect.mapping.RecordMappingFactory;
+import com.ably.kafka.connect.utils.CapturedDlqError;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import org.apache.kafka.connect.data.Schema;
@@ -32,25 +33,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class MessageGroupingTest {
 
     /**
-     * Pairing of records to errors for capturing objects sent to the DLQ
-     */
-    static class CapturedError {
-        public final SinkRecord record;
-        public final Throwable error;
-
-        CapturedError(SinkRecord record, Throwable error) {
-            this.record = record;
-            this.error = error;
-        }
-    }
-
-    /**
      * Ensure that records are grouped by channel and the returned MessageGroup returns the appropriate
      * BatchSpec configuration, and the corresponding SinkRecords where needed.
      */
     @Test
     public void testGroupsByChannelName() throws ChannelSinkConnectorConfig.ConfigException {
-        final List<CapturedError> errors = Lists.newArrayList();
+        final List<CapturedDlqError> errors = Lists.newArrayList();
         final MessageGrouper sut = grouper("channel_#{key}", "msgName", "skip", errors);
         final List<SinkRecord> records = List.of(
             new SinkRecord("topic1", 0, Schema.INT32_SCHEMA, 1, null, "msg1", 0),
@@ -74,8 +62,8 @@ public class MessageGroupingTest {
             "channel_3", List.of("msgName/msg3", "msgName/msg5")
         ), flatten(specs));
 
-        // allRecords() should recover all SinkRecords, but ordering will be arbitrary
-        assertEquals(Set.copyOf(records), Set.copyOf(group.allRecords()));
+        // allChannels() should return all channels we have records for
+        assertEquals(Set.of("channel_1", "channel_2", "channel_3"), group.allChannels());
 
         // Check that recordsForChannel can select correct subsets of records
         assertEquals(List.of(
@@ -104,7 +92,7 @@ public class MessageGroupingTest {
         );
 
         // `skip` configuration should not submit errors to DLQ and only return valid record mappings
-        final List<CapturedError> skipErrors = Lists.newArrayList();
+        final List<CapturedDlqError> skipErrors = Lists.newArrayList();
         final MessageGrouper skipGrouper = grouper("test_channel", "name_#{key}", "skip", skipErrors);
         final MessageGroup skipGroup = skipGrouper.group(records);
         assertEquals(Collections.emptyList(), skipErrors);
@@ -113,13 +101,13 @@ public class MessageGroupingTest {
         ), flatten(skipGroup.specs()));
 
         // `stop` should kill the sink task during processing
-        final List<CapturedError> stopErrors = Lists.newArrayList();
+        final List<CapturedDlqError> stopErrors = Lists.newArrayList();
         final MessageGrouper stopGrouper = grouper("test_channel", "name_#{key}", "stop", stopErrors);
         assertEquals(Collections.emptyList(), stopErrors);
         assertThrows(FatalBatchProcessingException.class, () -> stopGrouper.group(records));
 
         // `dlq` should send failed records to the DLQ
-        final List<CapturedError> dlqErrors = Lists.newArrayList();
+        final List<CapturedDlqError> dlqErrors = Lists.newArrayList();
         final MessageGrouper dlqGrouper = grouper("test_channel", "name_#{key}", "dlq", dlqErrors);
         final MessageGroup dlqGroup = dlqGrouper.group(records);
         assertEquals(1, dlqErrors.size());
@@ -168,7 +156,7 @@ public class MessageGroupingTest {
         String channelPattern,
         String messagePattern,
         String failAction,
-        @Nullable List<CapturedError> errorSink) throws ChannelSinkConnectorConfig.ConfigException {
+        @Nullable List<CapturedDlqError> errorSink) throws ChannelSinkConnectorConfig.ConfigException {
         final ChannelSinkConnectorConfig config = new ChannelSinkConnectorConfig(
             Map.of(
                 "client.key", "unused",
@@ -181,7 +169,7 @@ public class MessageGroupingTest {
         final RecordMappingFactory factory = new RecordMappingFactory(config);
         final ErrantRecordReporter dlqReporter =
             errorSink == null ? null : (sinkRecord, throwable) -> {
-            errorSink.add(new CapturedError(sinkRecord, throwable));
+            errorSink.add(new CapturedDlqError(sinkRecord, throwable));
             return Futures.immediateVoidFuture();
         };
         return new MessageGrouper(

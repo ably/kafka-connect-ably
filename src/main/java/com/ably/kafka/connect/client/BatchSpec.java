@@ -6,9 +6,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Ably BatchSpec type for submission using the Ably Rest API.
+ * GSON will serialise this to the expected JSON format.
+ */
 final public class BatchSpec {
     private final Set<String> channels;
     private final List<Message> messages;
+
     public BatchSpec(Set<String> channels, List<Message> messages) {
         this.channels = channels;
         this.messages = messages;
@@ -18,17 +23,5 @@ final public class BatchSpec {
     }
     public List<Message> getMessages() {
         return messages;
-    }
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BatchSpec batchSpec = (BatchSpec) o;
-        return Objects.equals(channels, batchSpec.channels)
-                && Objects.equals(messages, batchSpec.messages);
-    }
-    @Override
-    public int hashCode() {
-        return Objects.hash(channels, messages);
     }
 }
