@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Set;
 
 public class ChannelSinkConnectorConfig extends AbstractConfig {
 
@@ -134,9 +135,18 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     public static final int MESSAGE_PAYLOAD_SIZE_MAX_DEFAULT = 64 * 1024;
     private static final String MESSAGE_PAYLOAD_SIZE_MAX_DOC = "Maximum size of the message payload in KB";
 
-    public static final String SKIP_ON_KEY_ABSENCE = "skipOnKeyAbsence";
-    private static final String SKIP_ON_KEY_ABSENCE_DOC = "If true, it skips the record if the key has been provided as" +
-        " part of interpolable configuration value, but key is not available on the time of record creation. Default value is false.";
+    public static final String FAILED_RECORD_MAPPING_ACTION = "onFailedRecordMapping";
+    private static final String FAILED_RECORD_MAPPING_ACTION_DOC = "Action to take when an attempt to dynamically " +
+        "assign a message name or channel name to a record based on a template values. This can happen if the record " +
+        "is missing a referenced field, or it's not a valid type. The support actions are `stop`, to stop the sink task " +
+        "(default), `skip` to silently ignore those records or `dlq` to forward those records to a configured dead-letter " +
+        "queue. If `dlq` is selected but no DLQ is configured, the connector defaults to `stop`";
+
+    public static final String FAILED_RECORD_MAPPING_ACTION_DEFAULT = "stop";
+
+    public static final Set<String> FAILED_RECORD_MAPPING_ACTION_OPTIONS = Set.of(
+        "stop", "skip", "dlq"
+    );
 
     public static final String BATCH_EXECUTION_THREAD_POOL_SIZE = "batchExecutionThreadPoolSize";
     private static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DOC = "Size of Thread pool that is used to batch " +
@@ -166,6 +176,15 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final Logger logger = LoggerFactory.getLogger(ChannelSinkConnectorConfig.class);
 
     public final ClientOptions clientOptions;
+
+    /**
+     * Actions that can be taking in response to failed record mapping attempts.
+     */
+    public enum FailedRecordMappingAction {
+        STOP_TASK,
+        SKIP_RECORD,
+        DLQ_RECORD
+    }
 
     public static class ConfigException extends Exception {
         private static final long serialVersionUID = 6225540388729441285L;
@@ -232,6 +251,28 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         opts.agents = Map.of(ABLY_AGENT_HEADER_NAME, version);
 
         return opts;
+    }
+
+    /**
+     * Get the configured behaviour for handling failed attempts to map records to channel or message names.
+     *
+     * @return The configured error handling action
+     *
+     * @throws ConfigException if the configured action is valid, and this wasn't picked up by config validation.
+     */
+    public FailedRecordMappingAction getFailedMappingAction() throws ConfigException {
+        final String actionConfig = getString(FAILED_RECORD_MAPPING_ACTION);
+        switch (actionConfig) {
+            case "stop":
+                return FailedRecordMappingAction.STOP_TASK;
+            case "skip":
+                return FailedRecordMappingAction.SKIP_RECORD;
+            case "dlq":
+                return FailedRecordMappingAction.DLQ_RECORD;
+            default:
+                // unreachable - config validator should prevent this
+                throw new ConfigException("Invalid action configured for FailedRecordMappingAction");
+        }
     }
 
     public static ConfigDef createConfig() {
@@ -435,10 +476,18 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .build()
             )
             .define(
-                ConfigKeyBuilder.of(SKIP_ON_KEY_ABSENCE, Type.BOOLEAN)
-                    .documentation(SKIP_ON_KEY_ABSENCE_DOC)
+                ConfigKeyBuilder.of(FAILED_RECORD_MAPPING_ACTION, Type.STRING)
+                    .documentation(FAILED_RECORD_MAPPING_ACTION_DOC)
                     .importance(Importance.MEDIUM)
-                    .defaultValue(false)
+                    .defaultValue(FAILED_RECORD_MAPPING_ACTION_DEFAULT)
+                    .validator((s, o) -> {
+                        if (!(o instanceof String && FAILED_RECORD_MAPPING_ACTION_OPTIONS.contains((String) o))) {
+                            throw new org.apache.kafka.common.config.ConfigException(
+                              String.format("%s is not a valid option for %s, options are: %s",
+                                  o, FAILED_RECORD_MAPPING_ACTION, FAILED_RECORD_MAPPING_ACTION_OPTIONS)
+                            );
+                        }
+                    })
                     .build()
             )
             .define(

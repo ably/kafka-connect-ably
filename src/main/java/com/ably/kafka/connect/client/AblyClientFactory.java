@@ -14,5 +14,5 @@ public interface AblyClientFactory {
      *
      * @throws ChannelSinkConnectorConfig.ConfigException If the client cannot be created.
      */
-    AblyClient create(Map<String, String> settings) throws ChannelSinkConnectorConfig.ConfigException, AblyException;
+    AblyBatchClient create(Map<String, String> settings) throws ChannelSinkConnectorConfig.ConfigException, AblyException;
 }

@@ -1,8 +1,6 @@
 package com.ably.kafka.connect.batch;
 
-import com.ably.kafka.connect.client.DefaultAblyBatchClient;
-import org.apache.kafka.connect.sink.ErrantRecordReporter;
-import com.ably.kafka.connect.offset.OffsetRegistry;
+import com.ably.kafka.connect.client.AblyBatchClient;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,27 +19,21 @@ public class BatchProcessingThread implements Runnable {
     private final Thread mainSinkTask;
 
     private final List<SinkRecord> records;
-    private final DefaultAblyBatchClient batchClient;
-    private final ErrantRecordReporter dlqReporter;
-    private final OffsetRegistry offsetRegistryService;
+    private final AblyBatchClient batchClient;
 
     public BatchProcessingThread(
         final List<SinkRecord> sinkRecords,
-        final DefaultAblyBatchClient ablyBatchClient,
-        final ErrantRecordReporter dlqReporter,
-        final OffsetRegistry offsetRegistryService,
+        final AblyBatchClient ablyBatchClient,
         final Thread mainSinkTask) {
         this.records = sinkRecords;
         this.batchClient = ablyBatchClient;
-        this.dlqReporter = dlqReporter;
-        this.offsetRegistryService = offsetRegistryService;
         this.mainSinkTask = mainSinkTask;
     }
 
     @Override
     public void run() {
         try {
-            batchClient.publishBatch(records, this.dlqReporter, offsetRegistryService);
+            batchClient.publishBatch(records);
         } catch (FatalBatchProcessingException e) {
             logger.error("Worker thread killed due to fatal processing error, interrupting SinkTask", e);
             mainSinkTask.interrupt();
