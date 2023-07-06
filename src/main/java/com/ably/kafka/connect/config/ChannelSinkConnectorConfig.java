@@ -7,7 +7,6 @@ import com.github.jcustenborder.kafka.connect.utils.config.ConfigKeyBuilder;
 import com.github.jcustenborder.kafka.connect.utils.config.recommenders.Recommenders;
 import com.github.jcustenborder.kafka.connect.utils.config.validators.Validators;
 import io.ably.lib.http.HttpAuth;
-import io.ably.lib.rest.Auth.TokenParams;
 import io.ably.lib.transport.Defaults;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.ClientOptions;
@@ -105,23 +104,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final String CLIENT_FALLBACK_HOSTS_DOC = "List of custom fallback hosts to override the defaults. " +
         "Spec: TO3k6,RSC15a,RSC15b,RTN17b.";
 
-    public static final String CLIENT_TOKEN_PARAMS = "client.token.params";
-    private static final String CLIENT_TOKEN_PARAMS_DOC = "If true, use the configured token params.";
-
-    public static final String CLIENT_TOKEN_PARAMS_TTL = "client.token.params.ttl";
-    private static final String CLIENT_TOKEN_PARAMS_TTL_DOC = "Requested time to live for the token in milliseconds. " +
-        "When omitted, the REST API default of 60 minutes is applied by Ably. Client token params must be enabled";
-
-    public static final String CLIENT_TOKEN_PARAMS_CAPABILITY = "client.token.params.capability";
-    private static final String CLIENT_TOKEN_PARAMS_CAPABILITY_DOC = "Capability requirements JSON stringified for " +
-        "the token. When omitted, the REST API default to allow all operations is applied by Ably, with the string " +
-        "value {\"*\":[\"*\"]}. Client token params must be enabled.";
-
-    public static final String CLIENT_TOKEN_PARAMS_CLIENT_ID = "client.token.params.client.id";
-    private static final String CLIENT_TOKEN_PARAMS_CLIENT_ID_DOC = "Requested time to live for the token in " +
-        "milliseconds. When omitted, the REST API default of 60 minutes is applied by Ably. Client token params must " +
-        "be enabled.";
-
     public static final String CLIENT_ASYNC_HTTP_THREADPOOL_SIZE = "client.async.http.threadpool.size";
     private static final String CLIENT_ASYNC_HTTP_THREADPOOL_SIZE_DOC = "Allows the caller to specify a non-default " +
         "size for the asyncHttp threadpool";
@@ -154,12 +136,12 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     public static final String BATCH_EXECUTION_THREAD_POOL_SIZE_DEFAULT = "10";
 
     public static final String BATCH_EXECUTION_MAX_BUFFER_SIZE = "batchExecutionMaxBufferSize";
-    public static final String BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT = "1000";
+    public static final String BATCH_EXECUTION_MAX_BUFFER_SIZE_DEFAULT = "100";
     private static final String BATCH_EXECUTION_MAX_BUFFER_SIZE_DOC = "Size of the buffer, records " +
         "are buffered or chunked before calling the Ably Batch REST API";
 
     public static final String BATCH_EXECUTION_MAX_BUFFER_DELAY_MS = "batchExecutionMaxBufferSizeMs";
-    public static final String BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DEFAULT = "5000";
+    public static final String BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DEFAULT = "100";
     public static final String BATCH_EXECUTION_MAX_BUFFER_DELAY_MS_DOC =
         "Maximum delay to buffer records before submitting records collected so far to Ably";
 
@@ -234,12 +216,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         opts.httpRequestTimeout = getInt(CLIENT_HTTP_REQUEST_TIMEOUT);
         opts.httpMaxRetryCount = getInt(CLIENT_HTTP_MAX_RETRY_COUNT);
         opts.fallbackHosts = getList(CLIENT_FALLBACK_HOSTS).toArray(new String[0]);
-        if (getBoolean(CLIENT_TOKEN_PARAMS)) {
-            TokenParams tokenParams = new TokenParams();
-            tokenParams.ttl = getLong(CLIENT_TOKEN_PARAMS_TTL);
-            tokenParams.capability = getString(CLIENT_TOKEN_PARAMS_CAPABILITY);
-            tokenParams.clientId = getString(CLIENT_TOKEN_PARAMS_CLIENT_ID);
-        }
         opts.asyncHttpThreadpoolSize = getInt(CLIENT_ASYNC_HTTP_THREADPOOL_SIZE);
         opts.pushFullWait = getBoolean(CLIENT_PUSH_FULL_WAIT);
 
@@ -431,34 +407,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .documentation(CLIENT_FALLBACK_HOSTS_DOC)
                     .importance(Importance.MEDIUM)
                     .defaultValue("")
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS, Type.BOOLEAN)
-                    .documentation(CLIENT_TOKEN_PARAMS_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue(false)
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_TTL, Type.LONG)
-                    .documentation(CLIENT_TOKEN_PARAMS_TTL_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue(0L)
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_CAPABILITY, Type.STRING)
-                    .documentation(CLIENT_TOKEN_PARAMS_CAPABILITY_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue("")
-                    .build()
-            )
-            .define(
-                ConfigKeyBuilder.of(CLIENT_TOKEN_PARAMS_CLIENT_ID, Type.LONG)
-                    .documentation(CLIENT_TOKEN_PARAMS_CLIENT_ID_DOC)
-                    .importance(Importance.MEDIUM)
-                    .defaultValue(0L)
                     .build()
             )
             .define(

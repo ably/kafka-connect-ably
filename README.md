@@ -139,8 +139,11 @@ Extra Ably configuration is also required to enable push notifications, see the 
 
 #### Publishing messages with schema
 
-The Ably Kafka Connector supports messages which contain schema information by converting them to JSON before publishing them to Ably. To check how to use schema registry and supported converters, see [Using Kafka Connect with Schema Registry](https://docs.confluent.io/platform/current/schema-registry/connect.html). 
-For example, if messages on the Kafka topic are serialized using Avro with schemas registered at https://<your-schema-registry-host>, then set the following configuration so that those messages are converted from Avro to JSON:
+The Ably Kafka Connector supports messages which contain schema information by converting them to JSON before publishing 
+them to Ably. To check how to use schema registry and supported converters, see 
+[Using Kafka Connect with Schema Registry](https://docs.confluent.io/platform/current/schema-registry/connect.html).
+For example, if messages on the Kafka topic are serialized using Avro with schemas registered at https://<your-schema-registry-host>, 
+then set the following configuration so that those messages are converted from Avro to JSON:
 ```
 value.converter=io.confluent.connect.avro.AvroConverter
 value.converter.schema.registry.url=https://<your-schema-registry-host>
@@ -180,6 +183,9 @@ You should receive following Ably message where you subscribed. You will also re
 }
 ```
 
+Note that configuring the schema registry and appropriate key or value converters also enables referencing of record
+field data within [Dynamic Channel Configuration](#dynamic-channel-configuration)
+
 ## Breaking API Changes in Version 2.0.0
 
 Please see our [Upgrade / Migration Guide](UPDATING.md) for notes on changes you need to make to your configuration to update it with changes introduced by version 2.0.0 of the connector.
@@ -210,62 +216,148 @@ The basic properties that must be configured for the connector are:
 
 The advanced properties that can be configured for the connector are:
 
-| Property                          | Description                                                                                                                                                                                                                     | Type      | Default |
-|-----------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|---------|
-| message.name                      | Ably message name to publish. Can be a pattern, as per `channel` above.                                                                                                                                                         | *String*  |         |
-| skipOnKeyAbsence                  | Skips the record if channel name or message name is configured with a value containing #{key} but record does not have a valid key.                                                                                             | *Boolean* | false   |
-| batchExecutionThreadPoolSize      | The maximum number of parallel outgoing REST API requests to publish content to Ably                                                                                                                                            | *Integer* | 10      |
-| batchExecutionMaxBufferSize       | The maximum number of records to publish in a single batch to Ably                                                                                                                                                              | *Integer* | 1000    |
-| batchExecutionMaxBufferSizeMs     | The maxmium amount of time (in milliseconds) to wait for the batch publishing buffer to fill before publishing anyway                                                                                                           | *Integer* | 5000    |
-| client.async.http.threadpool.size | The size of the asyncHttp threadpool.                                                                                                                                                                                           | *Integer* | 64      |
-| client.fallback.hosts             | A list of custom fallback hosts. This will override the default fallback hosts.                                                                                                                                                 | *List*    ||
-| client.http.max.retry.count       | The maximum number of fallback hosts to use when an HTTP request to the primary host is unreachable or indicates that it is unserviceable.                                                                                      | *Integer* | 3       |
-| client.http.open.timeout          | The timeout period for opening an HTTP connection.                                                                                                                                                                              | *Integer* | 4000    |
-| client.http.request.timeout       | The timeout period for any single HTTP request and response.                                                                                                                                                                    | *Integer* | 15000   |
-| client.proxy                      | Sets whether the configured proxy options are used.                                                                                                                                                                             | *Boolean* ||
-| client.proxy.host                 | The proxy host to use. Requires `client.proxy` to be set to `true`.                                                                                                                                                             | *String*  ||
-| client.proxy.non.proxy.hosts      | A list of hosts excluded from using the proxy. Requires `client.proxy` to be set to `true`.                                                                                                                                     | *List*    ||
-| client.proxy.username             | The client proxy username. Requires `client.proxy` to be set to `true`.                                                                                                                                                         | *String*  ||
-| client.proxy.password             | The client proxy password. Requires `client.proxy` to be set to `true`.                                                                                                                                                         | *String*  ||
-| client.proxy.port                 | The client proxy port. Requires `client.proxy` to be set to `true`.                                                                                                                                                             | *Integer* ||
-| client.proxy.pref.auth.type       | The authentication type to use with the client proxy. Must be one of `BASIC`, `DIGEST` or `X_ABLY_TOKEN`. Requires `client.proxy` to be set to `true`.                                                                          | *String*  | Basic   |
-| client.push.full.wait             | Sets whether Ably should wait for all the effects of push REST requests before responding.                                                                                                                                      | *Boolean* ||
-| client.tls                        | Sets whether TLS is used for all connection types.                                                                                                                                                                              | *Boolean* | True    |
-| client.token.params               | Sets whether the configured token parameters are used.                                                                                                                                                                          | *Boolean* ||
-| client.token.params.capability    | Stringified JSON capability requirements for the token. When omitted, the REST API default to allow all operations is applied by Ably, with the string value `{“*”:[“*”]}`. Requires `client.token.params` to be set to `true`. | *String*  ||
-| client.token.params.client.id     | The client ID to include with the token. Requires `client.token.params` to be set to `true`.                                                                                                                                    | *String*  ||
-| client.token.params.ttl           | The requested time to live (TTL) for the token in milliseconds. When omitted, the REST API default of 60 minutes is applied by Ably. Requires `client.token.params` to be set to `true`.                                        | *Boolean* | 0       |
-| client.loglevel                   | Sets the verbosity of logging.                                                                                                                                                                                                  | *Integer* | 0       |
+| Property                          | Description                                                                                                                                            | Type      | Default |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|---------|
+| message.name                      | Ably message name to publish. Can be a pattern, as per [Dynamic Channel Configuration](#dynamic-channel-configuration) below.                          | *String*  |         |
+| batchExecutionThreadPoolSize      | The maximum number of parallel outgoing REST API requests to publish content to Ably                                                                   | *Integer* | 10      |
+| batchExecutionMaxBufferSize       | The maximum number of records to publish in a single batch to Ably. The maximum size of these batches must be less than the [maximum batch publish size](https://ably.com/docs/api/rest-api#batch-publish). | *Integer* | 100     |
+| batchExecutionMaxBufferSizeMs     | The maxmium amount of time (in milliseconds) to wait for the batch publishing buffer to fill before publishing anyway                                  | *Integer* | 100     |
+| onFailedRecordMapping             | Action to take if a dyanmic channel mapping fails for a record. See [Dynamic Channel Configuration](#Dynamic-Channel-Configuration) for full details.  | *String*  | stop    |
+| client.async.http.threadpool.size | The size of the asyncHttp threadpool.                                                                                                                  | *Integer* | 64      |
+| client.fallback.hosts             | A list of custom fallback hosts. This will override the default fallback hosts.                                                                        | *List*    ||
+| client.http.max.retry.count       | The maximum number of fallback hosts to use when an HTTP request to the primary host is unreachable or indicates that it is unserviceable.             | *Integer* | 3       |
+| client.http.open.timeout          | The timeout period for opening an HTTP connection.                                                                                                     | *Integer* | 4000    |
+| client.http.request.timeout       | The timeout period for any single HTTP request and response.                                                                                           | *Integer* | 15000   |
+| client.proxy                      | Sets whether the configured proxy options are used.                                                                                                    | *Boolean* ||
+| client.proxy.host                 | The proxy host to use. Requires `client.proxy` to be set to `true`.                                                                                    | *String*  ||
+| client.proxy.non.proxy.hosts      | A list of hosts excluded from using the proxy. Requires `client.proxy` to be set to `true`.                                                            | *List*    ||
+| client.proxy.username             | The client proxy username. Requires `client.proxy` to be set to `true`.                                                                                | *String*  ||
+| client.proxy.password             | The client proxy password. Requires `client.proxy` to be set to `true`.                                                                                | *String*  ||
+| client.proxy.port                 | The client proxy port. Requires `client.proxy` to be set to `true`.                                                                                    | *Integer* ||
+| client.proxy.pref.auth.type       | The authentication type to use with the client proxy. Must be one of `BASIC`, `DIGEST` or `X_ABLY_TOKEN`. Requires `client.proxy` to be set to `true`. | *String*  | Basic   |
+| client.push.full.wait             | Sets whether Ably should wait for all the effects of push REST requests before responding.                                                             | *Boolean* ||
+| client.tls                        | Sets whether TLS is used for all connection types.                                                                                                     | *Boolean* | True    |
+| client.loglevel                   | Sets the verbosity of logging.                                                                                                                         | *Integer* | 0       |
+
+## Buffering Records
+
+The Ably Kafka connector buffers records locally so that larger batches can be sent to Ably in parallel for improved
+throughput. This behaviour is configurable using these settings:
+
+* `batchExecutionMaxBufferSizeMs` - the maximum amount of time to wait (in milliseconds) for record data to accumulate 
+  before submitting as many records as have been buffered so far to Ably.
+* `batchExecutionMaxBufferSize` - the maximum number of records to buffer before submitting to Ably
+* `batchExecutionThreadPoolSize` - the size of the thread pool used to submit buffered batches to Ably, and therefore
+  the maximum number of concurrent submissions to Ably per sink task.
+
+Some consideration should be given with respect to your workload and requirements:
+
+* `batchExecutionMaxBufferSizeMs` is effectively the minimum latency for outgoing records. Increasing this value gives
+  records more time to accumulate so that more can be sent in each batch to Ably for improved efficiency, but if your
+  workload requires that latency between Kafka and the end user is low, you may need to decrease this value.
+* `batchExecutionMaxBufferSize` can be used to set a maximum on the number of records being sent to Ably. You should
+  consider your typical outgoing Ably message sizes and ensure that this is not set so high that batch submissions to
+  Ably may exceed your account limits.
+
+### Message Ordering
+
+If your workload requires that messages are sent to Ably channels in the order that they were published to Kafka Topic
+partitions, you will need to disable parallel submissions with sink tasks from the Ably connector as follows:
+
+* Set `batchExecutionThreadPoolSize=1` to prevent parallel submissions per task
+* Likely increase `max.tasks` to be the desired number of separate task instances required to achieve parallelism across
+  all topic partitions
 
 
 ## Dynamic Channel Configuration
-You can configure your channels dynamically by using `#{topic}` and/or `#{key}` placeholders in some configuration values. If you specify `#{key}` in your value, you must either send a UTF-8 encoded byte array or a string as your key value.
-Configurations that are supported:
-* `channel`
-  * For example. if you define a channel value with `channel_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the channel will be configured with `channel_topic1_key1` value.
-* `message.name`
-  * For example, if you define a `message.name` value with `message_#{topic}_#{key}` in your configuration, and publish a message to "topic1" with key "key1", the `message.name` will be configured with `message_topic1_key1` value.
 
-## Skipping failed messages on key absence
-If you are using `#{key}` in your configuration values for channel name or message name, the connector will fail if you do not provide a key or if the key is not a UTF-8 encoded string. If you want to skip the failed messages, you can set `skipOnKeyAbsence` to `true` in your configuration. If you set this value to `true`, the connector will skip the failed messages and log the error.
+Ably [Channels](https://ably.com/docs/channels) are very lightweight, and it's idiomatic to use very high numbers of distinct
+channels to send messages between users. In many use cases, it makes sense to create an Ably channel per user or per session,
+meaning there could be millions in total. Contrast with a typical Kafka deployment, where you're more likely to be putting
+records related to all users but of some common type through a single topic.
 
-<span style="color:red">Warning: If you want to be able to configure a dead letter queue for failed messages, merely setting this will not be adequate. Please read below to learn how to achieve this.</span>
+To enable "fan-out" to high numbers of channels from your Kafka topic, the Ably Kafka Connector supports Dynamic Channel
+Configuration, whereby you configure a template string to substitute data from incoming Kafka records into the outgoing Ably
+Channel name. The same functionality is also supported for the [Message](https://ably.com/docs/channels/messages) `name`
+field, if required.
 
-### Configuring custom SMT to enable dead letter queue for failed messages
-This project contains a custom SMT that is used to validate the key of the message and skip the message if the key is not a UTF-8 encoded string. If you want to configure a dead letter queue for failed messages, you must use this SMT. You can configure this SMT by adding the following configuration to your connector configuration:
+To make use of this feature, simply set the `channel` and/or `message.name` settings in your Connector properties file
+to reference data from the incoming Kafka record key or value, or metadata from the Kafka Topic, using the `#{...}`
+placeholder. Referencing data within a record key or value is only possible when making use of 
+[Kafka Connector Schema Support](https://docs.confluent.io/platform/current/schema-registry/index.html), though Topic
+metadata can always be referenced without a schema. References to unstructured `key` values is also supported, assuming
+they can be converted to a string.
+
+For example, the following configuration references a field within the record value and the topic name:
+
+```properties
+channel = user:#{value.userId}
+message.name = #{topic.name}
 ```
-transforms = RecordKeyCheck
-transforms.RecordKeyCheck.type = com.ably.kafka.connect.transform.RecordKeyCheck
-transforms.RecordKeyCheck.channel.name = #{topic}_#{key}
-transforms.RecordKeyCheck.message.name = #{key}_message
+
+This assumes that a schema registry is available and contains a schema for record values, and that an appropriate
+converter has been configured for values. If the value schema contains a field, `userId`, the configuration above
+will substitute those values into the outgoing channel names as per the template. The Ably Message name will also
+be set to the Kafka topic name, in this example.
+
+Fields can be nested within other `Structs`, for example `value.someStruct.userId` would also be valid if `someStruct`
+has `STRUCT` type and `userId` can be converted to a string. Given that both message and channel names are ultimately
+strings, the referenced fields must be reasonably interpretable as a string. The supported conversions are:
+
+* String
+* Integer (any precision)
+* Boolean
+* Bytes (assumed to be UTF-8 encoded string data)
+
+The table below summarises the substitutions that can be made within a `#{}` placeholder:
+
+| Placeholder            | Description                                                  |
+|------------------------|--------------------------------------------------------------|
+| `#{topic.name}`        | The Kafka Topic name                                         |
+| `#{topic.partition}`   | The Kafka Topic partition                                    |
+| `#{topic}`             | Alias for `topic.name`                                       |
+| `#{key}`               | The record key. Must be convertible to a string              |
+| `#{key.nestedField}`   | If key is a struct with a schema, uses `nestedField` value   |
+| `#{value.nestedField}` | If value is a struct with a schema, uses `nestedField` value |
+
+### Handling Failed Mappings
+
+Dynamic channel mapping can fail at runtime, if:
+
+* The template references a field that a record is missing
+* The referenced field cannot be converted to a string
+
+In these situations, it's possible to configure the desired error handling behaviour by setting the `onFailedRecordMapping`
+property to one of the following values:
+
+* `stop` (default) - Treat failed mappings as fatal and stop the Sink Task completely.
+* `skip` - Silently ignore records that cannot be mapped to the required template. Use this only if you're sure that
+the Kafka topic contains irrelevant records you'd like to filter out this way.
+* `dlq` - Send records with failed mappings along with the error (as a header) to a configured 
+[dead-letter queue](#dead-letter-queues).
+
+## Dead Letter Queues
+
+The Ably Kafka Connector is able to forward records to a dead-letter queue topic using Kafka Connect dead-letter queue
+support. You can learn more about dead-letter queues [here](https://www.confluent.io/en-gb/blog/kafka-connect-deep-dive-error-handling-dead-letter-queues/).
+
+As an example, adding the following configuration to your connector properties file will cause all failed records
+to be sent to a `dlq_ably_sink` topic with a replication factor of 1 and headers attached giving you full exception
+details for each record.
+
+```properties
+errors.tolerance = all
+errors.deadletterqueue.topic.name = dlq_ably_sink
+errors.deadletterqueue.topic.replication.factor=1
+errors.deadletterqueue.context.headers.enable=true
 ```
 
-`transforms.RecordKeyCheck.channel.name` must be exactly the same configuration as `channel` configuration in your connector. `transforms.RecordKeyCheck.message.name` is optional But when provided it must be set as exactly the same as `message.name` in your connector.
+Situations in which the Ably connector will forward records to a dead-letter queue include:
 
-There is a separate [Dockerfile](https://github.com/ably/kafka-connect-ably/blob/main/KeyCheckSMT/Dockerfile) provided in this project which contains the custom SMT installation along with connector. If you want to build your own Docker image, you can copy the content of this to `Dockerfile` provided in this project. You can alternatively build your JAR from the [source code](https://github.com/ably/kafka-connect-ably/blob/main/KeyCheckSMT) and add it to your  classpath.
-Please use this SMT only if you use `#{key}` in your configuration values for channel name or message name. If you do not use `#{key}` in your configuration values, you must not use this SMT.
+* Errors submitting to Ably, perhaps due to insufficient permissions to publish to a specific destination channel
+* Serious Ably service outages, after retrying with fallback endpoints
+* Failed dynamic channel mappings, if `onFailedRecordMapping = dlq`
 
-Setting up dead letter queue for failed messages is out of scope of this document. We recommend you read [this blog post](https://www.confluent.io/en-gb/blog/kafka-connect-deep-dive-error-handling-dead-letter-queues/) to learn how to set up dead letter queue for failed messages.
 ## Contributing
 
 For guidance on how to contribute to this project, see [CONTRIBUTING.md](CONTRIBUTING.md).
