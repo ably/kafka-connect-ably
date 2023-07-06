@@ -356,7 +356,7 @@ Situations in which the Ably connector will forward records to a dead-letter que
 
 * Errors submitting to Ably, perhaps due to insufficient permissions to publish to a specific destination channel
 * Serious Ably service outages, after retrying with fallback endpoints
-* Failed dyanmic channel mappings, if `onFailedRecordMapping = dlq`
+* Failed dynamic channel mappings, if `onFailedRecordMapping = dlq`
 
 ## Contributing
 
