@@ -55,6 +55,31 @@ To manually install the connector on a local installation of Confluent:
 
 3. [Configure](#configuration) the connector.
 
+
+### Confluent Cloud BYOC
+
+It is possible to use the connector as a plugin on Confluent Cloud, sometimes referred to as "Bring Your Own Connector". These steps assume that you have created a Confluent Cloud account and configured your cluster.
+
+1. Obtain the `.zip` of the connector as per [the manual installation guide](#manual-installation).
+2. Inside the cluster on your Confluent Cloud account, add a new Connector
+3. Instead of selecting Ably Kafka Connector from the Hub, instead click Add Plugin
+4. Give the plugin a name, and set the class to `com.ably.kafka.connect.ChannelSinkConnector`
+5. Upload the `.zip` file you obtained in step 1
+6. In the plugin config, insert the following, replacing the placeholder with your Ably API key:
+
+```json
+{
+  "connector.class": "com.ably.kafka.connect.ChannelSinkConnector",
+  "tasks.max": "3",
+  "group.id": "ably-connect-cluster",
+  "topics": "<topic1>,<topic2>",
+  "client.id": "Ably-Kafka-Connector",
+  "channel": "#{topic}",
+  "message.name": "#{topic}_message",
+  "client.key": "<YOUR_ABLY_API_KEY>"
+}
+```
+
 ### AWS MSK
 
 See the getting started instructions and example deployment in the [examples section](examples/msk_connect/README.md).
