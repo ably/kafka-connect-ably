@@ -5,7 +5,7 @@
 
   <groupId>com.ably.kafka.connect</groupId>
   <artifactId>kafka-connect-ably</artifactId>
-  <version>2.1.4</version>
+  <version>3.0.0</version>
   <packaging>jar</packaging>
 
   <properties>
