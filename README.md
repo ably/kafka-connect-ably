@@ -301,7 +301,7 @@ will substitute those values into the outgoing channel names as per the template
 be set to the Kafka topic name, in this example.
 
 Fields can be nested within other `Structs`, for example `value.someStruct.userId` would also be valid if `someStruct`
-has `STRUCT` type and `userId` can be converted to a string. Given that both message and channels names are ultimately
+has `STRUCT` type and `userId` can be converted to a string. Given that both message and channel names are ultimately
 strings, the referenced fields must be reasonably interpretable as a string. The supported conversions are:
 
 * String
