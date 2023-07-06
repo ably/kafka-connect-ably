@@ -79,6 +79,7 @@ It is possible to use the connector as a plugin on Confluent Cloud, sometimes re
   "client.key": "<YOUR_ABLY_API_KEY>"
 }
 ```
+7. When asked for an endpoint, enter `rest.ably.io:443:TCP`
 
 ### AWS MSK
 
