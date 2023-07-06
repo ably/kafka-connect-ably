@@ -218,7 +218,7 @@ The advanced properties that can be configured for the connector are:
 
 | Property                          | Description                                                                                                                                            | Type      | Default |
 |-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|---------|
-| message.name                      | Ably message name to publish. Can be a pattern, as per `channel` above.                                                                                | *String*  |         |
+| message.name                      | Ably message name to publish. Can be a pattern, as per [Dynamic Channel Configuration](#dynamic-channel-configuration) below.                          | *String*  |         |
 | batchExecutionThreadPoolSize      | The maximum number of parallel outgoing REST API requests to publish content to Ably                                                                   | *Integer* | 10      |
 | batchExecutionMaxBufferSize       | The maximum number of records to publish in a single batch to Ably                                                                                     | *Integer* | 1000    |
 | batchExecutionMaxBufferSizeMs     | The maxmium amount of time (in milliseconds) to wait for the batch publishing buffer to fill before publishing anyway                                  | *Integer* | 5000    |
