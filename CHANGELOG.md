@@ -1,5 +1,41 @@
 # Changelog
 
+## [3.0.0](https://github.com/ably/kafka-connect-ably/tree/v3.0.0)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.1.4...v3.0.0)
+
+This is a major release and contains a number of breaking changes. Please see the [upgrade guide](UPDATING.md) for more information on how to upgrade from version 2.x.
+
+**Closed issues:**
+
+- Support multiple `SinkTask` instances [\#138](https://github.com/ably/kafka-connect-ably/issues/138)
+- Remove orphaned config [\#135](https://github.com/ably/kafka-connect-ably/issues/135)
+- Support `Struct` fields in chanel and message name mapping [\#134](https://github.com/ably/kafka-connect-ably/issues/134)
+- Configurable buffering of incoming records [\#133](https://github.com/ably/kafka-connect-ably/issues/133)
+- Submit records using Batch API [\#124](https://github.com/ably/kafka-connect-ably/issues/124)
+- Test on MSK [\#123](https://github.com/ably/kafka-connect-ably/issues/123)
+- Offset tracking and committing [\#121](https://github.com/ably/kafka-connect-ably/issues/121)
+- Integration Testing [\#120](https://github.com/ably/kafka-connect-ably/issues/120)
+- DLQ Error Handling [\#119](https://github.com/ably/kafka-connect-ably/issues/119)
+
+**Merged pull requests:**
+
+- docs: readme entry for Confluent Cloud BYOC [\#147](https://github.com/ably/kafka-connect-ably/pull/147) ([AndyTWF](https://github.com/AndyTWF))
+- v3.0.0 [\#146](https://github.com/ably/kafka-connect-ably/pull/146) ([AndyTWF](https://github.com/AndyTWF))
+- Documentation and Config updates [\#142](https://github.com/ably/kafka-connect-ably/pull/142) ([jaley](https://github.com/jaley))
+- Structured field access for channel and message name mappings [\#141](https://github.com/ably/kafka-connect-ably/pull/141) ([jaley](https://github.com/jaley))
+- Support multiple tasks [\#140](https://github.com/ably/kafka-connect-ably/pull/140) ([jaley](https://github.com/jaley))
+- Remove legacy config and documentation [\#139](https://github.com/ably/kafka-connect-ably/pull/139) ([jaley](https://github.com/jaley))
+- Restore integration tests and fix related bugs [\#137](https://github.com/ably/kafka-connect-ably/pull/137) ([jaley](https://github.com/jaley))
+- Buffer incoming `SinkRecords` before sending batches [\#132](https://github.com/ably/kafka-connect-ably/pull/132) ([jaley](https://github.com/jaley))
+- End to end testing [\#131](https://github.com/ably/kafka-connect-ably/pull/131) ([jaley](https://github.com/jaley))
+- Added OffsetRegistryService class to store offsets by kafka topic/par… [\#130](https://github.com/ably/kafka-connect-ably/pull/130) ([subkanthi](https://github.com/subkanthi))
+- MSK Packaging & Example Deployment [\#129](https://github.com/ably/kafka-connect-ably/pull/129) ([jaley](https://github.com/jaley))
+- Kafka DLQ [\#128](https://github.com/ably/kafka-connect-ably/pull/128) ([subkanthi](https://github.com/subkanthi))
+- Update to Confluent Platform 7.4.0 [\#127](https://github.com/ably/kafka-connect-ably/pull/127) ([jaley](https://github.com/jaley))
+- Fix Docker build errors [\#126](https://github.com/ably/kafka-connect-ably/pull/126) ([jaley](https://github.com/jaley))
+- Batch API changes, create Threadpoolexecutor, add logic to batch mess… [\#125](https://github.com/ably/kafka-connect-ably/pull/125) ([subkanthi](https://github.com/subkanthi))
+
 ## [v2.1.4](https://github.com/ably/kafka-connect-ably/tree/v2.1.4)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.1.3...v2.1.4)
