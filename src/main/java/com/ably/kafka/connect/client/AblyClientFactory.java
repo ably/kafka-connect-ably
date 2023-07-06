@@ -1,6 +1,7 @@
 package com.ably.kafka.connect.client;
 
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
+import io.ably.lib.types.AblyException;
 
 import java.util.Map;
 
@@ -13,5 +14,5 @@ public interface AblyClientFactory {
      *
      * @throws ChannelSinkConnectorConfig.ConfigException If the client cannot be created.
      */
-    AblyClient create(Map<String, String> settings)  throws ChannelSinkConnectorConfig.ConfigException;
+    AblyBatchClient create(Map<String, String> settings) throws ChannelSinkConnectorConfig.ConfigException, AblyException;
 }

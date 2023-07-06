@@ -1,0 +1,135 @@
+version: '3'
+services:
+
+  kafka:
+    container_name: kafka
+    image: vectorized/redpanda:v22.1.3
+    restart: "no"
+    networks:
+      kafka_network:
+        aliases:
+          - kafka
+    ports:
+      # Expose LOCALHOST_NETWORK listener on localhost
+      - "19092:19092"
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      # Setup listeners for docker network and localhost network
+      - --kafka-addr
+      - DOCKER_NETWORK://0.0.0.0:9092,LOCALHOST_NETWORK://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - DOCKER_NETWORK://kafka:9092,LOCALHOST_NETWORK://127.0.0.1:19092
+
+  schema-registry:
+    container_name: schema-registry
+    #image: apicurio/apicurio-registry-mem:latest-release
+    image: confluentinc/cp-schema-registry:latest
+    restart: "no"
+    ports:
+      - "8081:8081"
+    environment:
+      - SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS=kafka:9092
+      - SCHEMA_REGISTRY_HOST_NAME=schema-registry
+      - SCHEMA_REGISTRY_LISTENERS=http://0.0.0.0:8081
+      - SCHEMA_REGISTRY_DEBUG=true
+    networks:
+      kafka_network:
+        aliases:
+          - schema-registry
+    depends_on:
+      - kafka
+
+
+  connector:
+    container_name: connector
+    image: connector:latest
+#    build:
+#      context: .
+#      dockerfile: Dockerfile_development
+    command:
+      - /bin/connect-standalone
+      - /config/docker-compose-worker.properties
+      - /config/docker-compose-connector.properties
+    volumes:
+      - ./config:/config
+    ports:
+      - 5005:5005
+    environment:
+      PORT: 5005
+      SUSPEND: ${SUSPEND:-n}
+      CONNECT_REST_PORT: 8083
+      CONNECT_REST_ADVERTISED_HOST_NAME: connector
+    networks:
+      kafka_network:
+        aliases:
+          - connector
+    depends_on:
+      - kafka
+      - schema-registry
+
+  mysql-master:
+    container_name: mysql-master
+    image: docker.io/bitnami/mysql:latest
+    restart: "no"
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=test
+      - MYSQL_REPLICATION_MODE=master
+      - MYSQL_REPLICATION_USER=repl_user
+      - ALLOW_EMPTY_PASSWORD=yes
+    #volumes:
+     # - ./mysqld.cnf:/opt/bitnami/mysql/conf/my_custom.cnf
+    # - ../sql/init_mysql.sql:/docker-entrypoint-initdb.d/init_mysql.sql
+    networks:
+      kafka_network:
+        aliases:
+          - mysql-master
+    healthcheck:
+      test: [ 'CMD', '/opt/bitnami/scripts/mysql/healthcheck.sh' ]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+
+
+  debezium:
+    container_name: debezium
+    image: debezium/connect:1.9.5.Final
+#    build:
+#      context: ../../docker/debezium_jmx
+#      args:
+#        DEBEZIUM_VERSION: 2.1.0.Alpha1
+#        JMX_AGENT_VERSION: 0.15.0
+    restart: "no"
+    ports:
+      - "8083:8083"
+      - "1976:1976"
+    networks:
+      kafka_network:
+        aliases:
+          - debezium
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      # Where to find Kafka broker
+      - BOOTSTRAP_SERVERS=kafka:9092
+      - GROUP_ID=1
+      - CONFIG_STORAGE_TOPIC=config-storage-topic-debezium
+      - OFFSET_STORAGE_TOPIC=offset-storage-topic-debezium
+      - STATUS_STORAGE_TOPIC=status-storage-topic-debezium
+      - LOG_LEVEL=INFO
+      - KEY_CONVERTER=io.confluent.connect.avro.AvroConverter
+      - VALUE_CONVERTER=io.confluent.connect.avro.AvroConverter
+      #- KAFKA_OPTS=-javaagent:/kafka/etc/jmx_prometheus_javaagent.jar=8080:/kafka/etc/config.yml
+      - JMXHOST=localhost
+      - JMXPORT=1976
+      - KAFKA_HEAP_OPTS=-Xms1G -Xmx5G
+      #- LOG_LEVEL=DEBUG
+    depends_on:
+      - kafka
+
+networks:
+  kafka_network:
