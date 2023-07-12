@@ -56,9 +56,9 @@ To manually install the connector on a local installation of Confluent:
 3. [Configure](#configuration) the connector.
 
 
-### Confluent Cloud BYOC
+### Confluent Cloud Custom Connector
 
-It is possible to use the connector as a plugin on Confluent Cloud, sometimes referred to as "Bring Your Own Connector". These steps assume that you have created a Confluent Cloud account and configured your cluster.
+It is possible to use the connector as a plugin on Confluent Cloud as a [Custom Connector](https://docs.confluent.io/cloud/current/connectors/bring-your-connector/overview.html). These steps assume that you have created a Confluent Cloud account and configured your cluster.
 
 1. Obtain the `.zip` of the connector as per [the manual installation guide](#manual-installation).
 2. Inside the cluster on your Confluent Cloud account, add a new Connector
