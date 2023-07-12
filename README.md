@@ -1,6 +1,6 @@
 # Ably Kafka Connector
 
-_[Ably](https://ably.com) is the platform that powers synchronized digital experiences in realtime. Whether attending an event in a virtual venue, receiving realtime financial information, or monitoring live car performance data – consumers simply expect realtime digital experiences as standard. Ably provides a suite of APIs to build, extend, and deliver powerful digital experiences in realtime for more than 250 million devices across 80 countries each month. Organizations like Bloomberg, HubSpot, Verizon, and Hopin depend on Ably’s platform to offload the growing complexity of business-critical realtime data synchronization at global scale. For more information, see the [Ably documentation](https://ably.com/documentation)._
+_[Ably](https://ably.com) is a realtime experiences infrastructure platform. Developers use our SDKs and APIs to build, extend and deliver realtime capabilities like Chat, Data Broadcast, Data Synchronization, Multiplayer Collaboration, and Notifications. Each month, Ably powers digital experiences in realtime for more than 350 million devices across 80 countries each. Organizations like HubSpot, Genius Sports, Verizon, Webflow, and Mentimeter depend on Ably’s platform to offload the growing complexity of business-critical realtime infrastructure at a global scale. For more information, see the [Ably documentation](https://ably.com/documentation)._
 
 ## Overview
 
