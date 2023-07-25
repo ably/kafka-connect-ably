@@ -76,7 +76,10 @@ It is possible to use the connector as a plugin on Confluent Cloud as a [Custom 
   "client.id": "Ably-Kafka-Connector",
   "channel": "#{topic}",
   "message.name": "#{topic}_message",
-  "client.key": "<YOUR_ABLY_API_KEY>"
+  "client.key": "<YOUR_ABLY_API_KEY>",
+  "key.converter": "org.apache.kafka.connect.converters.ByteArrayConverter",
+  "value.converter": "org.apache.kafka.connect.converters.ByteArrayConverter",
+  "value.converter.schemas.enable": "false"
 }
 ```
 7. When asked for an endpoint, enter `rest.ably.io:443:TCP`
