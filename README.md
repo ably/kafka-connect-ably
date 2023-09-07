@@ -13,7 +13,7 @@ The connector is built on top of [Apache Kafka Connect](http://docs.confluent.io
 
 ## Install
 
-Install the connector using the [Confluent Hub Client](#confluent-hub-installation) or [manually](#manual-installation) on Confluent Platform. Alternatively deploy it locally using [Docker](#docker).
+Install the connector using the [Confluent Hub Client](#confluent-hub-installation) or [manually](#manual-installation) on Confluent Platform. Alternatively deploy it locally using [Docker](#docker). If installing in Amazon MSK see the AWS MSK section below
 
 ### Confluent Hub installation
 
@@ -267,6 +267,7 @@ The advanced properties that can be configured for the connector are:
 | client.push.full.wait             | Sets whether Ably should wait for all the effects of push REST requests before responding.                                                             | *Boolean* ||
 | client.tls                        | Sets whether TLS is used for all connection types.                                                                                                     | *Boolean* | True    |
 | client.loglevel                   | Sets the verbosity of logging.                                                                                                                         | *Integer* | 0       |
+| client.environment                 | Custom Ably environment (https://ably.com/docs/platform-customization) | *String* ||
 
 ## Buffering Records
 
