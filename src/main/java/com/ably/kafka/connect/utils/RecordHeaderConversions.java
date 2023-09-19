@@ -102,7 +102,7 @@ public class RecordHeaderConversions {
                 }
 
                 if (extras.headersObject != null) {
-                    kafkaExtras().add(HEADERS_KEY, extras.headersObject);
+                    topExtrasObject().add(HEADERS_KEY, extras.headersObject);
                 }
 
                 buildPushExtras();
