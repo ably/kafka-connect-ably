@@ -95,9 +95,9 @@ public class RecordHeaderConversions {
             private void buildFromHeaders(Headers headers) {
                 for (Header header : headers) {
                     if (header.key().equals(PUSH_HEADER)) {
-                        extras.pushExtrasValue = header.value();
+                        extras.pushExtrasValue = stringifyHeaderValueIfPrimitive(header);
                     } else {
-                        headersObject().add(header.key(), header.value());
+                        headersObject().add(header.key(), stringifyHeaderValueIfPrimitive(header));
                     }
                 }
 
@@ -178,6 +178,17 @@ public class RecordHeaderConversions {
                 return new MessageExtras(topObject.toJson());
             }
             return null;
+        }
+
+        /**
+         * Stringify header value if it is primitive.
+         */
+        private static Object stringifyHeaderValueIfPrimitive(Header header) {
+            if (header.schema() != null && header.schema().type().isPrimitive()) {
+                return String.valueOf(header.value());
+            } else {
+                return header.value();
+            }
         }
 
     }
