@@ -119,8 +119,7 @@ class MessageConversionTest {
         final MessageExtras messageExtras = MessageConverter.toAblyMessage("name", record).extras;
 
         //then
-        final JsonObject receivedObject = messageExtras.asJsonObject().get("kafka").getAsJsonObject();
-        final JsonObject receivedHeaders = receivedObject.get("headers").getAsJsonObject();
+        final JsonObject receivedHeaders = messageExtras.asJsonObject().get("headers").getAsJsonObject();
         assertEquals(receivedHeaders.get("key1").getAsString(), "value1");
         assertEquals(receivedHeaders.get("key2").getAsString(), "value2");
     }

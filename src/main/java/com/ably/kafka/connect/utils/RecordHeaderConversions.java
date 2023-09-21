@@ -46,9 +46,9 @@ public class RecordHeaderConversions {
         return extras.toMessageExtras();
     }
 
-    /*
-    Wrapper class representing extras and is to be used to simplify building of extras object
-    * */
+    /**
+     * Wrapper class representing extras and is to be used to simplify building of extras object
+     */
     private static class Extras {
 
         private JsonUtils.JsonUtilsObject kafkaObject;
@@ -95,14 +95,20 @@ public class RecordHeaderConversions {
             private void buildFromHeaders(Headers headers) {
                 for (Header header : headers) {
                     if (header.key().equals(PUSH_HEADER)) {
+                        // We don't stringify push header value, it is special header, that end up as a nested JSON object
+                        // @see `Extras#buildPushPayload`
                         extras.pushExtrasValue = header.value();
                     } else {
-                        headersObject().add(header.key(), header.value());
+                        // Kafka automatically deserialises headers. Because Kafka doesn't know about what types
+                        // were originally, headers just get deserialised to the most obvious type. So that means
+                        // numeric strings end up as a numbers. There’s a problem with Realtime whereby large numbers
+                        // in headers breaks things. That's why we always stringify header value
+                        headersObject().add(header.key(), String.valueOf(header.value()));
                     }
                 }
 
                 if (extras.headersObject != null) {
-                    kafkaExtras().add(HEADERS_KEY, extras.headersObject);
+                    topExtrasObject().add(HEADERS_KEY, extras.headersObject);
                 }
 
                 buildPushExtras();
@@ -179,6 +185,5 @@ public class RecordHeaderConversions {
             }
             return null;
         }
-
     }
 }
