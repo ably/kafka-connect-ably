@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.0.0](https://github.com/ably/kafka-connect-ably/tree/v4.0.0) (2023-09-21)
+
+This is a major release and contains a number of breaking changes. Please see the [upgrade guide](UPDATING.md) for more information on how to upgrade from version 3.x.
+
+**Implemented enhancements:**
+
+- Stringify Kafka headers before send them to Ably [\#155](https://github.com/ably/kafka-connect-ably/pull/155)
+- Flatten Kafka headers in extras [\#155](https://github.com/ably/kafka-connect-ably/pull/155)
+
 ## [3.0.0](https://github.com/ably/kafka-connect-ably/tree/v3.0.0)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v2.1.4...v3.0.0)
