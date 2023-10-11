@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
@@ -164,16 +163,5 @@ public class StructToJsonConverterTest {
         final Map<String, AvroToStruct.Part> partMap = Map.of("wheel", part, "door", part2, "seat", part3);
 
         return new AvroToStruct.Garage(name, List.of(car1, car2), partMap, AvroToStruct.Garage.GarageType.CAR, false);
-    }
-
-    class Hello{
-        private final BigDecimal value = new BigDecimal("245.454545");
-
-    }
-    @Test
-    void testBigDecimal(){
-        Gson gson = new Gson();
-        final String json = gson.toJson(new Hello());
-        System.out.println(json);
     }
 }
