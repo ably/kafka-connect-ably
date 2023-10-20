@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.1.0](https://github.com/ably/kafka-connect-ably/compare/v4.0.0...v4.1.0)
+
+**Implemented enhancements:**
+
+- Provide option to specify encoding for Ably Message using special Kafka header [\#158](https://github.com/ably/kafka-connect-ably/issues/158)
+
 ## [4.0.0](https://github.com/ably/kafka-connect-ably/tree/v4.0.0) (2023-09-21)
 
 This is a major release and contains a number of breaking changes. Please see the [upgrade guide](UPDATING.md) for more information on how to upgrade from version 3.x.
