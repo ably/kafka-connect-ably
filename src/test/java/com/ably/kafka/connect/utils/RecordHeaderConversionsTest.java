@@ -82,36 +82,8 @@ class RecordHeaderConversionsTest {
         final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
         final JsonElement expected = JsonParser.parseString(pushHeaderValue);
 
-        final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
-        for (Map.Entry<String, String> entry : headersMap.entrySet()) {
-            headersList.add(new Header() {
-                @Override
-                public String key() {
-                    return entry.getKey();
-                }
-
-                @Override
-                public Schema schema() {
-                    return null;
-                }
-
-                @Override
-                public Object value() {
-                    return entry.getValue();
-                }
-
-                @Override
-                public Header with(Schema schema, Object value) {
-                    return null;
-                }
-
-                @Override
-                public Header rename(String key) {
-                    return null;
-                }
-            });
-        }
+        final List<Header> headersList = MockedHeader.fromMap(headersMap);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, keyBytes, Schema.BYTES_SCHEMA, "value", 0, 0L, null, headersList);
 
         //when
@@ -137,36 +109,8 @@ class RecordHeaderConversionsTest {
         final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
         final JsonElement expected = JsonParser.parseString(pushHeaderValue);
 
-        final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
-        for (Map.Entry<String, String> entry : headersMap.entrySet()) {
-            headersList.add(new Header() {
-                @Override
-                public String key() {
-                    return entry.getKey();
-                }
-
-                @Override
-                public Schema schema() {
-                    return null;
-                }
-
-                @Override
-                public Object value() {
-                    return entry.getValue();
-                }
-
-                @Override
-                public Header with(Schema schema, Object value) {
-                    return null;
-                }
-
-                @Override
-                public Header rename(String key) {
-                    return null;
-                }
-            });
-        }
+        final List<Header> headersList = MockedHeader.fromMap(headersMap);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, null, Schema.BYTES_SCHEMA, "value", 0, 0L, null, headersList);
 
         //when
@@ -192,36 +136,9 @@ class RecordHeaderConversionsTest {
         final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
         final JsonElement expected = JsonParser.parseString(pushHeaderValue);
 
-        final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
-        for (Map.Entry<String, String> entry : headersMap.entrySet()) {
-            headersList.add(new Header() {
-                @Override
-                public String key() {
-                    return entry.getKey();
-                }
+        final List<Header> headersList = MockedHeader.fromMap(headersMap);
 
-                @Override
-                public Schema schema() {
-                    return null;
-                }
-
-                @Override
-                public Object value() {
-                    return entry.getValue();
-                }
-
-                @Override
-                public Header with(Schema schema, Object value) {
-                    return null;
-                }
-
-                @Override
-                public Header rename(String key) {
-                    return null;
-                }
-            });
-        }
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, null, Schema.BYTES_SCHEMA, "value", 0, 0L, null, headersList);
 
         //when
@@ -244,36 +161,8 @@ class RecordHeaderConversionsTest {
         final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
         final JsonElement expected = JsonParser.parseString(pushHeaderValue);
         final Map pushJsonMap = new Gson().fromJson(pushHeaderValue, Map.class);
-        final List<Header> headersList = new ArrayList<>();
         final Map<String, Map> headersMap = Map.of("com.ably.extras.push", pushJsonMap);
-        for (Map.Entry<String, Map> entry : headersMap.entrySet()) {
-            headersList.add(new Header() {
-                @Override
-                public String key() {
-                    return entry.getKey();
-                }
-
-                @Override
-                public Schema schema() {
-                    return null;
-                }
-
-                @Override
-                public Object value() {
-                    return entry.getValue();
-                }
-
-                @Override
-                public Header with(Schema schema, Object value) {
-                    return null;
-                }
-
-                @Override
-                public Header rename(String key) {
-                    return null;
-                }
-            });
-        }
+        final List<Header> headersList = MockedHeader.fromMap(headersMap);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, null, Schema.BYTES_SCHEMA, "value", 0, 0L, null, headersList);
 
         //when
@@ -303,36 +192,8 @@ class RecordHeaderConversionsTest {
         final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
         final JsonElement expected = JsonParser.parseString(pushHeaderValue);
 
-        final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
-        for (Map.Entry<String, String> entry : headersMap.entrySet()) {
-            headersList.add(new Header() {
-                @Override
-                public String key() {
-                    return entry.getKey();
-                }
-
-                @Override
-                public Schema schema() {
-                    return schema;
-                }
-
-                @Override
-                public Object value() {
-                    return entry.getValue();
-                }
-
-                @Override
-                public Header with(Schema schema, Object value) {
-                    return null;
-                }
-
-                @Override
-                public Header rename(String key) {
-                    return null;
-                }
-            });
-        }
+        final List<Header> headersList = MockedHeader.fromMap(headersMap);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, null, Schema.BYTES_SCHEMA, "value", 0, 0L, null, headersList);
 
         //when
@@ -353,36 +214,8 @@ class RecordHeaderConversionsTest {
         //given
         final URL url = RecordHeaderConversionsTest.class.getResource("/invalid_push_payload_with_no_notification.json");
         final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
-        final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
-        for (Map.Entry<String, String> entry : headersMap.entrySet()) {
-            headersList.add(new Header() {
-                @Override
-                public String key() {
-                    return entry.getKey();
-                }
-
-                @Override
-                public Schema schema() {
-                    return null;
-                }
-
-                @Override
-                public Object value() {
-                    return entry.getValue();
-                }
-
-                @Override
-                public Header with(Schema schema, Object value) {
-                    return null;
-                }
-
-                @Override
-                public Header rename(String key) {
-                    return null;
-                }
-            });
-        }
+        final List<Header> headersList = MockedHeader.fromMap(headersMap);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, null, Schema.BYTES_SCHEMA, "value", 0, 0L, null, headersList);
 
         //when
@@ -397,36 +230,8 @@ class RecordHeaderConversionsTest {
         //given
         final URL url = RecordHeaderConversionsTest.class.getResource("/invalid_push_payload_with_no_title.json");
         final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
-        final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
-        for (Map.Entry<String, String> entry : headersMap.entrySet()) {
-            headersList.add(new Header() {
-                @Override
-                public String key() {
-                    return entry.getKey();
-                }
-
-                @Override
-                public Schema schema() {
-                    return null;
-                }
-
-                @Override
-                public Object value() {
-                    return entry.getValue();
-                }
-
-                @Override
-                public Header with(Schema schema, Object value) {
-                    return null;
-                }
-
-                @Override
-                public Header rename(String key) {
-                    return null;
-                }
-            });
-        }
+        final List<Header> headersList = MockedHeader.fromMap(headersMap);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, null, Schema.BYTES_SCHEMA, "value", 0, 0L, null, headersList);
 
         //when
@@ -441,36 +246,8 @@ class RecordHeaderConversionsTest {
         //given
         final URL url = RecordHeaderConversionsTest.class.getResource("/invalid_push_payload_with_no_body.json");
         final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
-        final List<Header> headersList = new ArrayList<>();
         final Map<String, String> headersMap = Map.of("com.ably.extras.push", pushHeaderValue);
-        for (Map.Entry<String, String> entry : headersMap.entrySet()) {
-            headersList.add(new Header() {
-                @Override
-                public String key() {
-                    return entry.getKey();
-                }
-
-                @Override
-                public Schema schema() {
-                    return null;
-                }
-
-                @Override
-                public Object value() {
-                    return entry.getValue();
-                }
-
-                @Override
-                public Header with(Schema schema, Object value) {
-                    return null;
-                }
-
-                @Override
-                public Header rename(String key) {
-                    return null;
-                }
-            });
-        }
+        final List<Header> headersList = MockedHeader.fromMap(headersMap);
         final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, null, Schema.BYTES_SCHEMA, "value", 0, 0L, null, headersList);
 
         //when
@@ -478,6 +255,26 @@ class RecordHeaderConversionsTest {
 
         //then
         assertNull(messageExtras);
+    }
+
+    @Test
+    void filtersSpecialAblyHeadersFromExtras() throws IOException {
+        // given
+        final URL url = RecordHeaderConversionsTest.class.getResource("/example_push_payload_with_icon.json");
+        final String pushHeaderValue =  IOUtils.toString(url, StandardCharsets.UTF_8);
+        final Map<String, String> headersMap = Map.of(
+            "com.ably.extras.push", pushHeaderValue,
+            "com.ably.encoding", "json",
+            "foo", "bar"
+        );
+        final List<Header> headersList = MockedHeader.fromMap(headersMap);
+        final SinkRecord record = new SinkRecord("sink", 0, Schema.BYTES_SCHEMA, null, Schema.BYTES_SCHEMA, "value", 0, 0L, null, headersList);
+
+        //when
+        final MessageExtras messageExtras = RecordHeaderConversions.toMessageExtras(record);
+
+        //then
+        assertEquals("{\"foo\":\"bar\"}", messageExtras.asJsonObject().getAsJsonObject().get("headers").toString());
     }
 
 }
