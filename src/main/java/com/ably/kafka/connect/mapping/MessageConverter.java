@@ -1,6 +1,7 @@
 package com.ably.kafka.connect.mapping;
 
 import com.ably.kafka.connect.utils.RecordHeaderConversions;
+import com.ably.kafka.connect.utils.SpecialAblyHeader;
 import com.ably.kafka.connect.utils.StructToJsonConverter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -22,7 +23,7 @@ public class MessageConverter {
      * Convert a SinkRecord to an Ably Message
      *
      * @param messageName mapped message name, or null if not using names
-     * @param record the incoming Kafka Connect SinkRecord
+     * @param record      the incoming Kafka Connect SinkRecord
      */
     public static Message toAblyMessage(final String messageName, final SinkRecord record) {
         if (record.valueSchema() == null) {
@@ -45,6 +46,9 @@ public class MessageConverter {
             default:
                 throw new ConnectException("Unsupported value schema type: " + valueSchema.type());
         }
+
+        SpecialAblyHeader.ENCODING_HEADER.tryFindInHeaders(record.headers())
+            .ifPresent(header -> message.encoding = String.valueOf(header.value()));
 
         final MessageExtras extras = RecordHeaderConversions.toMessageExtras(record);
         if (extras != null) {

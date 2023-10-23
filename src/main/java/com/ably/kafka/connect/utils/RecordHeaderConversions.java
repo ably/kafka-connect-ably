@@ -1,10 +1,10 @@
 package com.ably.kafka.connect.utils;
 
+import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.ably.lib.types.MessageExtras;
 import io.ably.lib.util.JsonUtils;
-import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.header.Headers;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;
@@ -17,10 +17,10 @@ import java.util.Map;
 public class RecordHeaderConversions {
 
     private static final Logger logger = LoggerFactory.getLogger(RecordHeaderConversions.class);
-    private static final String PUSH_HEADER = "com.ably.extras.push";
     private static final String KAFKA_KEY = "kafka";
     private static final String HEADERS_KEY = "headers";
     private static final String PUSH_KEY = "push";
+
     /**
      * Returns the extras object to use when converting a Kafka message
      * to an Ably message.
@@ -30,7 +30,7 @@ public class RecordHeaderConversions {
      * <p>
      * If the Kafka message has headers, they are set as the "headers" field
      * in the extras.
-     *
+     * <p>
      * If the Kafka message has "com.ably.extras.push" header this is set as "push" extras for Ably message.
      *
      * @param record The sink record representing the Kafka message
@@ -38,7 +38,7 @@ public class RecordHeaderConversions {
      */
     @Nullable
     public static MessageExtras toMessageExtras(final SinkRecord record) {
-       final Extras.Builder extrasBuilder = new Extras.Builder();
+        final Extras.Builder extrasBuilder = new Extras.Builder();
         final Extras extras = extrasBuilder.key(record.key())
             .recordHeaders(record.headers())
             .build();
@@ -46,9 +46,9 @@ public class RecordHeaderConversions {
         return extras.toMessageExtras();
     }
 
-    /*
-    Wrapper class representing extras and is to be used to simplify building of extras object
-    * */
+    /**
+     * Wrapper class representing extras and is to be used to simplify building of extras object
+     */
     private static class Extras {
 
         private JsonUtils.JsonUtilsObject kafkaObject;
@@ -59,6 +59,7 @@ public class RecordHeaderConversions {
 
         static class Builder {
             final Extras extras;
+
             Builder() {
                 extras = new Extras();
             }
@@ -93,16 +94,22 @@ public class RecordHeaderConversions {
             }
 
             private void buildFromHeaders(Headers headers) {
-                for (Header header : headers) {
-                    if (header.key().equals(PUSH_HEADER)) {
-                        extras.pushExtrasValue = header.value();
-                    } else {
-                        headersObject().add(header.key(), header.value());
-                    }
-                }
+                Iterables.filter(headers, header -> !SpecialAblyHeader.isSpecialAblyHeader(header)).forEach(header -> {
+                    // Kafka automatically deserialises headers. Because Kafka doesn't know about what types
+                    // were originally, headers just get deserialised to the most obvious type. So that means
+                    // numeric strings end up as a numbers. There’s a problem with Realtime whereby large numbers
+                    // in headers breaks things. That's why we always stringify header value
+                    headersObject().add(header.key(), String.valueOf(header.value()));
+                });
+
+                SpecialAblyHeader.PUSH_HEADER.tryFindInHeaders(headers).ifPresent(header -> {
+                    // We don't stringify push header value, it is special header, that end up as a nested JSON object
+                    // @see `Extras#buildPushPayload`
+                    extras.pushExtrasValue = header.value();
+                });
 
                 if (extras.headersObject != null) {
-                    kafkaExtras().add(HEADERS_KEY, extras.headersObject);
+                    topExtrasObject().add(HEADERS_KEY, extras.headersObject);
                 }
 
                 buildPushExtras();
@@ -156,6 +163,7 @@ public class RecordHeaderConversions {
                 }
                 return extras.kafkaObject;
             }
+
             private JsonUtils.JsonUtilsObject topExtrasObject() {
                 if (extras.topObject == null) {
                     extras.topObject = JsonUtils.object();
@@ -173,12 +181,11 @@ public class RecordHeaderConversions {
         }
 
         @Nullable
-        MessageExtras toMessageExtras(){
-            if (topObject != null){
+        MessageExtras toMessageExtras() {
+            if (topObject != null) {
                 return new MessageExtras(topObject.toJson());
             }
             return null;
         }
-
     }
 }

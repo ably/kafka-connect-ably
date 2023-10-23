@@ -1,5 +1,12 @@
 # Upgrade / Migration Guide
 
+## Version 3.x to 4.0
+
+There are two **breaking changes** to configuration in the Ably Connector v4.0.0. The summary below covers the main changes:
+
+* **Stringify Kafka headers before send to Ably**. All Kafka headers except `com.ably.extras.push` are now stringified using `String.valueOf` before being sent to Ably.
+* **Flatten Kafka headers**. Previously, Kafka headers were located in `extras.kafka.headers` on Ably messages. They are now located in `extras.headers`. 
+
 ## Version 2.x to 3.0
 
 There are several **breaking changes** to configuration in the Ably Connector v3.0.0, due to improvements made and
