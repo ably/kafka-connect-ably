@@ -60,6 +60,9 @@ To manually install the connector on a local installation of Confluent:
 
 It is possible to use the connector as a plugin on Confluent Cloud as a [Custom Connector](https://docs.confluent.io/cloud/current/connectors/bring-your-connector/overview.html). These steps assume that you have created a Confluent Cloud account and configured your cluster.
 
+> [!IMPORTANT]  
+> In order to run Ably connector, your Kafka cluster must reside in a [supported cloud provider and region](https://docs.confluent.io/cloud/current/connectors/bring-your-connector/custom-connector-fands.html#cc-byoc-regions).
+
 1. Obtain the `.zip` of the connector as per [the manual installation guide](#manual-installation).
 2. Inside the cluster on your Confluent Cloud account, add a new Connector
 3. Instead of selecting Ably Kafka Connector from the Hub, instead click Add Plugin
@@ -82,7 +85,7 @@ It is possible to use the connector as a plugin on Confluent Cloud as a [Custom 
   "value.converter.schemas.enable": "false"
 }
 ```
-7. When asked for an endpoint, enter `rest.ably.io:443:TCP`
+7. When asked for an endpoint, enter `rest.ably.io:443:TCP`. If you are using Kafka Schema Registry, also add `<SCHEMA_REGISTRY_URL>:443:TCP`.
 
 ### AWS MSK
 
