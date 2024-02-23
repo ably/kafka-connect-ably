@@ -2,23 +2,48 @@ package com.ably.kafka.connect;
 
 import com.ably.kafka.connect.batch.AutoFlushingBuffer;
 import com.ably.kafka.connect.batch.BatchProcessingThread;
+import com.ably.kafka.connect.batch.BatchRecord;
 import com.ably.kafka.connect.client.AblyBatchClient;
 import com.ably.kafka.connect.client.AblyClientFactory;
 import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.offset.OffsetRegistry;
 import com.ably.kafka.connect.offset.OffsetRegistryService;
+import com.ably.kafka.connect.utils.Tracing;
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.RetriableException;
+import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.kafka.connect.sink.SinkTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.contrib.awsxray.AwsXrayIdGenerator;
+import io.opentelemetry.contrib.awsxray.propagator.AwsXrayPropagator;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.semconv.ResourceAttributes;
+
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import java.util.List;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -35,7 +60,7 @@ public class ChannelSinkTask extends SinkTask {
     private final BlockingQueue<Runnable> sinkRecordsQueue = new LinkedBlockingQueue<>();
     private ThreadPoolExecutor executor;
 
-    private AutoFlushingBuffer<SinkRecord> buffer;
+    private AutoFlushingBuffer<BatchRecord> buffer;
 
     private final OffsetRegistry offsetRegistryService = new OffsetRegistryService();
 
@@ -84,9 +109,35 @@ public class ChannelSinkTask extends SinkTask {
     }
 
     public void put(Collection<SinkRecord> records) {
+        // start a trace span for each Kafka message, which ends when the
+        // message gets published
+        List<BatchRecord> batch = records.stream()
+            .map(record -> {
+                // extract the trace context
+                Context context = Tracing.otel.getPropagators().getTextMapPropagator().extract(
+                    Context.current(),
+                    record,
+                    Tracing.textMapGetter);
+
+                // start a server span
+                logger.debug("SinkTask starting server span");
+                Span serverSpan = Tracing.tracer.spanBuilder("server")
+                        .setParent(context)
+                        .setSpanKind(SpanKind.SERVER)
+                        .startSpan();
+
+                logger.debug("SinkTask starting queue span");
+                Span queueSpan = Tracing.tracer.spanBuilder("queue")
+                        .setParent(context.with(serverSpan))
+                        .startSpan();
+
+                return new BatchRecord(record, serverSpan, queueSpan);
+            })
+            .collect(Collectors.toList());
+
         if(records.size() > 0) {
-            logger.debug("SinkTask put (buffering) - Num records: " + records.size());
-            this.buffer.addAll(new ArrayList<>(records));
+            logger.debug("SinkTask put (buffering) - Num records: " + batch.size());
+            this.buffer.addAll(batch);
         }
     }
 

@@ -1,10 +1,12 @@
 package com.ably.kafka.connect.client;
 
+import com.ably.kafka.connect.batch.BatchRecord;
 import com.ably.kafka.connect.batch.MessageGroup;
 import com.ably.kafka.connect.batch.MessageGrouper;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.mapping.RecordMappingFactory;
 import com.ably.kafka.connect.offset.OffsetRegistry;
+import com.ably.kafka.connect.utils.Tracing;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -19,7 +21,13 @@ import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Context;
+
 import javax.annotation.Nullable;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import java.util.List;
 
 /**
@@ -73,8 +81,31 @@ public class DefaultAblyBatchClient implements AblyBatchClient {
      * @param records list of sink records.
      */
     @Override
-    public void publishBatch(List<SinkRecord> records) {
+    public void publishBatch(List<BatchRecord> batchRecords) {
+        List<SinkRecord> records = batchRecords.stream().map(r -> r.record).collect(Collectors.toList());
         if (!records.isEmpty()) {
+            for (BatchRecord record : batchRecords) {
+                logger.debug("publishBatch ending queue span");
+                record.queueSpan.end();
+            }
+
+            List<Span> publishSpans = batchRecords.stream()
+                .map(record -> {
+                // extract the trace context
+                Context context = Tracing.otel.getPropagators().getTextMapPropagator().extract(
+                    Context.current(),
+                    record.record,
+                    Tracing.textMapGetter);
+
+                    // start a publish span
+                    Span span = Tracing.tracer.spanBuilder("publish")
+                            .setParent(context.with(record.serverSpan))
+                            .startSpan();
+
+                    return span;
+                })
+                .collect(Collectors.toList());
+
             final MessageGroup groupedMessages = this.messageGrouper.group(records);
             try {
                 logger.debug("Ably Batch API call - Thread({})", Thread.currentThread().getName());
@@ -98,6 +129,16 @@ public class DefaultAblyBatchClient implements AblyBatchClient {
                 logger.error("Error while sending batch", e);
                 sendMessagesToDlq(records, e);
             }
+
+            for (Span span : publishSpans) {
+                logger.debug("publishBatch ending publish span");
+                span.end();
+            }
+            for (BatchRecord record : batchRecords) {
+                logger.debug("publishBatch ending server span");
+                record.serverSpan.end();
+            }
+
         }
     }
 

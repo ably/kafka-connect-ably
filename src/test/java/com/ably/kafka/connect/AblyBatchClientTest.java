@@ -1,5 +1,6 @@
 package com.ably.kafka.connect;
 
+import com.ably.kafka.connect.batch.BatchRecord;
 import com.ably.kafka.connect.client.AblyBatchClient;
 import com.ably.kafka.connect.client.AblyChannelPublishException;
 import com.ably.kafka.connect.client.AblyRestProxy;
@@ -47,11 +48,11 @@ public class AblyBatchClientTest {
     @Test
     public void testSendsAblyBatchApiRequests() throws ChannelSinkConnectorConfig.ConfigException {
         final List<CapturedDlqError> errors = Lists.newArrayList();
-        final List<SinkRecord> records = List.of(
-            new SinkRecord("topic1", 0, Schema.INT32_SCHEMA, 1, null, "msg1", 0),
-            new SinkRecord("topic1", 0, Schema.INT32_SCHEMA, 2, null, "msg2", 1),
-            new SinkRecord("topic1", 1, Schema.INT32_SCHEMA, 2, null, "msg3", 4),
-            new SinkRecord("topic1", 1, Schema.INT32_SCHEMA, 1, null, "msg4", 3)
+        final List<BatchRecord> records = List.of(
+            new BatchRecord(new SinkRecord("topic1", 0, Schema.INT32_SCHEMA, 1, null, "msg1", 0), null, null),
+            new BatchRecord(new SinkRecord("topic1", 0, Schema.INT32_SCHEMA, 2, null, "msg2", 1), null, null),
+            new BatchRecord(new SinkRecord("topic1", 1, Schema.INT32_SCHEMA, 2, null, "msg3", 4), null, null),
+            new BatchRecord(new SinkRecord("topic1", 1, Schema.INT32_SCHEMA, 1, null, "msg4", 3), null, null)
         );
         final OffsetRegistry registry = new OffsetRegistryService();
 
@@ -131,9 +132,9 @@ public class AblyBatchClientTest {
     @Test
     public void testSendsEntireBatchToDlqOnFullFailure() throws ChannelSinkConnectorConfig.ConfigException {
         final List<CapturedDlqError> errors = Lists.newArrayList();
-        final List<SinkRecord> records = List.of(
-            new SinkRecord("topic1", 0, Schema.INT32_SCHEMA, 1, null, "msg1", 10),
-            new SinkRecord("topic1", 0, Schema.INT32_SCHEMA, 2, null, "msg2", 11)
+        final List<BatchRecord> records = List.of(
+            new BatchRecord(new SinkRecord("topic1", 0, Schema.INT32_SCHEMA, 1, null, "msg1", 10), null, null),
+            new BatchRecord(new SinkRecord("topic1", 0, Schema.INT32_SCHEMA, 2, null, "msg2", 11), null, null)
         );
         final OffsetRegistry registry = new OffsetRegistryService();
 
@@ -173,7 +174,7 @@ public class AblyBatchClientTest {
         final AblyChannelPublishException expectedError =
             new AblyChannelPublishException("static_channel", 40140, 401, "Token expire");
         assertEquals(records.stream()
-            .map(record -> new CapturedDlqError(record, expectedError))
+            .map(record -> new CapturedDlqError(record.record, expectedError))
             .collect(Collectors.toList()),
             errors);
 
@@ -192,8 +193,8 @@ public class AblyBatchClientTest {
     @Test
     public void testPublishExceptionWillDlqRecords() throws ChannelSinkConnectorConfig.ConfigException {
         final List<CapturedDlqError> errors = Lists.newArrayList();
-        final List<SinkRecord> records = List.of(
-            new SinkRecord("topic3", 0, Schema.INT32_SCHEMA, 1, null, "msg", 10)
+        final List<BatchRecord> records = List.of(
+            new BatchRecord(new SinkRecord("topic3", 0, Schema.INT32_SCHEMA, 1, null, "msg", 10), null, null)
         );
         final OffsetRegistry registry = new OffsetRegistryService();
         final AblyBatchClient client = getClient(
@@ -229,9 +230,9 @@ public class AblyBatchClientTest {
     @Test
     public void testPartialFailureSendsFailedRecordsToDlq() throws ChannelSinkConnectorConfig.ConfigException {
         final List<CapturedDlqError> errors = Lists.newArrayList();
-        final List<SinkRecord> records = List.of(
-            new SinkRecord("topic1", 0, Schema.INT32_SCHEMA, 1, null, "msg1", 0),
-            new SinkRecord("topic1", 1, Schema.INT32_SCHEMA, 2, null, "msg2", 1)
+        final List<BatchRecord> records = List.of(
+            new BatchRecord(new SinkRecord("topic1", 0, Schema.INT32_SCHEMA, 1, null, "msg1", 0), null, null),
+            new BatchRecord(new SinkRecord("topic1", 1, Schema.INT32_SCHEMA, 2, null, "msg2", 1), null, null)
         );
         final OffsetRegistry registry = new OffsetRegistryService();
 

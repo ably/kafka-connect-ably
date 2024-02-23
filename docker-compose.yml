@@ -95,6 +95,7 @@ services:
       CONNECT_LISTENERS: 'http://:8083'
       CONNECT_REST_ADVERTISED_HOST_NAME: connector
       CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4317
     networks:
       kafka_network:
         aliases:
@@ -103,6 +104,19 @@ services:
       - zookeeper
       - kafka
       - schema-registry
+
+  collector:
+    image: otel/opentelemetry-collector
+    container_name: collector
+    ports:
+      - 4317:4317
+      - 4318:4318
+    volumes:
+      - ./collector-config.yaml:/etc/otelcol/config.yaml
+    networks:
+      kafka_network:
+        aliases:
+          - collector
 
   # The test cli allows us to run tests with access the kafka nework
   # test-cli:
