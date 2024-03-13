@@ -67,15 +67,25 @@ public class AblyBatchClientTest {
                 "    {\n" +
                 "        channels: ['channel_1'],\n" +
                 "        messages: [\n" +
-                "            {data: 'msg1', name: 'static_name'},\n" +
-                "            {data: 'msg4', name:'static_name'}\n" +
+                "            {data: 'msg1', name: 'static_name'}\n" +
                 "        ]\n" +
                 "    },\n" +
                 "    {\n" +
                 "        channels: ['channel_2'],\n" +
                 "        messages: [\n" +
-                "            {data: 'msg2', name: 'static_name'},\n" +
+                "            {data: 'msg2', name: 'static_name'}\n" +
+                "        ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "        channels: ['channel_2'],\n" +
+                "        messages: [\n" +
                 "            {data: 'msg3', name:'static_name'}\n" +
+                "        ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "        channels: ['channel_1'],\n" +
+                "        messages: [\n" +
+                "            {data: 'msg4', name:'static_name'}\n" +
                 "        ]\n" +
                 "    }\n" +
                 "]\n",
@@ -83,21 +93,33 @@ public class AblyBatchClientTest {
                 201,
                 0,
                 "", // no error message
-                   "[\n" +
+                "[\n" +
                     "    {\n" +
-                    "        successCount: 2, \n" +
+                    "        successCount: 1, \n" +
                     "        failureCount: 0,\n" +
                     "        results: [\n" +
-                    "            {channel: \"channe_1\", messageId: \"1\"},\n" +
-                    "            {channel: \"channe_1\", messageId: \"2\"}\n" +
+                    "            {channel: \"channe_1\", messageId: \"1\"}\n" +
                     "        ]\n" +
                     "    },\n" +
                     "    {\n" +
-                    "        successCount: 2, \n" +
+                    "        successCount: 1, \n" +
                     "        failureCount: 0,\n" +
                     "        results: [\n" +
-                    "            {channel: \"channe_2\", messageId: \"3\"},\n" +
-                    "            {channel: \"channe_2\", messageId: \"4\"}\n" +
+                    "            {channel: \"channe_2\", messageId: \"2\"}\n" +
+                    "        ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        successCount: 1, \n" +
+                    "        failureCount: 0,\n" +
+                    "        results: [\n" +
+                    "            {channel: \"channe_2\", messageId: \"3\"}\n" +
+                    "        ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        successCount: 1, \n" +
+                    "        failureCount: 0,\n" +
+                    "        results: [\n" +
+                    "            {channel: \"channe_1\", messageId: \"4\"}\n" +
                     "        ]\n" +
                     "    }\n" +
                     "]\n"
@@ -149,7 +171,12 @@ public class AblyBatchClientTest {
                 "    {\n" +
                 "        channels: ['static_channel'],\n" +
                 "        messages: [\n" +
-                "            {data: 'msg1', name: 'static_name_2'},\n" +
+                "            {data: 'msg1', name: 'static_name_2'}\n" +
+                "        ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "        channels: ['static_channel'],\n" +
+                "        messages: [\n" +
                 "            {data: 'msg2', name:'static_name_2'}\n" +
                 "        ]\n" +
                 "    }\n" +
