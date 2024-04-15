@@ -1,17 +1,17 @@
 package com.ably.kafka.connect.client;
 
-import com.ably.kafka.connect.batch.MessageGroup;
-import com.ably.kafka.connect.batch.MessageGrouper;
+import com.ably.kafka.connect.batch.MessageTransformer;
+import com.ably.kafka.connect.batch.RecordMessagePair;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.mapping.RecordMappingFactory;
 import com.ably.kafka.connect.offset.OffsetRegistry;
-import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.ably.lib.http.HttpCore;
 import io.ably.lib.http.HttpUtils;
 import io.ably.lib.types.AblyException;
+import io.ably.lib.types.ErrorInfo;
 import io.ably.lib.types.HttpPaginatedResponse;
 import io.ably.lib.types.Param;
 import org.apache.kafka.connect.sink.ErrantRecordReporter;
@@ -20,7 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Ably Batch client based on REST API
@@ -32,7 +36,7 @@ public class DefaultAblyBatchClient implements AblyBatchClient {
     private final AblyRestProxy restClient;
     @Nullable private final ErrantRecordReporter dlqReporter;
     private final OffsetRegistry offsetRegistryService;
-    private final MessageGrouper messageGrouper;
+    private final MessageTransformer messageTransformer;
 
     public DefaultAblyBatchClient(
         final ChannelSinkConnectorConfig connectorConfig,
@@ -59,7 +63,7 @@ public class DefaultAblyBatchClient implements AblyBatchClient {
         this.offsetRegistryService = offsetRegistryService;
 
         final RecordMappingFactory mappingFactory = new RecordMappingFactory(this.connectorConfig);
-        this.messageGrouper = new MessageGrouper(
+        this.messageTransformer = new MessageTransformer(
             mappingFactory.channelNameMapping(),
             mappingFactory.messageNameMapping(),
             this.connectorConfig.getFailedMappingAction(),
@@ -75,23 +79,29 @@ public class DefaultAblyBatchClient implements AblyBatchClient {
     @Override
     public void publishBatch(List<SinkRecord> records) {
         if (!records.isEmpty()) {
-            final MessageGroup groupedMessages = this.messageGrouper.group(records);
+            final List<RecordMessagePair> recordMessagePairs = this.messageTransformer.transform(records);
+            final List<BatchSpec> batchSpecs = recordMessagePairs
+                .stream()
+                .map(RecordMessagePair::getBatchSpec)
+                .collect(Collectors.toList());
+
             try {
                 logger.debug("Ably Batch API call - Thread({})", Thread.currentThread().getName());
-                final HttpPaginatedResponse response = this.sendBatches(groupedMessages.specs());
+                final HttpPaginatedResponse response = this.sendBatches(batchSpecs);
 
                 if (isError(response)) {
-                    for (final String channelName : groupedMessages.allChannels()) {
+                    for (final RecordMessagePair recordMessagePair : recordMessagePairs) {
+                        final String channelName = recordMessagePair.getChannelName();
                         final AblyChannelPublishException error = new AblyChannelPublishException(
                             channelName,
                             response.errorCode,
                             response.statusCode,
                             response.errorMessage
                         );
-                        sendMessagesToDlq(groupedMessages.recordsForChannel(channelName), error);
+                        sendMessagesToDlq(Collections.singletonList(recordMessagePair.getKafkaRecord()), error);
                     }
                 } else {
-                    handlePartialFailure(response, groupedMessages);
+                    handlePartialFailure(response, recordMessagePairs);
                     offsetRegistryService.updateTopicPartitionToOffsetMap(records);
                 }
             } catch (AblyException e) {
@@ -113,20 +123,38 @@ public class DefaultAblyBatchClient implements AblyBatchClient {
      */
     private void handlePartialFailure(
         HttpPaginatedResponse response,
-        MessageGroup messageGroup) throws AblyException {
+        List<RecordMessagePair> recordMessagePairs) throws AblyException {
+        Iterator<RecordMessagePair> recordMessagePairItr = recordMessagePairs.iterator();
+        Iterator<JsonElement> itemsItr = Arrays.stream(response.items()).iterator();
 
-        do {
-            JsonElement[] batchResponses = response.items();
-            for (JsonElement batchResponse : batchResponses) {
-                for (AblyChannelPublishException error : getFailedChannels(batchResponse)) {
-                    logger.debug("Submission to channel {} failed", error.channelName, error);
-                    final List<SinkRecord> failedRecords = messageGroup.recordsForChannel(error.channelName);
-                    sendMessagesToDlq(failedRecords, error);
-                }
+        while (recordMessagePairItr.hasNext() && itemsItr.hasNext()) {
+            RecordMessagePair recordMessagePair = recordMessagePairItr.next();
+            JsonObject batchSpecResponse = itemsItr.next().getAsJsonObject();
+
+            int failureCount = batchSpecResponse.
+                getAsJsonPrimitive("failureCount").getAsInt();
+
+            if (failureCount == 0) continue;
+
+            JsonArray results = batchSpecResponse.getAsJsonObject().getAsJsonArray("results");
+
+            if (results == null || results.size() != 1)
+                throw AblyException.fromErrorInfo(new ErrorInfo("Inconsistent batch response: result field should contain single element", 500, 50000));
+
+            JsonObject result = results.iterator().next().getAsJsonObject();
+            String channelName = result.getAsJsonPrimitive("channel").getAsString();
+
+            if (result.has("error")) {
+                JsonObject error = result.getAsJsonObject("error");
+                int errorCode = error.getAsJsonPrimitive("code").getAsInt();
+                int statusCode = error.getAsJsonPrimitive("statusCode").getAsInt();
+                String errorMessage = error.getAsJsonPrimitive("message").getAsString();
+                AblyChannelPublishException publishError =
+                    new AblyChannelPublishException(channelName, errorCode, statusCode, errorMessage);
+                logger.debug("Submission to channel {} failed", channelName, publishError);
+                sendMessagesToDlq(Collections.singletonList(recordMessagePair.getKafkaRecord()), publishError);
             }
-
-            response = response.next();
-        } while (response != null);
+        }
     }
 
     /**
@@ -162,37 +190,5 @@ public class DefaultAblyBatchClient implements AblyBatchClient {
             response.statusCode, response.errorCode, response.errorMessage);
 
         return response;
-    }
-
-    /**
-     * Function to parse the Ably response message and retrieve the list of failed channel ids.
-     *
-     * @param batchResponse BatchResponse response object
-     */
-    private List<AblyChannelPublishException> getFailedChannels(JsonElement batchResponse) {
-
-        final List<AblyChannelPublishException> failures = Lists.newArrayList();
-
-        final int failureCount = batchResponse.getAsJsonObject().
-                getAsJsonPrimitive("failureCount").getAsInt();
-
-        if(failureCount > 0) {
-            JsonArray results = batchResponse.getAsJsonObject().getAsJsonArray("results");
-            if (results != null) {
-                for (JsonElement resultElement : results) {
-                    final JsonObject result = resultElement.getAsJsonObject();
-                    final String channelName = result.getAsJsonPrimitive("channel").getAsString();
-                    if (result.has("error")) {
-                        final JsonObject error = result.getAsJsonObject("error");
-                        final int errorCode = error.getAsJsonPrimitive("code").getAsInt();
-                        final int statusCode = error.getAsJsonPrimitive("statusCode").getAsInt();
-                        final String errorMessage = error.getAsJsonPrimitive("message").getAsString();
-                        failures.add(new AblyChannelPublishException(channelName, errorCode, statusCode, errorMessage));
-                    }
-                }
-            }
-        }
-
-        return failures;
     }
 }

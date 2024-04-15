@@ -2,8 +2,8 @@ package com.ably.kafka.connect.client;
 
 import io.ably.lib.types.Message;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -17,6 +17,9 @@ final public class BatchSpec {
     public BatchSpec(Set<String> channels, List<Message> messages) {
         this.channels = channels;
         this.messages = messages;
+    }
+    public BatchSpec(String channelName, Message message) {
+        this(Collections.singleton(channelName), Collections.singletonList(message));
     }
     public Set<String> getChannels() {
         return channels;
