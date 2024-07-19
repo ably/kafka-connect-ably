@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.1.1](https://github.com/ably/kafka-connect-ably/tree/v4.1.1)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v4.1.0...v4.1.1)
+
+**Implemented enhancements:**
+
+- Update `ably-java` dependency [\#181](https://github.com/ably/kafka-connect-ably/issues/181)
+- Encryption support feature request \[parked\] [\#169](https://github.com/ably/kafka-connect-ably/issues/169)
+
+**Fixed bugs:**
+
+- Kafka connector's `client.id` configuration option is ignored during message publishing. [\#186](https://github.com/ably/kafka-connect-ably/issues/186)
+- In a batch request each message should be in its own batchspec [\#171](https://github.com/ably/kafka-connect-ably/issues/171)
+
 ## [4.1.0](https://github.com/ably/kafka-connect-ably/compare/v4.0.0...v4.1.0)
 
 **Implemented enhancements:**
