@@ -78,7 +78,8 @@ public class OffsetRegistryService implements OffsetRegistry {
             TopicPartition topicPartition = entry.getKey();
 
             if (topicPartitionToOffsetMap.containsKey(topicPartition)) {
-                committedOffsets.put(topicPartition, new OffsetAndMetadata(topicPartitionToOffsetMap.get(topicPartition)));
+                Long endOffset = topicPartitionToOffsetMap.get(topicPartition) + 1;
+                committedOffsets.put(topicPartition, new OffsetAndMetadata(endOffset));
             }
         }
 
