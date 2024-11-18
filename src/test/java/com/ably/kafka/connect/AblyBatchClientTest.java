@@ -141,8 +141,8 @@ public class AblyBatchClientTest {
             )
         );
         assertEquals(Map.of(
-            new TopicPartition("topic1", 0), new OffsetAndMetadata(1),
-            new TopicPartition("topic1", 1), new OffsetAndMetadata(4)
+            new TopicPartition("topic1", 0), new OffsetAndMetadata(2),
+            new TopicPartition("topic1", 1), new OffsetAndMetadata(5)
         ), offsets);
     }
 
@@ -334,8 +334,8 @@ public class AblyBatchClientTest {
         // Offset registry *should* have been updated for both partitions, as we've DLQ'ed failures
         assertEquals(
             Map.of(
-                new TopicPartition("topic1", 0), new OffsetAndMetadata(0),
-                new TopicPartition("topic1", 1), new OffsetAndMetadata(1)
+                new TopicPartition("topic1", 0), new OffsetAndMetadata(1),
+                new TopicPartition("topic1", 1), new OffsetAndMetadata(2)
             ), registry.updateOffsets(
                 Map.of(
                     new TopicPartition("topic1", 0), new OffsetAndMetadata(20),
