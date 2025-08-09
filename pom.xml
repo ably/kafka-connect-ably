@@ -9,7 +9,7 @@
   <packaging>jar</packaging>
 
   <properties>
-    <kafka.version>3.1.0</kafka.version>
+    <kafka.version>3.6.1</kafka.version>
     <kafka.scala.version>2.13</kafka.scala.version>
     <guava.version>32.0.0-jre</guava.version>
   </properties>
@@ -203,15 +203,15 @@
 
 
     <!--
-      Pin reflections to 0.9.10 to prevent the following error when running DocumentationTest.java:
+      Pin reflections to 0.10.2 to prevent the following error when running tests with Kafka 3.6+:
 
-      java.lang.NoSuchMethodError: 'java.util.Set org.reflections.Reflections.getResources(com.google.common.base.Predicate)'
+      java.lang.NoSuchMethodError: 'org.reflections.util.ConfigurationBuilder org.reflections.util.ConfigurationBuilder.setClassLoaders(java.lang.ClassLoader[])'
     -->
 
     <dependency>
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
-      <version>0.9.10</version>
+      <version>0.10.2</version>
     </dependency>
 
     <dependency>
