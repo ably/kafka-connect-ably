@@ -11,8 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
-
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.kafka.connect.runtime.ConnectorConfig.CONNECTOR_CLASS_CONFIG;
@@ -35,15 +33,7 @@ public class ChannelSinkConnectorTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        // Use hybrid_warn for tests since third-party plugins like AvroConverter
-        // don't have ServiceLoader manifests yet. This is the recommended approach
-        // for testing environments with mixed plugin types.
-        Map<String, String> workerProps = new HashMap<>();
-        workerProps.put("plugin.discovery", "hybrid_warn");
-
-        connectCluster = new EmbeddedConnectCluster.Builder()
-                .workerProps(workerProps)
-                .build();
+        connectCluster = new EmbeddedConnectCluster.Builder().build();
         connectCluster.start();
         connectCluster.assertions().assertAtLeastNumWorkersAreUp(NUM_WORKERS, "Initial group of workers did not start in time.");
     }

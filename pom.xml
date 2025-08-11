@@ -9,9 +9,10 @@
   <packaging>jar</packaging>
 
   <properties>
-    <kafka.version>3.6.1</kafka.version>
+    <kafka.version>3.9.1</kafka.version>
     <kafka.scala.version>2.13</kafka.scala.version>
     <guava.version>32.0.0-jre</guava.version>
+    <confluent.version>7.9.2</confluent.version>
   </properties>
 
   <name>kafka-connect-ably</name>
@@ -185,7 +186,7 @@
     <dependency>
       <groupId>io.ably</groupId>
       <artifactId>ably-java</artifactId>
-      <version>1.2.41</version>
+      <version>1.2.54</version>
     </dependency>
 
     <dependency>
@@ -199,19 +200,6 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>${guava.version}</version>
-    </dependency>
-
-
-    <!--
-      Pin reflections to 0.10.2 to prevent the following error when running tests with Kafka 3.6+:
-
-      java.lang.NoSuchMethodError: 'org.reflections.util.ConfigurationBuilder org.reflections.util.ConfigurationBuilder.setClassLoaders(java.lang.ClassLoader[])'
-    -->
-
-    <dependency>
-      <groupId>org.reflections</groupId>
-      <artifactId>reflections</artifactId>
-      <version>0.10.2</version>
     </dependency>
 
     <dependency>
@@ -264,6 +252,14 @@
 
     <dependency>
       <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-server-common</artifactId>
+      <version>${kafka.version}</version>
+      <classifier>test</classifier>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
       <artifactId>connect-transforms</artifactId>
       <version>${kafka.version}</version>
       <scope>compile</scope>
@@ -272,7 +268,7 @@
     <dependency>
       <groupId>io.confluent</groupId>
       <artifactId>kafka-schema-registry</artifactId>
-      <version>7.1.1</version>
+      <version>${confluent.version}</version>
       <scope>test</scope>
     </dependency>
     <!-- https://mvnrepository.com/artifact/tech.allegro.schema.json2avro/converter -->
@@ -287,7 +283,7 @@
     <dependency>
       <groupId>io.confluent</groupId>
       <artifactId>kafka-connect-avro-converter</artifactId>
-      <version>7.1.1</version>
+      <version>${confluent.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -295,7 +291,7 @@
     <dependency>
       <groupId>io.confluent</groupId>
       <artifactId>kafka-connect-avro-data</artifactId>
-      <version>5.5.1</version>
+      <version>${confluent.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -41,14 +41,14 @@ jobs:
           role-session-name: "${{ github.run_id }}-${{ github.run_number }}"
 
       - name: Upload Confluent ZIP archive
-        uses: ably/sdk-upload-action@v1
+        uses: ably/sdk-upload-action@v2
         with:
           sourcePath: target/components/packages
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           artifactName: kafka-connect-ably
 
       - name: Upload MSK Plugin ZIP archive
-        uses: ably/sdk-upload-action@v1
+        uses: ably/sdk-upload-action@v2
         with:
           sourcePath: target/kafka-connect-ably-msk-plugin
           githubToken: ${{ secrets.GITHUB_TOKEN }}
