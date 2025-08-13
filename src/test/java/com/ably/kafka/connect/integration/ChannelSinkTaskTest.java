@@ -56,15 +56,7 @@ public class ChannelSinkTaskTest {
     public void prepTestEnvironment() throws Exception {
         assertDoesNotThrow(() -> appSpec = AblyHelpers.createTestApp(), "Failed to create Ably client");
 
-        // Use hybrid_warn for tests since third-party plugins like AvroConverter
-        // don't have ServiceLoader manifests yet. This is the recommended approach
-        // for testing environments with mixed plugin types.
-        Map<String, String> workerProps = new HashMap<>();
-        workerProps.put("plugin.discovery", "hybrid_warn");
-
-        connectCluster = new EmbeddedConnectCluster.Builder()
-                .workerProps(workerProps)
-                .build();
+        connectCluster = new EmbeddedConnectCluster.Builder().build();
         connectCluster.start();
         connectCluster.kafka().createTopic(DEFAULT_TOPIC);
 
