@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.2](https://github.com/ably/kafka-connect-ably/tree/v4.1.2)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v4.1.1...v4.1.2)
+
+- Fixed offset calculation
+- Updated dependencies
+
 ## [4.1.1](https://github.com/ably/kafka-connect-ably/tree/v4.1.1)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v4.1.0...v4.1.1)
