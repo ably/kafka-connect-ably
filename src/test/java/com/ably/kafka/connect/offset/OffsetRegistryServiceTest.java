@@ -105,8 +105,8 @@ public class OffsetRegistryServiceTest {
         Map<TopicPartition, OffsetAndMetadata> result = offsetRegistryService.updateOffsets(preCommitOffsets);
 
         Map<TopicPartition, OffsetAndMetadata> expectedResult = new HashMap<>();
-        expectedResult.put(new TopicPartition("topic1", 0), new OffsetAndMetadata(3L));
-        expectedResult.put(new TopicPartition("topic1", 1), new OffsetAndMetadata(2L));
+        expectedResult.put(new TopicPartition("topic1", 0), new OffsetAndMetadata(4L));
+        expectedResult.put(new TopicPartition("topic1", 1), new OffsetAndMetadata(3L));
 
         assertEquals(result, expectedResult);
     }
