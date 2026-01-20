@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.1.3](https://github.com/ably/kafka-connect-ably/tree/v4.1.3)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v4.1.2...v4.1.3)
+
+**Fixed bugs:**
+
+- Upgrade msgpack-core to 0.9.11 to address security vulnerability [\#206](https://github.com/ably/kafka-connect-ably/pull/206)
+
 ## [4.1.2](https://github.com/ably/kafka-connect-ably/tree/v4.1.2)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v4.1.1...v4.1.2)
