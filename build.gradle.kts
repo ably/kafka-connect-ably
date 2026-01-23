@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.ably.kafka.connect"
-version = "4.1.3-SNAPSHOT"
+version = "4.1.4"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11

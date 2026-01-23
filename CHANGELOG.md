@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.1.4](https://github.com/ably/kafka-connect-ably/tree/v4.1.4)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v4.1.3...v4.1.4)
+
+- Bump ably-java to 1.6.0 [\#211](https://github.com/ably/kafka-connect-ably/pull/211)]
+- Remove deprecated connection-utils dependency [\#210](https://github.com/ably/kafka-connect-ably/pull/210)
+- Migrate to Gradle from Maven [\#209](https://github.com/ably/kafka-connect-ably/pull/209)
+
 ## [4.1.3](https://github.com/ably/kafka-connect-ably/tree/v4.1.3)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v4.1.2...v4.1.3)
