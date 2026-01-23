@@ -45,11 +45,13 @@ To manually install the connector on a local installation of Confluent:
 
         `git clone git@github.com:ably/kafka-connect-ably.git`
 
-    2. Build the connector using [Maven](https://maven.apache.org/):
+    2. Build the connector using Gradle:
 
-        `mvn clean package`
+        `./gradlew build`
 
-    3. A `.zip` file will be produced in the `/target/components/packages/` folder after the process has run.
+    3. Distribution `.zip` files will be produced in the `/build/distributions/` folder after the process has run:
+       - `confluent/kafka-connect-ably-<version>.zip` for Confluent Hub
+       - `msk/kafka-connect-ably-<version>-bin.zip` for AWS MSK
 
 2. Extract the `.zip` into a directory specified in the `plugin.path` of your connect worker's configuration properties file. See the [Confluent instructions](https://docs.confluent.io/home/connect/install.html#install-connector-manually) for further information on this step.
 

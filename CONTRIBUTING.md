@@ -11,21 +11,21 @@
 
 ### Building
 
-Build the connector using [Maven](https://maven.apache.org/):
+Build the connector using [Gradle](https://gradle.org/):
 
-    mvn clean package
+    ./gradlew clean assemble
 
 ## Running Tests
 
-There are both unit tests and integration tests that can be run using [Maven](https://maven.apache.org/).
+There are both unit tests and integration tests that can be run using [Gradle](https://gradle.org/).
 
 Run the unit tests:
 
-    mvn test
+    ./gradlew unitTest
 
 Run the integration tests:
 
-    mvn verify
+    ./gradlew test
 
 ## Release Process
 

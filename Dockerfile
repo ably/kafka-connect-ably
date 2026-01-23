@@ -1,18 +1,30 @@
-FROM maven:3-openjdk-16 AS build
+FROM gradle:8.12-jdk17 AS build
 
 WORKDIR /usr/src/app
 
-COPY pom.xml .
+# Copy Gradle configuration files
+COPY build.gradle.kts settings.gradle.kts ./
 
-RUN mvn -DskipTests -Dassembly.skipAssembly=true clean install
+# Download dependencies (cached layer)
+RUN gradle dependencies --no-daemon || true
 
+# Copy source code
 COPY src src/
+COPY config config/
+COPY logos logos/
+COPY README.md LICENSE ./
 
-RUN mvn -DskipTests package
+# Build the project
+RUN gradle clean mskArchive --no-daemon
 
-FROM confluentinc/cp-kafka-connect:7.4.0-2-ubi8
+# Extract the MSK archive to get all JARs
+RUN unzip build/distributions/msk/kafka-connect-ably-*-bin.zip -d /tmp/plugin && \
+    mkdir -p /plugins && \
+    cp /tmp/plugin/*.jar /plugins/
 
-COPY --from=build /usr/src/app/target/kafka-connect-ably-msk-plugin/kafka-connect-target /plugins/
+FROM confluentinc/cp-kafka-connect:7.9.2-1-ubi8
+
+COPY --from=build /plugins/ /plugins/
 
 ADD bin/docker-entrypoint.sh /bin/docker-entrypoint.sh
 ENTRYPOINT ["/bin/docker-entrypoint.sh"]

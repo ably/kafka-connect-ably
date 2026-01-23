@@ -17,7 +17,7 @@ If you're an existing MSK user and would like to forward data to Ably, the high-
 
 * Obtain the latest plugin zip, either by:
   * Downloading it [here](https://sdk.ably.com/builds/ably/kafka-connect-ably/main/kafka-connect-ably-msk-plugin/kafka-connect-ably-4.1.2-bin.zip)
-  * Checking out this repo and running `mvn clean package`, the zip will be at `target/kafka-connect-ably-msk-plugin`
+  * Checking out this repo and running `./gradlew clean assemble`, the zip will be at `build/distributions/msk`
 * Put the plugin zip somewhere your MSK Connector can access it, e.g. an S3 bucket that you control
   * Note: MSK Connect will only download plugin binaries from S3 buckets in the same region as the connector, so
     downloading directly from Ably will only work in `eu-west-2`
