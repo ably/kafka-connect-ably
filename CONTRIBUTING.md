@@ -43,4 +43,8 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 5. Once the PR is approved, merge it into `main`
 6. Add a tag and push to origin - e.g.: `git tag v1.2.3 && git push origin v1.2.3`
 7. Create the release on Github including populating the release notes
-8. Notify the product team that a new ZIP file needs to be sent to Confluent Hub, which can be downloaded at the following URL (replacing the version number with the version number built, available once [the workflow](.github/workflows/integration-test.yml) has finished executing on `main`): https://sdk.ably.com/builds/ably/kafka-connect-ably/main/kafka-connect-ably/ably-kafka-connect-ably-1.2.3.zip
+8. Notify the product team that a new ZIP file needs to be sent to Confluent Hub, which can be downloaded at 
+the following URL (replacing the version number with the version number built, available once
+[the workflow](.github/workflows/integration-test.yml) has finished executing on pushed tag, v1.2.3 in the example): 
+https://sdk.ably.com/builds/ably/kafka-connect-ably/tag/v{VERSION}/kafka-connect-ably/kafka-connect-ably-{VERSION}.zip
+Where `{VERSION}` is the version number.
