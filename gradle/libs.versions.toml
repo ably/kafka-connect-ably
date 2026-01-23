@@ -2,10 +2,10 @@
 # Core versions
 kafka = "3.9.1"
 kafka-scala = "2.13"
-confluent = "7.9.2"
+confluent = "7.9.5"
 
 # Library versions
-ably = "1.2.54"
+ably = "1.6.0"
 guava = "33.4.0-jre"
 gson = "2.11.0"
 msgpack = "0.9.11"

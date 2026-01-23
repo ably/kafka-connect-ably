@@ -1,3 +1,5 @@
+import java.time.LocalDate
+
 plugins {
     java
     `maven-publish`
@@ -139,10 +141,10 @@ val confluentArchive by tasks.registering(Zip::class) {
                 "logo": "assets/ably.png"
               },
               "support": {
-                "provider_name": "Ably",
+                "summary": "This connector is <a href=\"https://ably.com/support\">supported by Ably</a>",
                 "url": "https://ably.com/support",
                 "logo": "assets/ably.png",
-                "summary": "This connector is supported by Ably"
+                "provider_name": "Ably"
               },
               "tags": ["Ably", "realtime", "kafka-connect-ably"],
               "features": {
@@ -152,6 +154,13 @@ val confluentArchive by tasks.registering(Zip::class) {
                 "kafka_connect_api": true
               },
               "documentation_url": "https://github.com/ably/kafka-connect-ably",
+              "source_url": "https://github.com/ably/kafka-connect-ably",
+              "license": [ {
+                "name": "The Apache License, Version 2.0",
+                "url": "https://www.apache.org/licenses/LICENSE-2.0"
+              } ],
+              "docker_image": { },
+              "release_date": "${LocalDate.now()}",
               "component_types": ["sink"]
             }
         """.trimIndent())

@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   build:
@@ -32,12 +34,21 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.ABLY_AWS_ACCOUNT_ID_SDK}}:role/ably-sdk-builds-kafka-connect-ably
           role-session-name: "${{ github.run_id }}-${{ github.run_number }}"
 
+      - name: Read artifacts names
+        id: artifacts
+        run: |
+          MSK_ARCHIVE=$(basename "$(find build/distributions/msk -name '*.zip' -type f | head -n 1)")
+          CONFLUENT_ARCHIVE=$(basename "$(find build/distributions/confluent -name '*.zip' -type f | head -n 1)")
+          echo "msk_archive=${MSK_ARCHIVE}" >> $GITHUB_OUTPUT
+          echo "confluent_archive=${CONFLUENT_ARCHIVE}" >> $GITHUB_OUTPUT
+
       - name: Upload Confluent ZIP archive
         uses: ably/sdk-upload-action@v2
         with:
           sourcePath: build/distributions/confluent
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           artifactName: kafka-connect-ably
+          landingPagePath: ${{ steps.artifacts.outputs.confluent_archive }}
 
       - name: Upload MSK Plugin ZIP archive
         uses: ably/sdk-upload-action@v2
@@ -45,3 +56,5 @@ jobs:
           sourcePath: build/distributions/msk
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           artifactName: kafka-connect-ably-msk-plugin
+          landingPagePath: ${{ steps.artifacts.outputs.msk_archive }}
+
