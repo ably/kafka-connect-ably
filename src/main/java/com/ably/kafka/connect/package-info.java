@@ -32,7 +32,7 @@
 @PluginName("kafka-connect-ably")
 package com.ably.kafka.connect;
 
-import com.github.jcustenborder.kafka.connect.utils.config.Introduction;
-import com.github.jcustenborder.kafka.connect.utils.config.PluginName;
-import com.github.jcustenborder.kafka.connect.utils.config.PluginOwner;
-import com.github.jcustenborder.kafka.connect.utils.config.Title;
+import com.ably.kafka.connect.annotation.Introduction;
+import com.ably.kafka.connect.annotation.PluginName;
+import com.ably.kafka.connect.annotation.PluginOwner;
+import com.ably.kafka.connect.annotation.Title;

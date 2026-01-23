@@ -3,9 +3,6 @@ package com.ably.kafka.connect.config;
 
 import com.ably.kafka.connect.validators.ChannelNameValidator;
 import com.ably.kafka.connect.validators.MultiConfigValidator;
-import com.github.jcustenborder.kafka.connect.utils.config.ConfigKeyBuilder;
-import com.github.jcustenborder.kafka.connect.utils.config.recommenders.Recommenders;
-import com.github.jcustenborder.kafka.connect.utils.config.validators.Validators;
 import io.ably.lib.http.HttpAuth;
 import io.ably.lib.transport.Defaults;
 import io.ably.lib.types.AblyException;
@@ -363,8 +360,8 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .documentation(CLIENT_PROXY_PREF_AUTH_TYPE_DOC)
                     .importance(Importance.MEDIUM)
                     .defaultValue(HttpAuth.Type.BASIC.name())
-                    .validator(Validators.validEnum(HttpAuth.Type.class))
-                    .recommender(Recommenders.enumValues(HttpAuth.Type.class))
+                    .enumValidator(HttpAuth.Type.class)
+                    .enumRecommender(HttpAuth.Type.class)
                     .build()
             )
             .define(

@@ -27,9 +27,8 @@ import org.apache.kafka.connect.sink.SinkConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
-import com.github.jcustenborder.kafka.connect.utils.config.Description;
-import com.github.jcustenborder.kafka.connect.utils.config.Title;
+import com.ably.kafka.connect.annotation.Description;
+import com.ably.kafka.connect.annotation.Title;
 
 @Title("Channel Sink Connector")
 @Description("Publishes a kafka topic to an ably channel")
@@ -65,6 +64,6 @@ public class ChannelSinkConnector extends SinkConnector {
 
     @Override
     public String version() {
-        return VersionUtil.version(this.getClass());
+        return BuildConfig.ABLY_CONNECTOR_VERSION;
     }
 }
