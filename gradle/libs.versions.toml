@@ -1,0 +1,74 @@
+[versions]
+# Core versions
+kafka = "3.9.1"
+kafka-scala = "2.13"
+confluent = "7.9.2"
+
+# Library versions
+ably = "1.2.54"
+connect-utils = "0.7.177"
+guava = "33.4.0-jre"
+gson = "2.11.0"
+msgpack = "0.9.11"
+slf4j = "2.0.16"
+
+# Test library versions
+jose4j = "0.9.6"
+json2avro = "0.2.14"
+junit = "5.11.4"
+
+[libraries]
+# Kafka Connect API (provided by runtime)
+kafka-connect-api = { module = "org.apache.kafka:connect-api", version.ref = "kafka" }
+kafka-connect-transforms = { module = "org.apache.kafka:connect-transforms", version.ref = "kafka" }
+
+# Kafka Connect utilities
+connect-utils = { module = "com.github.jcustenborder.kafka.connect:connect-utils", version.ref = "connect-utils" }
+connect-utils-testing = { module = "com.github.jcustenborder.kafka.connect:connect-utils-testing", version.ref = "connect-utils" }
+
+# Runtime dependencies
+ably-java = { module = "io.ably:ably-java", version.ref = "ably" }
+msgpack-core = { module = "org.msgpack:msgpack-core", version.ref = "msgpack" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+
+# Kafka test dependencies
+kafka-kafka = { module = "org.apache.kafka:kafka_2.13", version.ref = "kafka" }
+kafka-clients-test = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka" }
+kafka-connect-runtime = { module = "org.apache.kafka:connect-runtime", version.ref = "kafka" }
+kafka-server-common-test = { module = "org.apache.kafka:kafka-server-common", version.ref = "kafka" }
+
+# Confluent test dependencies
+confluent-schema-registry = { module = "io.confluent:kafka-schema-registry", version.ref = "confluent" }
+confluent-avro-converter = { module = "io.confluent:kafka-connect-avro-converter", version.ref = "confluent" }
+confluent-avro-data = { module = "io.confluent:kafka-connect-avro-data", version.ref = "confluent" }
+
+# Other test dependencies
+jose4j = { module = "org.bitbucket.b_c:jose4j", version.ref = "jose4j" }
+json2avro = { module = "tech.allegro.schema.json2avro:converter", version.ref = "json2avro" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+
+[bundles]
+# Bundle commonly used Kafka test dependencies
+kafka-test = [
+    "kafka-kafka",
+    "kafka-clients-test",
+    "kafka-connect-runtime",
+    "kafka-server-common-test"
+]
+
+# Bundle Confluent test dependencies
+confluent-test = [
+    "confluent-schema-registry",
+    "confluent-avro-converter",
+    "confluent-avro-data"
+]
+
+# Bundle JUnit 5 dependencies
+junit = [
+    "junit-jupiter-api",
+    "junit-jupiter-engine"
+]

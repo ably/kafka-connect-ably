@@ -25,7 +25,7 @@ services:
   schema-registry:
     container_name: schema-registry
     #image: apicurio/apicurio-registry-mem:latest-release
-    image: confluentinc/cp-schema-registry:latest
+    image: confluentinc/cp-schema-registry:7.9.2
     restart: "no"
     ports:
       - "8081:8081"

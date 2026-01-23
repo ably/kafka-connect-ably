@@ -5,3 +5,8 @@
 target/
 config/docker-compose-connector.properties
 .DS_Store
+
+# Gradle
+.gradle/
+build/
+generated/

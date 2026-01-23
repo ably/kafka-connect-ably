@@ -1,5 +1,9 @@
-FROM confluentinc/cp-kafka-connect:7.4.0-2-ubi8
-COPY target/kafka-connect-ably-msk-plugin/kafka-connect-target /plugins/
+FROM confluentinc/cp-kafka-connect:7.9.2-1-ubi8
+
+# Copy the connector JAR and all runtime dependencies
+RUN unzip build/distributions/msk/kafka-connect-ably-*-bin.zip -d /tmp/plugin && \
+    mkdir -p /plugins && \
+    cp /tmp/plugin/*.jar /plugins/
 
 ADD bin/docker-entrypoint.sh /bin/docker-entrypoint.sh
 ENTRYPOINT ["/bin/docker-entrypoint.sh"]

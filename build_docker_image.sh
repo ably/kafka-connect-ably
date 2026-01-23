@@ -1,4 +1,4 @@
 #!/bin/bash
 
-mvn clean package -DskipTests=true -Dmaven.javadoc.skip=true
+./gradlew clean mskArchive
 docker build -f Dockerfile_development . -t connector
