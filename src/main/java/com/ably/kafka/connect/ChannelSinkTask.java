@@ -8,7 +8,6 @@ import com.ably.kafka.connect.client.DefaultAblyClientFactory;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.offset.OffsetRegistry;
 import com.ably.kafka.connect.offset.OffsetRegistryService;
-import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import io.ably.lib.types.AblyException;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -117,6 +116,6 @@ public class ChannelSinkTask extends SinkTask {
 
     @Override
     public String version() {
-        return VersionUtil.version(this.getClass());
+        return BuildConfig.ABLY_CONNECTOR_VERSION;
     }
 }

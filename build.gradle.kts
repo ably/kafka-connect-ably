@@ -1,6 +1,7 @@
 plugins {
     java
     `maven-publish`
+    alias(libs.plugins.build.config)
 }
 
 group = "com.ably.kafka.connect"
@@ -28,10 +29,6 @@ dependencies {
     compileOnly(libs.kafka.connect.api)
     compileOnly(libs.kafka.connect.transforms)
 
-    // Kafka Connect utilities
-    // (not supported since 2023, compiled against kafka 2.8, it's better to get rid of it)
-    implementation(libs.connect.utils)
-
     // Runtime dependencies
     implementation(libs.ably.java)
     implementation(libs.msgpack.core)
@@ -40,7 +37,6 @@ dependencies {
     implementation(libs.slf4j.api)
 
     // Test dependencies
-    testImplementation(libs.connect.utils.testing)
     testImplementation(libs.jose4j)
 
     // Kafka test dependencies (using catalog reference for standard deps)
@@ -61,6 +57,12 @@ dependencies {
     testImplementation(libs.slf4j.simple)
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
+}
+
+buildConfig {
+  packageName(group.toString())
+  useJavaOutput()
+  buildConfigField("ABLY_CONNECTOR_VERSION", provider { version.toString() })
 }
 
 tasks.test {
