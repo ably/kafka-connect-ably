@@ -23,41 +23,44 @@ repositories {
     }
 }
 
-val kafkaVersion = "3.9.1"
-val kafkaScalaVersion = "2.13"
-val confluentVersion = "7.9.2"
-
 dependencies {
     // Kafka Connect API - provided by runtime
-    compileOnly("org.apache.kafka:connect-api:$kafkaVersion")
-    compileOnly("org.apache.kafka:connect-transforms:$kafkaVersion")
+    compileOnly(libs.kafka.connect.api)
+    compileOnly(libs.kafka.connect.transforms)
 
     // Kafka Connect utilities
-    implementation("com.github.jcustenborder.kafka.connect:connect-utils:0.7.177")
+    // (not supported since 2023, compiled against kafka 2.8, it's better to get rid of it)
+    implementation(libs.connect.utils)
 
     // Runtime dependencies
-    implementation("io.ably:ably-java:1.2.54")
-    implementation("org.msgpack:msgpack-core:0.9.11")
-    implementation("com.google.code.gson:gson:2.11.0")
-    implementation("com.google.guava:guava:33.4.0-jre")
-    implementation("org.slf4j:slf4j-api:2.0.16")
+    implementation(libs.ably.java)
+    implementation(libs.msgpack.core)
+    implementation(libs.gson)
+    implementation(libs.guava)
+    implementation(libs.slf4j.api)
 
     // Test dependencies
-    testImplementation("com.github.jcustenborder.kafka.connect:connect-utils-testing:0.7.177")
-    testImplementation("org.bitbucket.b_c:jose4j:0.9.6")
-    testImplementation("org.apache.kafka:kafka_$kafkaScalaVersion:$kafkaVersion")
-    testImplementation("org.apache.kafka:kafka_$kafkaScalaVersion:$kafkaVersion:test")
-    testImplementation("org.apache.kafka:kafka-clients:$kafkaVersion:test")
-    testImplementation("org.apache.kafka:connect-runtime:$kafkaVersion")
-    testImplementation("org.apache.kafka:connect-runtime:$kafkaVersion:test")
-    testImplementation("org.apache.kafka:kafka-server-common:$kafkaVersion:test")
-    testImplementation("io.confluent:kafka-schema-registry:$confluentVersion")
-    testImplementation("io.confluent:kafka-connect-avro-converter:$confluentVersion")
-    testImplementation("io.confluent:kafka-connect-avro-data:$confluentVersion")
-    testImplementation("tech.allegro.schema.json2avro:converter:0.2.14")
-    testImplementation("org.slf4j:slf4j-simple:2.0.16")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.4")
+    testImplementation(libs.connect.utils.testing)
+    testImplementation(libs.jose4j)
+
+    // Kafka test dependencies (using catalog reference for standard deps)
+    testImplementation(libs.kafka.kafka)
+    testImplementation(libs.kafka.connect.runtime)
+    testImplementation(variantOf(libs.kafka.kafka) { classifier("test") })
+    testImplementation(variantOf(libs.kafka.clients.test) { classifier("test") })
+    testImplementation(variantOf(libs.kafka.connect.runtime) { classifier("test") })
+    testImplementation(variantOf(libs.kafka.server.common.test) { classifier("test") })
+
+    // Confluent test dependencies
+    testImplementation(libs.confluent.schema.registry)
+    testImplementation(libs.confluent.avro.converter)
+    testImplementation(libs.confluent.avro.data)
+
+    // Other test dependencies
+    testImplementation(libs.json2avro)
+    testImplementation(libs.slf4j.simple)
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
 tasks.test {
