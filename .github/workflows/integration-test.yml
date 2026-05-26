@@ -8,12 +8,15 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
 
+permissions: {}
+
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      deployments: write
-      id-token: write
+      contents: read    # checkout the repository
+      deployments: write # ably/sdk-upload-action publishes preview artifacts as GitHub deployments
+      id-token: write   # aws-actions/configure-aws-credentials uses OIDC to assume an AWS role
 
     steps:
       - uses: actions/checkout@v4
