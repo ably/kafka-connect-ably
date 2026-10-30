@@ -37,14 +37,36 @@ public class ChannelSinkConnectorConfigTest {
     }
 
     /**
-     * Legacy environment setting must keep working now that ably-java only accepts an endpoint.
+     * Legacy environment value is passed through unchanged as the endpoint.
      */
     @Test
-    public void testEnvironmentFallsBackToEndpoint() {
+    public void testEnvironmentIsPassedThroughAsEndpoint() {
         final ChannelSinkConnectorConfig config = configure(Map.of(
-            ChannelSinkConnectorConfig.CLIENT_ENVIRONMENT, "sandbox"
+            ChannelSinkConnectorConfig.CLIENT_ENVIRONMENT, "eu"
         ));
-        assertEquals("sandbox", config.clientOptions.endpoint);
+        assertEquals("eu", config.clientOptions.endpoint);
+    }
+
+    /**
+     * Templated configs often leave settings blank; an empty endpoint would resolve to an invalid host.
+     */
+    @Test
+    public void testBlankValuesAreTreatedAsUnset() {
+        final ChannelSinkConnectorConfig config = configure(Map.of(
+            ChannelSinkConnectorConfig.CLIENT_ENDPOINT, "",
+            ChannelSinkConnectorConfig.CLIENT_REST_HOST, " ",
+            ChannelSinkConnectorConfig.CLIENT_ENVIRONMENT, ""
+        ));
+        assertNull(config.clientOptions.endpoint);
+    }
+
+    @Test
+    public void testBlankValueFallsBackToNextSetting() {
+        final ChannelSinkConnectorConfig config = configure(Map.of(
+            ChannelSinkConnectorConfig.CLIENT_ENDPOINT, "",
+            ChannelSinkConnectorConfig.CLIENT_REST_HOST, "rest.example.com"
+        ));
+        assertEquals("rest.example.com", config.clientOptions.endpoint);
     }
 
     private static ChannelSinkConnectorConfig configure(final Map<String, String> settings) {

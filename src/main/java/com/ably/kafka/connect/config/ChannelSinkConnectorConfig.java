@@ -90,7 +90,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
 
     public static final String CLIENT_ENVIRONMENT = "client.environment";
     private static final String CLIENT_ENVIRONMENT_DOC = "Deprecated: use client.endpoint instead. For development " +
-        "environments only; allows a non-default Ably environment to be used. Spec: REC1c.";
+        "environments only; allows a non-default Ably environment to be used.";
 
     public static final String CLIENT_HTTP_OPEN_TIMEOUT = "client.http.open.timeout";
     private static final String CLIENT_HTTP_OPEN_TIMEOUT_DOC = "Timeout for opening the http connection";
@@ -236,15 +236,39 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
      */
     @Nullable
     private String getEndpoint() {
-        final String endpoint = getString(CLIENT_ENDPOINT);
+        final String endpoint = getNonBlankString(CLIENT_ENDPOINT);
+        final String restHost = getNonBlankString(CLIENT_REST_HOST);
+        final String environment = getNonBlankString(CLIENT_ENVIRONMENT);
+
+        if (restHost != null) {
+            logger.warn("{} is deprecated, use {} instead", CLIENT_REST_HOST, CLIENT_ENDPOINT);
+        }
+        if (environment != null) {
+            logger.warn("{} is deprecated, use {} instead", CLIENT_ENVIRONMENT, CLIENT_ENDPOINT);
+        }
+
         if (endpoint != null) {
+            if (restHost != null || environment != null) {
+                logger.warn("{} is set, ignoring {} and {}", CLIENT_ENDPOINT, CLIENT_REST_HOST, CLIENT_ENVIRONMENT);
+            }
             return endpoint;
         }
-        final String restHost = getString(CLIENT_REST_HOST);
         if (restHost != null) {
+            if (environment != null) {
+                logger.warn("{} is set, ignoring {}", CLIENT_REST_HOST, CLIENT_ENVIRONMENT);
+            }
             return restHost;
         }
-        return getString(CLIENT_ENVIRONMENT);
+        return environment;
+    }
+
+    /**
+     * Get a string config value, treating blank values as unset.
+     */
+    @Nullable
+    private String getNonBlankString(final String key) {
+        final String value = getString(key);
+        return value == null || value.isBlank() ? null : value;
     }
 
     /**
