@@ -272,7 +272,8 @@ The advanced properties that can be configured for the connector are:
 | client.push.full.wait             | Sets whether Ably should wait for all the effects of push REST requests before responding.                                                             | *Boolean* ||
 | client.tls                        | Sets whether TLS is used for all connection types.                                                                                                     | *Boolean* | True    |
 | client.loglevel                   | Sets the verbosity of logging.                                                                                                                         | *Integer* | 0       |
-| client.environment                | Custom Ably environment (https://ably.com/docs/platform-customization)                                                                                 | *String*  ||
+| client.endpoint                   | Custom Ably endpoint: a routing policy name or a fully qualified hostname (https://ably.com/docs/platform-customization)                               | *String*  ||
+| client.environment                | Deprecated, use `client.endpoint` instead. Custom Ably environment.                                                                                    | *String*  ||
 
 ## Buffering Records
 

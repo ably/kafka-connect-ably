@@ -1,7 +1,7 @@
 package com.ably.kafka.connect.batch;
 
 import com.ably.kafka.connect.client.BatchSpec;
-import io.ably.lib.types.Message;
+import io.ably.pubsub.types.Message;
 import org.apache.kafka.connect.sink.SinkRecord;
 
 /**

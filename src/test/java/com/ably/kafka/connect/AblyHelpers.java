@@ -19,21 +19,22 @@ package com.ably.kafka.connect;
 import java.util.List;
 import java.util.ArrayList;
 
-import io.ably.lib.http.Http;
-import io.ably.lib.http.HttpCore;
-import io.ably.lib.http.HttpScheduler;
-import io.ably.lib.http.HttpUtils;
-import io.ably.lib.http.HttpHelpers;
-import io.ably.lib.realtime.AblyRealtime;
-import io.ably.lib.realtime.Channel;
-import io.ably.lib.realtime.Channel.MessageListener;
-import io.ably.lib.rest.AblyRest;
-import io.ably.lib.types.AblyException;
-import io.ably.lib.types.Callback;
-import io.ably.lib.types.ClientOptions;
-import io.ably.lib.types.ErrorInfo;
-import io.ably.lib.types.Message;
-import io.ably.lib.util.Serialisation;
+import io.ably.pubsub.http.HttpRequester;
+import io.ably.pubsub.http.HttpCore;
+import io.ably.pubsub.http.HttpScheduler;
+import io.ably.pubsub.http.HttpUtils;
+import io.ably.pubsub.http.HttpHelpers;
+import io.ably.pubsub.realtime.PubSubRealtimeClient;
+import io.ably.pubsub.realtime.Channel;
+import io.ably.pubsub.server.PubSubServer;
+import io.ably.pubsub.realtime.ChannelBase.MessageListener;
+import io.ably.pubsub.http.PubSubHttpClient;
+import io.ably.pubsub.types.AblyException;
+import io.ably.pubsub.types.Callback;
+import io.ably.pubsub.types.ClientOptions;
+import io.ably.pubsub.types.ErrorInfo;
+import io.ably.pubsub.types.Message;
+import io.ably.pubsub.util.Serialisation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,14 +47,14 @@ import org.slf4j.LoggerFactory;
  * https://github.com/ably/ably-java/blob/main/lib/src/test/java/io/ably/lib/test/common/Setup.java
  */
 public class AblyHelpers {
-    public static final String TEST_ENVIRONMENT = "sandbox";
+    public static final String TEST_ENDPOINT = "nonprod:sandbox";
 
     public static class Key {
         public String keyName;
         public String keySecret;
         public String keyStr;
         public String capability;
-        public int status;
+        public Integer status;
     }
 
     public static class AppSpec {
@@ -73,11 +74,11 @@ public class AblyHelpers {
      */
     public static AppSpec createTestApp() throws AblyException {
         ClientOptions opts = new ClientOptions("a.b:c");
-        opts.environment = TEST_ENVIRONMENT;
-        AblyRealtime ably = new AblyRealtime(opts);
+        opts.endpoint = TEST_ENDPOINT;
+        PubSubRealtimeClient ably = PubSubServer.realtimeClientBuilder(opts).build();
 
         AppSpec request = new AppSpec();
-        request.keys = new Key[1];
+        request.keys = new Key[]{new Key()};
 
         return HttpHelpers.postSync(ably.http, "/apps", null, null, new HttpUtils.JsonRequestBody(request), new HttpCore.ResponseHandler<AppSpec>() {
             @Override
@@ -96,10 +97,10 @@ public class AblyHelpers {
     public static void deleteTestApp(AppSpec appSpec) {
         try {
             ClientOptions opts = new ClientOptions(appSpec.key());
-            opts.environment = TEST_ENVIRONMENT;
-            AblyRest ably = new AblyRest(opts);
+            opts.endpoint = TEST_ENDPOINT;
+            PubSubHttpClient ably = PubSubServer.httpClientBuilder(opts).build();
 
-            ably.http.request(new Http.Execute<Void>() {
+            ably.http.request(new HttpRequester.Execute<Void>() {
                 @Override
                 public void execute(HttpScheduler http, Callback<Void> callback) throws AblyException {
                     http.del("/apps/" + appSpec.appId, HttpUtils.defaultAcceptHeaders(false), null, null, true, callback);
@@ -114,10 +115,10 @@ public class AblyHelpers {
     /**
      * Return a realtime client using the key from the given app spec.
      */
-    public static AblyRealtime realtimeClient(AppSpec appSpec) throws AblyException {
+    public static PubSubRealtimeClient realtimeClient(AppSpec appSpec) throws AblyException {
         ClientOptions opts = new ClientOptions(appSpec.key());
-        opts.environment = TEST_ENVIRONMENT;
-        return new AblyRealtime(opts);
+        opts.endpoint = TEST_ENDPOINT;
+        return PubSubServer.realtimeClientBuilder(opts).build();
     }
 
     /**

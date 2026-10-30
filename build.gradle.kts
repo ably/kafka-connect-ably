@@ -32,7 +32,7 @@ dependencies {
     compileOnly(libs.kafka.connect.transforms)
 
     // Runtime dependencies
-    implementation(libs.ably.java)
+    implementation(libs.ably.pubsub.server)
     implementation(libs.msgpack.core)
     implementation(libs.gson)
     implementation(libs.guava)

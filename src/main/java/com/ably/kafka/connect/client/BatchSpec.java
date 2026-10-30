@@ -1,6 +1,6 @@
 package com.ably.kafka.connect.client;
 
-import io.ably.lib.types.Message;
+import io.ably.pubsub.types.Message;
 
 import java.util.Collections;
 import java.util.List;

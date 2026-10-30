@@ -4,7 +4,7 @@ import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.mapping.MessageConverter;
 import com.ably.kafka.connect.mapping.RecordMapping;
 import com.ably.kafka.connect.mapping.RecordMappingException;
-import io.ably.lib.types.Message;
+import io.ably.pubsub.types.Message;
 import org.apache.kafka.connect.sink.ErrantRecordReporter;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.slf4j.Logger;

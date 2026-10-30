@@ -3,7 +3,7 @@ package com.ably.kafka.connect.client;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
 import com.ably.kafka.connect.offset.OffsetRegistry;
 import com.ably.kafka.connect.utils.ClientOptionsLogHandler;
-import io.ably.lib.types.AblyException;
+import io.ably.pubsub.types.AblyException;
 import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.connect.sink.ErrantRecordReporter;
 import org.slf4j.Logger;

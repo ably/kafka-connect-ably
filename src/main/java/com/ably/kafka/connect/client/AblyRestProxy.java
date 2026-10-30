@@ -1,19 +1,20 @@
 package com.ably.kafka.connect.client;
 
-import io.ably.lib.http.HttpCore;
-import io.ably.lib.rest.AblyRest;
-import io.ably.lib.types.AblyException;
-import io.ably.lib.types.ClientOptions;
-import io.ably.lib.types.HttpPaginatedResponse;
-import io.ably.lib.types.Param;
+import io.ably.pubsub.http.HttpCore;
+import io.ably.pubsub.http.PubSubHttpClient;
+import io.ably.pubsub.server.PubSubServer;
+import io.ably.pubsub.types.AblyException;
+import io.ably.pubsub.types.ClientOptions;
+import io.ably.pubsub.types.HttpPaginatedResponse;
+import io.ably.pubsub.types.Param;
 
 /**
- * Proxy for AblyRest to enable simpler testing.
+ * Proxy for PubSubHttpClient to enable simpler testing.
  */
 public interface AblyRestProxy {
 
     /**
-     * Delegates to {@link io.ably.lib.rest.AblyRest}
+     * Delegates to {@link io.ably.pubsub.http.PubSubHttpClient}
      */
     HttpPaginatedResponse request(
         String method,
@@ -23,11 +24,11 @@ public interface AblyRestProxy {
         Param[] headers) throws AblyException;
 
     /**
-     * Construct a proxy that forwards directly to AblyRest
+     * Construct a proxy that forwards directly to PubSubHttpClient
      */
     @SuppressWarnings("resource")
     static AblyRestProxy forClientOptions(ClientOptions opts) throws AblyException {
-        final AblyRest restClient = new AblyRest(opts);
+        final PubSubHttpClient restClient = PubSubServer.httpClientBuilder(opts).build();
         return restClient::request;
     }
 }
