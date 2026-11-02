@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.0](https://github.com/ably/kafka-connect-ably/tree/v4.2.0)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v4.1.4...v4.2.0)
+
+- Replace `io.ably:ably-java` 1.6.0 with `io.ably.pubsub:server` 2.0.0
+- Add `client.endpoint` setting; `client.rest.host` and `client.environment` are deprecated and now map to the endpoint
+
 ## [4.1.4](https://github.com/ably/kafka-connect-ably/tree/v4.1.4)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v4.1.3...v4.1.4)

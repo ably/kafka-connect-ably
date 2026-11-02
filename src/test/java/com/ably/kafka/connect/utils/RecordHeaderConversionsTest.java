@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.ably.lib.types.MessageExtras;
+import io.ably.pubsub.types.MessageExtras;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.header.Header;

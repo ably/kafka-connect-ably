@@ -1,7 +1,7 @@
 package com.ably.kafka.connect.mapping;
 
 import com.ably.kafka.connect.utils.MockedHeader;
-import io.ably.lib.types.Message;
+import io.ably.pubsub.types.Message;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.sink.SinkRecord;

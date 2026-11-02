@@ -135,7 +135,7 @@ public class ChannelSinkConnectorTest {
         settings.put(ChannelSinkConnectorConfig.CHANNEL_CONFIG, channel);
         settings.put(ChannelSinkConnectorConfig.CLIENT_KEY, clientKey);
         settings.put(ChannelSinkConnectorConfig.CLIENT_ID, clientId);
-        settings.put(ChannelSinkConnectorConfig.CLIENT_ENVIRONMENT, AblyHelpers.TEST_ENVIRONMENT);
+        settings.put(ChannelSinkConnectorConfig.CLIENT_ENDPOINT, AblyHelpers.TEST_ENDPOINT);
         return settings;
     }
 }

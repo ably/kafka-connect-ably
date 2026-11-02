@@ -1,6 +1,6 @@
 package com.ably.kafka.connect.client;
 
-import io.ably.lib.types.AblyException;
+import io.ably.pubsub.types.AblyException;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 

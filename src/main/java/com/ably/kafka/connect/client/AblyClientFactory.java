@@ -1,7 +1,7 @@
 package com.ably.kafka.connect.client;
 
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
-import io.ably.lib.types.AblyException;
+import io.ably.pubsub.types.AblyException;
 
 import java.util.Map;
 

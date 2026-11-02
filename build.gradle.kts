@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.ably.kafka.connect"
-version = "4.1.4"
+version = "4.2.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -32,7 +32,7 @@ dependencies {
     compileOnly(libs.kafka.connect.transforms)
 
     // Runtime dependencies
-    implementation(libs.ably.java)
+    implementation(libs.ably.pubsub.server)
     implementation(libs.msgpack.core)
     implementation(libs.gson)
     implementation(libs.guava)

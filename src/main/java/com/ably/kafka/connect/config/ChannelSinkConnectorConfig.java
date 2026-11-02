@@ -3,12 +3,12 @@ package com.ably.kafka.connect.config;
 
 import com.ably.kafka.connect.validators.ChannelNameValidator;
 import com.ably.kafka.connect.validators.MultiConfigValidator;
-import io.ably.lib.http.HttpAuth;
-import io.ably.lib.transport.Defaults;
-import io.ably.lib.types.AblyException;
-import io.ably.lib.types.ClientOptions;
-import io.ably.lib.types.ProxyOptions;
-import io.ably.lib.util.Log;
+import io.ably.pubsub.http.HttpAuth;
+import io.ably.pubsub.transport.Defaults;
+import io.ably.pubsub.types.AblyException;
+import io.ably.pubsub.types.ClientOptions;
+import io.ably.pubsub.types.ProxyOptions;
+import io.ably.pubsub.util.Log;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Importance;
@@ -16,6 +16,7 @@ import org.apache.kafka.common.config.ConfigDef.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,9 +45,13 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
     private static final String CLIENT_TLS_DOC = "Encrypted transport: if true, TLS will be used for all connections " +
         "(whether REST/HTTP or Realtime WebSocket or Comet connections).";
 
+    public static final String CLIENT_ENDPOINT = "client.endpoint";
+    private static final String CLIENT_ENDPOINT_DOC = "Allows a non-default Ably endpoint to be specified, either a " +
+        "routing policy name such as 'main' or a fully qualified hostname. Spec: REC1b.";
+
     public static final String CLIENT_REST_HOST = "client.rest.host";
-    private static final String CLIENT_REST_HOST_DOC = "For development environments only; allows a non-default Ably " +
-        "host to be specified.";
+    private static final String CLIENT_REST_HOST_DOC = "Deprecated: use client.endpoint instead. For development " +
+        "environments only; allows a non-default Ably host to be specified.";
 
     public static final String CLIENT_PORT = "client.port";
     private static final String CLIENT_PORT_DOC = "For development environments only; allows a non-default Ably port " +
@@ -84,8 +89,8 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         "client proxy is enabled. This should be \"BASIC\",  \"DIGEST\" or \"X_ABLY_TOKEN\"";
 
     public static final String CLIENT_ENVIRONMENT = "client.environment";
-    private static final String CLIENT_ENVIRONMENT_DOC = "For development environments only; allows a non-default " +
-        "Ably environment to be used such as 'sandbox'. Spec: TO3k1.";
+    private static final String CLIENT_ENVIRONMENT_DOC = "Deprecated: use client.endpoint instead. For development " +
+        "environments only; allows a non-default Ably environment to be used.";
 
     public static final String CLIENT_HTTP_OPEN_TIMEOUT = "client.http.open.timeout";
     private static final String CLIENT_HTTP_OPEN_TIMEOUT_DOC = "Timeout for opening the http connection";
@@ -195,7 +200,7 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         opts.clientId = getString(CLIENT_ID);
         opts.logLevel = getInt(CLIENT_LOG_LEVEL);
         opts.tls = getBoolean(CLIENT_TLS);
-        opts.restHost = getString(CLIENT_REST_HOST);
+        opts.endpoint = getEndpoint();
         opts.port = getInt(CLIENT_PORT);
         opts.tlsPort = getInt(CLIENT_TLS_PORT);
         if (getBoolean(CLIENT_PROXY)) {
@@ -208,7 +213,6 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
             proxyOpts.prefAuthType = HttpAuth.Type.valueOf(getString(CLIENT_PROXY_PREF_AUTH_TYPE));
             opts.proxy = proxyOpts;
         }
-        opts.environment = getString(CLIENT_ENVIRONMENT);
         opts.httpOpenTimeout = getInt(CLIENT_HTTP_OPEN_TIMEOUT);
         opts.httpRequestTimeout = getInt(CLIENT_HTTP_REQUEST_TIMEOUT);
         opts.httpMaxRetryCount = getInt(CLIENT_HTTP_MAX_RETRY_COUNT);
@@ -224,6 +228,47 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
         opts.agents = Map.of(ABLY_AGENT_HEADER_NAME, version);
 
         return opts;
+    }
+
+    /**
+     * Resolve the Ably endpoint, falling back to the deprecated rest host and environment settings that
+     * ably-java 2.x replaced with a single endpoint option.
+     */
+    @Nullable
+    private String getEndpoint() {
+        final String endpoint = getNonBlankString(CLIENT_ENDPOINT);
+        final String restHost = getNonBlankString(CLIENT_REST_HOST);
+        final String environment = getNonBlankString(CLIENT_ENVIRONMENT);
+
+        if (restHost != null) {
+            logger.warn("{} is deprecated, use {} instead", CLIENT_REST_HOST, CLIENT_ENDPOINT);
+        }
+        if (environment != null) {
+            logger.warn("{} is deprecated, use {} instead", CLIENT_ENVIRONMENT, CLIENT_ENDPOINT);
+        }
+
+        if (endpoint != null) {
+            if (restHost != null || environment != null) {
+                logger.warn("{} is set, ignoring {} and {}", CLIENT_ENDPOINT, CLIENT_REST_HOST, CLIENT_ENVIRONMENT);
+            }
+            return endpoint;
+        }
+        if (restHost != null) {
+            if (environment != null) {
+                logger.warn("{} is set, ignoring {}", CLIENT_REST_HOST, CLIENT_ENVIRONMENT);
+            }
+            return restHost;
+        }
+        return environment;
+    }
+
+    /**
+     * Get a string config value, treating blank values as unset.
+     */
+    @Nullable
+    private String getNonBlankString(final String key) {
+        final String value = getString(key);
+        return value == null || value.isBlank() ? null : value;
     }
 
     /**
@@ -297,6 +342,13 @@ public class ChannelSinkConnectorConfig extends AbstractConfig {
                     .documentation(CLIENT_TLS_DOC)
                     .importance(Importance.MEDIUM)
                     .defaultValue(true)
+                    .build()
+            )
+            .define(
+                ConfigKeyBuilder.of(CLIENT_ENDPOINT, Type.STRING)
+                    .documentation(CLIENT_ENDPOINT_DOC)
+                    .importance(Importance.LOW)
+                    .defaultValue(null)
                     .build()
             )
             .define(

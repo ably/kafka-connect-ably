@@ -11,7 +11,7 @@ import com.ably.kafka.connect.mapping.RecordMappingFactory;
 import com.ably.kafka.connect.utils.CapturedDlqError;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
-import io.ably.lib.types.Message;
+import io.ably.pubsub.types.Message;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.sink.ErrantRecordReporter;
 import org.apache.kafka.connect.sink.SinkRecord;

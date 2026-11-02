@@ -3,11 +3,11 @@ package com.ably.kafka.connect.integration;
 import com.ably.kafka.connect.AblyHelpers;
 import com.ably.kafka.connect.ChannelSinkConnector;
 import com.ably.kafka.connect.config.ChannelSinkConnectorConfig;
-import io.ably.lib.realtime.AblyRealtime;
-import io.ably.lib.realtime.Channel;
-import io.ably.lib.realtime.ConnectionState;
-import io.ably.lib.types.AblyException;
-import io.ably.lib.types.Message;
+import io.ably.pubsub.realtime.PubSubRealtimeClient;
+import io.ably.pubsub.realtime.Channel;
+import io.ably.pubsub.realtime.ConnectionState;
+import io.ably.pubsub.types.AblyException;
+import io.ably.pubsub.types.Message;
 import org.apache.kafka.connect.converters.ByteArrayConverter;
 import org.apache.kafka.connect.util.clusters.EmbeddedConnectCluster;
 import org.junit.jupiter.api.AfterEach;
@@ -50,7 +50,7 @@ public class ChannelSinkTaskTest {
 
     private EmbeddedConnectCluster connectCluster;
     private AblyHelpers.AppSpec appSpec;
-    private AblyRealtime ablyClient;
+    private PubSubRealtimeClient ablyClient;
 
     @BeforeEach
     public void prepTestEnvironment() throws Exception {
@@ -349,7 +349,7 @@ public class ChannelSinkTaskTest {
         settings.put(ChannelSinkConnectorConfig.CHANNEL_CONFIG, channelNamePattern);
         settings.put(ChannelSinkConnectorConfig.CLIENT_KEY, appSpec.key());
         settings.put(ChannelSinkConnectorConfig.CLIENT_ID, "kafka-connect-ably-test");
-        settings.put(ChannelSinkConnectorConfig.CLIENT_ENVIRONMENT, AblyHelpers.TEST_ENVIRONMENT);
+        settings.put(ChannelSinkConnectorConfig.CLIENT_ENDPOINT, AblyHelpers.TEST_ENDPOINT);
         settings.put(ChannelSinkConnectorConfig.BATCH_EXECUTION_MAX_BUFFER_DELAY_MS, Integer.toString(TEST_MAX_BUFFERING_DELAY_MS));
         if (messageNamePattern != null) {
             settings.put(ChannelSinkConnectorConfig.MESSAGE_CONFIG, messageNamePattern);
