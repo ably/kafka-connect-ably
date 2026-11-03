@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.2.1](https://github.com/ably/kafka-connect-ably/tree/v4.2.1)
+
+[Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v4.2.0...v4.2.1)
+
+**Fixed bugs:**
+
+- Upgrade guava to 33.7.2-jre to address security vulnerability CVE-2026-102554
+
 ## [4.2.0](https://github.com/ably/kafka-connect-ably/tree/v4.2.0)
 
 [Full Changelog](https://github.com/ably/kafka-connect-ably/compare/v4.1.4...v4.2.0)
