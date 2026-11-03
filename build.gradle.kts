@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.ably.kafka.connect"
-version = "4.2.0"
+version = "4.2.1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -30,6 +30,7 @@ dependencies {
     // Kafka Connect API - provided by runtime
     compileOnly(libs.kafka.connect.api)
     compileOnly(libs.kafka.connect.transforms)
+    compileOnly(libs.jsr305)
 
     // Runtime dependencies
     implementation(libs.ably.pubsub.server)
