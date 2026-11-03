@@ -6,7 +6,8 @@ confluent = "7.9.5"
 
 # Library versions
 ably = "2.0.0"
-guava = "33.4.0-jre"
+guava = "33.7.2-jre"
+jsr305 = "3.0.2"
 gson = "2.11.0"
 msgpack = "0.9.11"
 slf4j = "2.0.16"
@@ -28,6 +29,7 @@ ably-pubsub-server = { module = "io.ably.pubsub:server", version.ref = "ably" }
 msgpack-core = { module = "org.msgpack:msgpack-core", version.ref = "msgpack" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
+jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
